@@ -1,0 +1,4 @@
+<td><%= link_to tree.name, tree %></td>
+
+<td><%= link_to "Edit", edit_tree_path(tree), :class => 'btn btn-default btn-xs btn-success' %></td>
+<td><%= link_to "Delete", tree_path(tree), :data => { :confirm => "Are you sure?" }, :method => :delete, :class => 'btn btn-default btn-xs btn-danger' %></td>

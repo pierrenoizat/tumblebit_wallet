@@ -1,0 +1,11 @@
+development:
+  access_key_id: 'AKIAISHH6QIJ3R7Q2HXQ'
+  secret_access_key: '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'
+  aws_access_key_id: <%= Figaro.env.aws_access_key_id %>
+  aws_secret_access_key: <%= Figaro.env.aws_secret_access_key %>
+test:
+  access_key_id: 'AKIAISHH6QIJ3R7Q2HXQ'
+  secret_access_key: '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'
+production:
+  access_key_id: 'AKIAISHH6QIJ3R7Q2HXQ'
+  secret_access_key: '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'

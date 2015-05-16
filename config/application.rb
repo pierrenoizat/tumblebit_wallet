@@ -34,5 +34,17 @@ module RailsOmniauth
 
     # Do not swallow errors in after_commit/after_rollback callbacks.
     config.active_record.raise_in_transactional_callbacks = true
+    $SALT_STRING = "ygiu1211095gadqfzzieczc4320098777pmlkjuyrcw67xfxuxgwosjdhdhd76392187643hdhsdndiidnd"
+    
+    AWS.config(access_key_id: Figaro.env.access_key_id, secret_access_key: Figaro.env.secret_access_key, region: 'eu-west-1')
+    
+    config.paperclip_defaults = {
+      :storage => :s3,
+      :s3_protocol => 'http',
+      :s3_credentials => {
+        :bucket => 'hashtree-assets'
+      }
+    }
+    
   end
 end

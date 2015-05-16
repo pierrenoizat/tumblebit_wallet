@@ -1,0 +1,42 @@
+<%- model_class = Tree -%>
+<%= form_for(@tree, multipart: true) do |f| %>
+  <% if @tree.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@tree.errors.count, "error") %> prohibited this list from being saved:</h2>
+
+      <ul>
+      <% @tree.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <p><%= f.label 'Account list name' %></p>
+    <p><%= f.text_field :name %></p></br></br>
+  </div>
+
+  <div class="field">
+    <p><%= f.label 'Logo* (optional, leave blank if no logo):' %></p>
+    <p><%= f.file_field :avatar %></p></br></br>
+  </div>
+
+ <div class="field">
+    <p><%= f.label 'Account List**' %></p>
+    <p><%= f.file_field :roll %></p></br></br>
+  </div>
+
+  <div class="actions">
+	
+	<% if @tree.id %>
+		<p><%= f.submit 'Update', class: "btn btn-primary btn-small", style: "background-color:blue;color:white;" %>
+	<% else %>
+		<p><%= f.submit 'Create', class: "btn btn-primary btn-small", style: "background-color:blue;color:white;" %>
+	<% end %>
+
+	<a class="btn btn-small" href=<%= "#{trees_path}" %> style="background-color:gainsboro;color:black;" >Cancel</a></p>
+  </div>
+<% end %>
+<aside>* Image in jpg or png format, max file size 500 kbytes</aside>
+<aside>** File in CSV format, max file size 500 kbytes</aside>

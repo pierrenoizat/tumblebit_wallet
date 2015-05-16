@@ -28,7 +28,7 @@ group :development, :test do
   gem 'rspec-rails'
 end
 group :production do
-  gem 'puma'
+  gem 'unicorn'
   gem 'rails_12factor'
 end
 group :test do
@@ -37,3 +37,21 @@ group :test do
   gem 'launchy'
   gem 'selenium-webdriver'
 end
+
+gem 'omniauth'
+gem 'omniauth-twitter'
+gem 'figaro'
+
+# gem 'resque', "~> 1.22.0", :require => 'resque/server'
+gem "resque", :require => 'resque/server'
+gem 'redis'
+gem 'redis-store'
+gem 'resque_mailer'
+
+gem 'fastercsv'
+
+gem 'aws-sdk', '~> 1'
+gem 'aws-sdk-resources', '~> 2'
+gem 'paperclip'
+gem "cocaine", "= 0.5.7" # required for imagemagick
+gem "d3-rails"

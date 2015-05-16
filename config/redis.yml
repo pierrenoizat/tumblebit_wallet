@@ -1,0 +1,18 @@
+defaults: &defaults
+  host: angelfish.redistogo.com
+  username: redistogo
+  password: 652f4c27327c7cb52ac7042b0fb31ca2
+  port: 10315
+
+development:
+  host: localhost
+  port: 6379
+
+staging:
+  <<: *defaults
+
+production:
+  host: angelfish.redistogo.com
+  username: redistogo
+  password: 652f4c27327c7cb52ac7042b0fb31ca2
+  port: 10315

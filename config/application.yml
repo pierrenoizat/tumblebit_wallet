@@ -1,0 +1,33 @@
+# Add configuration values here, as shown below.
+#
+# pusher_app_id: "2954"
+# pusher_key: 7381a978f7dd7f9a1117
+# pusher_secret: abdc3b896a0ffb85d373
+# stripe_api_key: sk_test_2J0l093xOyW72XUYJHE4Dv2r
+# stripe_publishable_key: pk_test_ro9jV5SNwGb1yYlQfzG17LHK
+# recaptcha site key for microbitcoin.net
+
+
+default: &default
+  recaptcha_public_key: 6Le4VgMTAAAAAG8kuI-hjaqnwBwdCqB6T-G5-CNo
+  recaptcha_private_key: 6Le4VgMTAAAAAL2BVqT3VCegcGWXHKsrzGOWwPf_
+
+development:
+  <<: *default
+  secret_key_base: ca67d0cbaf24f4cebd1cbd67fc06da43053ac2896ac0304f6cf673a900b80d855d2ca0381c9487fae44b49e25ccf09362d56ce9430571507a8ff0c376a10e554
+  access_key_id: 'AKIAISHH6QIJ3R7Q2HXQ'
+  secret_access_key: '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'
+  aws_access_key_id: AKIAISHH6QIJ3R7Q2HXQ
+  aws_secret_access_key: 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
+  omniauth_provider_key: nQqzGa1YpyS0tJjiyafJyw2eW
+  omniauth_provider_secret: P3HwYhtrVQv8rXTZEWbe6VQF1WERgrq9OPAPmUEowz6cqce1xy
+
+production:
+  <<: *default
+  secret_key_base: ca67d0cbaf24f4cebd1cbd67fc06da43053ac2896ac0304f6cf673a900b80d855d2ca0381c9487fae44b49e25ccf09362d56ce9430571507a8ff0c376a10e554
+  access_key_id: 'AKIAISHH6QIJ3R7Q2HXQ'
+  secret_access_key: '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'
+  aws_access_key_id: 'AKIAISHH6QIJ3R7Q2HXQ'
+  aws_secret_access_key: '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'
+  omniauth_provider_key: nQqzGa1YpyS0tJjiyafJyw2eW
+  omniauth_provider_secret: P3HwYhtrVQv8rXTZEWbe6VQF1WERgrq9OPAPmUEowz6cqce1xy

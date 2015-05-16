@@ -1,19 +1,14 @@
-Rails Omniauth
+Rails Omniauth App
 ================
 
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
-This application was generated with the [rails_apps_composer](https://github.com/RailsApps/rails_apps_composer) gem
-provided by the [RailsApps Project](http://railsapps.github.io/).
-
-Rails Composer is open source and supported by subscribers. Please join RailsApps to support development of Rails Composer.
+This application allows users to create and navigate a binary tree build from an account list uploaded to AWS S3.
 
 Problems? Issues?
 -----------
 
-Need help? Ask on Stack Overflow with the tag 'railsapps.'
-
-Your application contains diagnostics in the README file. Please provide a copy of the README file when reporting any issues.
+Need help? Contact me at pierre dot noizat at paymium dot com
 
 If the application doesn't work as expected, please [report an issue](https://github.com/RailsApps/rails_apps_composer/issues)
 and include the diagnostics.
@@ -26,25 +21,12 @@ This application requires:
 - Ruby 2.2.0
 - Rails 4.2.0
 
-Learn more about [Installing Rails](http://railsapps.github.io/installing-rails.html).
-
 Getting Started
 ---------------
-
-Documentation and Support
--------------------------
-
-Issues
--------------
-
-Similar Projects
-----------------
-
-Contributing
-------------
-
-Credits
--------
+To create a new binary tree, upload a CSV file of your account list.
+Each account is on a new line with: name, credit
+Make sure to NOT add an empty line at the end of your file as this would cause the line count to be incremented, messing up the computation of the tree.
 
 License
 -------
+DWTFYW License
