@@ -12,8 +12,7 @@ class LeafNode < ActiveRecord::Base
   
   def as_json(*args)
       {
-        :hash => "#{self.leaf_hash}",
-        :credit => "#{self.credit}"
+        :name => "#{self.leaf_hash}"
       }
     end
   

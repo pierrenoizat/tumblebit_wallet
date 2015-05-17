@@ -25,8 +25,12 @@
 </style>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
+<%= javascript_tag do %>
+	var myJson = <%= raw @tree.nodes.last.to_json %>;
+	window.root = myJson
+<% end %>
 <script>
-var treeId = $('#timer').data('treeid');
+
 
 var margin = {top: 20, right: 120, bottom: 20, left: 120},
     width = 960 - margin.right - margin.left,
@@ -34,7 +38,7 @@ var margin = {top: 20, right: 120, bottom: 20, left: 120},
     
 var i = 0,
     duration = 750,
-    root;
+	root;
 
 var tree = d3.layout.tree()
     .size([height, width]);
@@ -47,9 +51,8 @@ var svg = d3.select("body").append("svg")
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+	
 
-d3.json("display.json", function(error, flare) {
-  root = flare;
   root.x0 = height / 2;
   root.y0 = 0;
 
@@ -59,11 +62,10 @@ d3.json("display.json", function(error, flare) {
       d._children.forEach(collapse);
       d.children = null;
     }
-  }
+  };
 
   root.children.forEach(collapse);
   update(root);
-});
 
 d3.select(self.frameElement).style("height", "800px");
 
@@ -165,6 +167,6 @@ function click(d) {
   }
   update(d);
 }
-
 </script>
-<span id="timer" data-treeid = "<%= @tree.id %>" ></span>
+<div id="timer" data-treeid = "<%= @tree.id %>"></div>
+</body>

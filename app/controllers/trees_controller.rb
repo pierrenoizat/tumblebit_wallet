@@ -76,15 +76,15 @@ class TreesController < ApplicationController
   end
   
   def display # method called in app/views/trees/get_tree.html.erb   
-    
-    @tree = Tree.find_by_id(params[:id]) 
-    
+    @tree = Tree.find_by_id(params[:id])
   end
+
+
 
   private
  
      def tree_params
-       params.require(:tree).permit(:avatar, :roll, :name, :root, :depth, :height, :count, :error_count)
+       params.require(:tree).permit(:avatar, :roll, :name, :depth, :height, :count, :error_count)
        #params.require(:tree).permit(leaf_nodes_attributes: [:nonce, :credit, :name, :tree_id])
        #params.require(:tree).permit(nodes_attributes: [:left, :right,:height, :sum, :hash, :tree_id])
      end

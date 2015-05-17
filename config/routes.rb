@@ -7,6 +7,7 @@ Rails.application.routes.draw do
         get 'display'
       end
     end
+    
   
   resources :leaf_nodes
   resources :nodes
