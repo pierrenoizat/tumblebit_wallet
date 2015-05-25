@@ -45,7 +45,7 @@ class LeafNodesController < ApplicationController
   private
 
   def secure_params
-    params.require(:leaf_node).permit(:nonce, :credit, :name, :height, :tree_id)
+    params.require(:leaf_node).permit(:nonce, :credit, :name, :height, :tree_id, :node_id)
   end
 
 end

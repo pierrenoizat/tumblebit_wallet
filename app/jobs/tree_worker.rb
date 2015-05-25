@@ -125,6 +125,10 @@ module TreeWorker
           @node.height = 1
           @node.left = leaf.leaf_hash
           @node.sum = leaf.credit
+          @node.left_id = leaf.id
+          @node.save
+          leaf.node_id = @node.id
+          leaf.save
 
           if k == count # last leaf node gets height = 1 instead of 0 if odd count
             @node.height = 1
@@ -133,6 +137,7 @@ module TreeWorker
             @node.sum = leaf.credit
             @node.node_hash = leaf.leaf_hash
             @node.tree_id = tree_id
+            @node.right_id = nil
             @node.save
           end
 
@@ -141,11 +146,15 @@ module TreeWorker
           @node.sum += leaf.credit
           message = "#{@node.sum.to_s}|#{@node.left}|#{@node.right}"
           @node.node_hash = OpenSSL::Digest::SHA256.new.digest(message).unpack('H*').first
-          @node.tree_id = tree_id 
+          @node.tree_id = tree_id
+          @node.right_id = leaf.id
           @node.save
+          leaf.node_id = @node.id
+          leaf.save
 
         end # if k.odd ?
         k+=1
+        
 
       end # each do leaf
       ############################## get other internal nodes all the way to the root  
@@ -179,6 +188,7 @@ module TreeWorker
               @node.height = height + 1
               @node.left = value.node_hash
               @node.sum = value.sum
+              @node.left_id = value.id
 
               if k == count # last internal node of height height gets height = height+1 if odd count
                 @node.height = height + 1
@@ -186,6 +196,7 @@ module TreeWorker
                 @node.right = value.right
                 @node.sum = value.sum
                 @node.node_hash = value.node_hash
+                @node.right_id = nil
                 @node.save
               end
 
@@ -195,7 +206,7 @@ module TreeWorker
               
               message = "#{@node.sum.to_s}|#{@node.left}|#{@node.right}"
               @node.node_hash = OpenSSL::Digest::SHA256.new.digest(message).unpack('H*').first
-              
+              @node.right_id = value.id
               @node.save
             end
             k+=1

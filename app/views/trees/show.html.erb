@@ -4,6 +4,7 @@
 	<!--<p><%= image_tag @tree.avatar.url(:square) %></p>-->
 	<p>Name: <%= @tree.name if @tree.name %></p>
 	<p>Root hash: <%= @tree.root_hash if @tree %></p>
+	<p>Height: <%= @tree.height if @tree %></p>
 	<p>Total: <%= @tree.total if @tree %></p>
 	<p><b><%= @leaf_nodes.count %> Leaves:</b></p>
     <div class="column">
@@ -14,7 +15,6 @@
 			<th>Credit</th>
 			<th>Nonce</th>
 			<th>Hash</th>
-			<th>Height</th>
 			<% if @leaf_nodes %>
           		<% @leaf_nodes.each do |leaf| %>
             	<tr>
@@ -41,8 +41,8 @@
       <table class="table">
         <tbody>
 			<th>Id</th>
-			<th>Left</th>
-			<th>Right</th>
+			<th>Left Id</th>
+			<th>Right Id</th>
 			<th>Hash</th>
 			<th>Height</th>
 			<th>Sum</th>

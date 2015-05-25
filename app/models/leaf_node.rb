@@ -1,5 +1,6 @@
 class LeafNode < ActiveRecord::Base
   belongs_to :tree
+  belongs_to :node
   # after_initialize :set_nonce, :if => :new_record?
   
   def leaf_hash
