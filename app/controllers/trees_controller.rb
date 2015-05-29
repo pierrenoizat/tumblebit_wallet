@@ -77,6 +77,15 @@ class TreesController < ApplicationController
   
   def display # method called in app/views/trees/get_tree.html.erb   
     @tree = Tree.find_by_id(params[:id])
+    @nodes = @tree.nodes
+    @leaf_nodes = @tree.leaf_nodes
+    
+    unless @nodes
+      respond_to do |format|
+        flash[:success] = "Displaying tree."
+        format.html { render action: 'display'}
+      end
+    end
   end
 
 

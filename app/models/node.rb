@@ -13,7 +13,7 @@ class Node < ActiveRecord::Base
     @tree = Tree.find_by_id(self.tree_id)
     height = @tree.height
     h = height-1
-
+    # intialize @my_json, a json, serialized form of the tree with the first two levels of nodes from the root down.
      @my_json = {
       :name => "#{truncate_node_hash(self.node_hash)}", :node_id => "#{self.id}", :sum => "#{self.sum}",
       :children => [
@@ -31,7 +31,7 @@ class Node < ActiveRecord::Base
         @my_json = {
           :name => "#{truncate_node_hash(self.node_hash)}", :node_id => "#{self.id}", :sum => "#{self.sum}",
           :children => [
-              {:name => "#{truncate_node_hash(self.left)}", :children => [{:name => "#{truncate_node_hash(self.left_child.left)}", :sum => "#{self.left_child.sum}", :node_id => "#{self.left_child.left_id}"}]},
+              {:name => "#{truncate_node_hash(self.left)}", :children => [{:name => "#{truncate_node_hash(self.left)}", :sum => "#{self.left_child.sum}", :node_id => "#{self.left_child.left_id}"}]},
               {:name => "#{truncate_node_hash(self.right)}", 
                :children => [
                  {:name => "#{truncate_node_hash(self.right_child.left)}", :sum => "#{self.right_child.left_child.sum}",:node_id => "#{self.right_child.left_id}",:left_id => "#{self.right_child.left_child.left_id}",:right_id => "#{self.right_child.left_child.right_id}"},
@@ -51,7 +51,7 @@ class Node < ActiveRecord::Base
                  {:name => "#{truncate_node_hash(self.left_child.right)}", :sum => "#{self.left_child.right_child.sum}",:node_id => "#{self.left_child.right_id}",:left_id => "#{self.left_child.right_child.left_id}",:right_id => "#{self.left_child.right_child.right_id}"}
                 ]
                 },
-              {:name => "#{truncate_node_hash(self.right)}", :children => [{:name => "#{truncate_node_hash(self.right_child.left)}", :sum => "#{self.right_child.sum}",:node_id => "#{self.right_child.left_id}"}]}
+              {:name => "#{truncate_node_hash(self.right)}", :children => [{:name => "#{truncate_node_hash(self.right)}", :sum => "#{self.right_child.sum}",:node_id => "#{self.right_child.left_id}"}]}
               ]  
             }
             
@@ -77,10 +77,7 @@ class Node < ActiveRecord::Base
         puts "I have no idea what to do with that."
       end
       
-      
-      # json_height(@my_json)
-      append_nodes(@my_json, self.tree_id)
-      # @my_json
+      append_nodes(@my_json, self.tree_id) # returns @my_json completed with internal nodes through the leaves
       
     end
     
@@ -112,7 +109,7 @@ class Node < ActiveRecord::Base
       h = json_height(jvar)
       @tree = Tree.find_by_id(id)
 
-      # get nodes where node.height = tree.height-h-2
+      # get nodes where node.height = tree.height-h-2, first nodes to be appended
       @nodes = Node.where('height' => @tree.height - h - 2).all
       unless @nodes.blank?
       @nodes = @nodes.select { |node| node.tree_id == id }
@@ -120,46 +117,49 @@ class Node < ActiveRecord::Base
 
       
       if @nodes.count > 0
-        # append nodes
+        # append nodes, if tree height > 4, i.e if there are nodes with height > 3
         
         @nodes.each do |node|  ########################################
-          m = h
+          # m = h
           
-          @selection = @nodes.select { |node| node.left_id == node.id }
+          # @selection = @nodes.select { |obj| obj.left_id == node.id }
+          @selection = Node.select { |obj| obj.left_id == node.id }
           @node = @selection.first
           if @node
             node_path = "0"
           else
-            @selection = @nodes.select { |node| node.right_id == node.id }
+            @selection = Node.select { |obj| obj.right_id == node.id }
             @node = @selection.first
             node_path = "1"
           end
           
           while @node
-            m -= 1 # get nodes just above current node
-            @selected_nodes = Node.select { |node| ((node.tree_id == id) and (node.height == @tree.height - m - 1)) }
+            # get nodes just above current node
+            @selected_nodes = Node.select { |obj| ((obj.tree_id == id) and (obj.height == @node.height + 1)) }
             i = @node.id
           
-            @selection = @selected_nodes.select { |node| node.left_id == i }
-            @node = @selection.first
+            @selection = @selected_nodes.select { |obj| obj.left_id == i }
+            @parent_node = @selection.first
             
-            if @node
+            if @parent_node
               node_path += "0" # rightmost digit of leaf_path points to highest node
             else
-              @selection = @selected_nodes.select { |node| node.right_id == i }
-              @node = @selection.first
+              @selection = @selected_nodes.select { |obj| obj.right_id == i }
+              @parent_node = @selection.first
               
-              if @node
+              if @parent_node
                 node_path += "1"
               end
             end
+            # m -= 1
+            @node = @parent_node
           end # while @node
           
           jsonvar = jvar
           node.node_path = node_path
           node.save
           puts h
-          puts node.id
+          puts "node " + node.id.to_s
           puts node_path
           puts jsonvar
           @new_jsonvar = {}
@@ -169,14 +169,26 @@ class Node < ActiveRecord::Base
           
           case node_path
 
-          when "000" # good only for tree height = 4, 2**3 = 8 lines !
-            @new_jsonvar[:children][0][:children][0][:children] = [@node_json]
+          when "000" # good only for tree height = 5, 2**3 = 8 lines !
+            if @new_jsonvar[:children][0][:children][0][:children].blank?
+              @new_jsonvar[:children][0][:children][0][:children] = [@node_json]
+            else
+              @new_jsonvar[:children][0][:children][0][:children][0] = @node_json
+            end
             
           when "001"
-            @new_jsonvar[:children][1][:children][0][:children] = [@node_json]
+            if @new_jsonvar[:children][1][:children][0][:children].blank?
+              @new_jsonvar[:children][1][:children][0][:children] = [@node_json]
+            else
+              @new_jsonvar[:children][1][:children][0][:children][0] = @node_json
+            end
             
           when "010"
-            @new_jsonvar[:children][0][:children][1][:children] = [@node_json]
+            if @new_jsonvar[:children][0][:children][1][:children].blank?
+              @new_jsonvar[:children][0][:children][1][:children] = [@node_json]
+            else
+              @new_jsonvar[:children][0][:children][1][:children][0] = @node_json
+            end
             
           when "100"
               if @new_jsonvar[:children][0][:children][0][:children].blank?
@@ -200,19 +212,23 @@ class Node < ActiveRecord::Base
               end
             
           when "011"
-            @new_jsonvar[:children][1][:children][1][:children] = [@node_json]
+            if @new_jsonvar[:children][1][:children][1][:children].blank?
+              @new_jsonvar[:children][1][:children][1][:children] = [@node_json]
+            else
+              @new_jsonvar[:children][1][:children][1][:children][0] = @node_json
+            end
             
           when "111"
-            if @new_jsonvar[:children][1][:children][1][:children].blank?
-              @new_jsonvar[:children][1][:children][1][:children] = [ {}, @node_json ]
-            else
-              @new_jsonvar[:children][1][:children][1][:children] << @node_json
-            end
+              if @new_jsonvar[:children][1][:children][1][:children].blank?
+                @new_jsonvar[:children][1][:children][1][:children] = [ {}, @node_json ]
+              else
+                @new_jsonvar[:children][1][:children][1][:children] << @node_json
+              end
      
           end
           
           
-        end ###########################################################
+        end # of do |node| #########################################################
         
       else
         # append leaf nodes
@@ -328,33 +344,19 @@ class Node < ActiveRecord::Base
           end
           
         end # of do |leaf|  ########################################################
-        @new_jsonvar
+        
       end
-      
+      puts @new_jsonvar
+      @new_jsonvar
       
       
     end  # of method append_nodes
     
     
-    def down_left(jsonvar) # append nodes of height = h-1 to nodes of height = h and up
-      @var = jsonvar[:children]
-      if @var
-        jsonvar[:children][0]
-      end
-    end
-    
-    def down_right(jsonvar)
-      @var = jsonvar[:children]
-      if @var
-        jsonvar[:children][1]
-      end
-    end
-    
-    
     def left_child
-      @tree = Tree.find_by_id(self.tree_id)
-      @nodes = @tree.nodes
-      @nodes = @nodes.select { |node| (node.node_hash == self.left) && (node.height == self.height-1) }
+      # @tree = Tree.find_by_id(self.tree_id)
+      # @nodes = @tree.nodes
+      @nodes = Node.select { |node| ((node.id == self.left_id) and (node.tree_id == self.tree_id) )}
       if @nodes
         @node = @nodes.first
       else
@@ -365,7 +367,8 @@ class Node < ActiveRecord::Base
     def right_child
       @tree = Tree.find_by_id(self.tree_id)
       @nodes = @tree.nodes
-      @nodes = @nodes.select { |node| (node.node_hash == self.right) && (node.height == self.height-1) }
+      # @nodes = @nodes.select { |node| (node.node_hash == self.right) && (node.height == self.height-1) }
+      @nodes = @nodes.select { |node| (node.id == self.right_id) }
       if @nodes
         @node = @nodes.first
       else
