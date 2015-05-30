@@ -283,6 +283,25 @@ module TreeWorker
 
               node.save
             end # of do |node| ################################################
+            
+            @nodes = Node.select { |node| ((node.tree_id == id) and (node.height == 1)) } # get nodes just above leaves
+
+            @leaf_nodes = LeafNode.where('tree_id' => id).all
+
+            @leaf_nodes.each do |leaf| ######################################
+
+              @selection = @nodes.select { |node| node.left_id == leaf.id }
+              @node = @selection.first
+              if @node
+                leaf_path = "0" + @node.node_path
+              else
+                @selection = @nodes.select { |node| node.right_id == leaf.id }
+                @node = @selection.first
+                leaf_path = "1" + @node.node_path
+              end
+              leaf.leaf_path = leaf_path
+              leaf.save
+            end # of do |leaf|
              
     puts "#{@tree.name} analysis job successfully completed"
   end # of method
