@@ -241,6 +241,49 @@ module TreeWorker
             end
             
             @tree.save 
-  
+            
+            # intialize attribute node_path for the internal nodes
+            # @nodes = @tree.nodes  does NOT work !
+            @nodes = Node.select { |node| node.tree_id == id } 
+            
+            @nodes.each do |node|  ########################################
+              k = node.height
+              @selected_nodes = @nodes.select { |obj| obj.left_id == node.id }
+              @next_node = @selected_nodes.first
+              if @next_node
+                node.node_path = "0"
+              else
+                @selected_nodes = @nodes.select { |obj| obj.right_id == node.id }
+                @next_node = @selected_nodes.first
+                if @next_node
+                  node.node_path = "1"
+                else
+                  node.node_path = ""
+                end
+              end
+              k += 1
+              while k < (@tree.height - 1)
+                # get nodes just above current node
+                @selected_nodes = @nodes.select { |obj| obj.left_id == @next_node.id }
+                @parent_node = @selected_nodes.first
+
+                if @parent_node
+                  node.node_path += "0" # rightmost digit of leaf_path points to highest node
+                else
+                  @selected_nodes = @nodes.select { |obj| obj.right_id == @next_node.id }
+                  @parent_node = @selected_nodes.first
+
+                  if @parent_node
+                    node.node_path += "1"
+                  end
+                end
+                @next_node = @parent_node
+                k += 1
+              end # of while k < @tree.height -1
+
+              node.save
+            end # of do |node| ################################################
+             
+    puts "#{@tree.name} analysis job successfully completed"
   end # of method
 end # of module

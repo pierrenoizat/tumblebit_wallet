@@ -120,44 +120,8 @@ class Node < ActiveRecord::Base
         # append nodes, if tree height > 4, i.e if there are nodes with height > 3
         
         @nodes.each do |node|  ########################################
-          # m = h
-          
-          # @selection = @nodes.select { |obj| obj.left_id == node.id }
-          @selection = Node.select { |obj| obj.left_id == node.id }
-          @node = @selection.first
-          if @node
-            node_path = "0"
-          else
-            @selection = Node.select { |obj| obj.right_id == node.id }
-            @node = @selection.first
-            node_path = "1"
-          end
-          
-          while @node
-            # get nodes just above current node
-            @selected_nodes = Node.select { |obj| ((obj.tree_id == id) and (obj.height == @node.height + 1)) }
-            i = @node.id
-          
-            @selection = @selected_nodes.select { |obj| obj.left_id == i }
-            @parent_node = @selection.first
-            
-            if @parent_node
-              node_path += "0" # rightmost digit of leaf_path points to highest node
-            else
-              @selection = @selected_nodes.select { |obj| obj.right_id == i }
-              @parent_node = @selection.first
-              
-              if @parent_node
-                node_path += "1"
-              end
-            end
-            # m -= 1
-            @node = @parent_node
-          end # while @node
           
           jsonvar = jvar
-          node.node_path = node_path
-          node.save
           puts h
           puts "node " + node.id.to_s
           puts node_path
@@ -167,7 +131,7 @@ class Node < ActiveRecord::Base
           @new_jsonvar = jvar
           @node_json = {:name => "#{truncate_node_hash(node.node_hash)}", :sum => "#{node.sum}",:node_id => "#{node.id}"}
           
-          case node_path
+          case node.node_path
 
           when "000" # good only for tree height = 5, 2**3 = 8 lines !
             if @new_jsonvar[:children][0][:children][0][:children].blank?

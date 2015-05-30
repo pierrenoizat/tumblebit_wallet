@@ -45,7 +45,7 @@ class NodesController < ApplicationController
   private
 
   def secure_params
-    params.require(:node).permit(:left, :right,:height, :sum, :node_hash, :tree_id)
+    params.require(:node).permit(:left, :right,:height, :sum, :node_hash, :tree_id, :left_id, :right_id, :node_path)
   end
 
 end
