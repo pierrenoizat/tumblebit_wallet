@@ -245,6 +245,21 @@ class Node < ActiveRecord::Base
               end
             end
             
+          when 9 # when tree height is ten, 257 leaves or more
+            if a[0] == 0
+              if @new_jsonvar[:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [@node_json]
+              else
+                @new_jsonvar[:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = @node_json
+              end
+            else
+              if @new_jsonvar[:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, @node_json ]
+              else
+                @new_jsonvar[:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << @node_json
+              end
+            end
+            
           else
             puts "I will deal with this node later."
           end
@@ -358,6 +373,21 @@ class Node < ActiveRecord::Base
                 @new_jsonvar[:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, @leaf_json ]
               else
                 @new_jsonvar[:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << @leaf_json
+              end
+            end
+            
+          when 9 # when tree height is ten, 257 leaves or more
+            if a[0] == 0
+              if @new_jsonvar[:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [@leaf_json]
+              else
+                @new_jsonvar[:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = @leaf_json
+              end
+            else
+              if @new_jsonvar[:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, @leaf_json ]
+              else
+                @new_jsonvar[:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << @leaf_json
               end
             end
             
