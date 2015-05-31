@@ -205,8 +205,27 @@ class Node < ActiveRecord::Base
 
             end
             
+          when 6
+
+            if node.node_path[0] == "0"
+
+              if @new_jsonvar[:children][node.node_path[5].to_i][:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children].blank?
+                @new_jsonvar[:children][node.node_path[5].to_i][:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children] = [@node_json]
+              else
+                @new_jsonvar[:children][node.node_path[5].to_i][:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children][0] = @node_json
+              end
+            else
+
+              if @new_jsonvar[:children][node.node_path[5].to_i][:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children].blank?
+                @new_jsonvar[:children][node.node_path[5].to_i][:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children] = [ {}, @node_json ]
+              else
+                @new_jsonvar[:children][node.node_path[5].to_i][:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children] << @node_json
+              end
+
+            end
+            
           else
-            puts "I will deal with that node later."
+            puts "I will deal with this node later."
           end
           
         end # of do |node| #########################################################
@@ -284,8 +303,27 @@ class Node < ActiveRecord::Base
 
             end
             
+          when 6
+
+            if leaf.leaf_path[0] == "0"
+
+              if @new_jsonvar[:children][leaf.leaf_path[5].to_i][:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children].blank?
+                @new_jsonvar[:children][leaf.leaf_path[5].to_i][:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children] = [@leaf_json]
+              else
+                @new_jsonvar[:children][leaf.leaf_path[5].to_i][:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children][0] = @leaf_json
+              end
+            else
+
+              if @new_jsonvar[:children][leaf.leaf_path[5].to_i][:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children].blank?
+                @new_jsonvar[:children][leaf.leaf_path[5].to_i][:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children] = [ {}, @leaf_json ]
+              else
+                @new_jsonvar[:children][leaf.leaf_path[5].to_i][:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children] << @leaf_json
+              end
+
+            end
+            
           else
-            puts "I will deal with that leaf later."
+            puts "I will deal with this leaf later."
           end
           
         end # of do |leaf|  ########################################################

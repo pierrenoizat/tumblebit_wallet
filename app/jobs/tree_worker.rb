@@ -248,12 +248,12 @@ module TreeWorker
             
             @nodes.each do |node|  ########################################
               k = node.height
-              @selected_nodes = @nodes.select { |obj| obj.left_id == node.id }
+              @selected_nodes = @nodes.select { |obj| ((obj.left_id == node.id) and (obj.height == node.height + 1)) }
               @next_node = @selected_nodes.first
               if @next_node
                 node.node_path = "0"
               else
-                @selected_nodes = @nodes.select { |obj| obj.right_id == node.id }
+                @selected_nodes = @nodes.select { |obj| ((obj.right_id == node.id) and (obj.height == node.height + 1)) }
                 @next_node = @selected_nodes.first
                 if @next_node
                   node.node_path = "1"
@@ -264,13 +264,13 @@ module TreeWorker
               k += 1
               while k < (@tree.height - 1)
                 # get nodes just above current node
-                @selected_nodes = @nodes.select { |obj| obj.left_id == @next_node.id }
+                @selected_nodes = @nodes.select { |obj| ((obj.left_id == @next_node.id) and (obj.height == @next_node.height + 1)) }
                 @parent_node = @selected_nodes.first
 
                 if @parent_node
                   node.node_path += "0" # rightmost digit of leaf_path points to highest node
                 else
-                  @selected_nodes = @nodes.select { |obj| obj.right_id == @next_node.id }
+                  @selected_nodes = @nodes.select { |obj| ((obj.right_id == @next_node.id) and (obj.height == @next_node.height + 1)) }
                   @parent_node = @selected_nodes.first
 
                   if @parent_node
@@ -290,12 +290,12 @@ module TreeWorker
 
             @leaf_nodes.each do |leaf| ######################################
 
-              @selection = @nodes.select { |node| node.left_id == leaf.id }
+              @selection = @nodes.select { |node| ((node.left_id == leaf.id) and (node.height == 1)) }
               @node = @selection.first
               if @node
                 leaf_path = "0" + @node.node_path
               else
-                @selection = @nodes.select { |node| node.right_id == leaf.id }
+                @selection = @nodes.select { |node| ((node.right_id == leaf.id) and (node.height == 1)) }
                 @node = @selection.first
                 leaf_path = "1" + @node.node_path
               end

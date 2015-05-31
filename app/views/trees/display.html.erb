@@ -42,6 +42,12 @@ var tree = d3.layout.tree()
 var diagonal = d3.svg.diagonal()
     .projection(function(d) { return [d.y, d.x]; });
 
+var linkUrl = "<%= $TREES_URL %>" + "<%= @tree.id %>";
+var linkString = "<%= @tree.name %>";
+var element = document.getElementById("title");
+var result = linkString.link(linkUrl);
+element.innerHTML = result;
+
 var svg = d3.select("body").append("svg")
     .attr("width", width + margin.right + margin.left)
     .attr("height", height + margin.top + margin.bottom)
@@ -164,5 +170,6 @@ function click(d) {
   update(d);
 }
 </script>
+<div id="title"></div>
 <div id="timer" data-treeid = "<%= @tree.id %>"></div>
 </body>
