@@ -145,83 +145,104 @@ class Node < ActiveRecord::Base
           @node_json = {:name => "#{truncate_node_hash(node.node_hash)}", :sum => "#{node.sum}",:node_id => "#{node.id}"}
           
           #######################
+          a = node.node_path.split(//)  # converts node_path string into an array of characters
+          for i in 0..a.count
+            a[i] = a[i].to_i # convert a to an array of integers
+          end
           
           case node.node_path.length
 
           when 3
-            
-            if node.node_path[0] == "0"
-            
-              if @new_jsonvar[:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children] = [@node_json]
+            if a[0] == 0
+              if @new_jsonvar[:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[2]][:children][a[1]][:children] = [@node_json]
               else
-                @new_jsonvar[:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children][0] = @node_json
+                @new_jsonvar[:children][a[2]][:children][a[1]][:children][0] = @node_json
               end
             else
-              
-              if @new_jsonvar[:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children] = [ {}, @node_json ]
+              if @new_jsonvar[:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[2]][:children][a[1]][:children] = [ {}, @node_json ]
               else
-                @new_jsonvar[:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children] << @node_json
+                @new_jsonvar[:children][a[2]][:children][a[1]][:children] << @node_json
               end
-              
             end
             
           when 4
-
-            if node.node_path[0] == "0"
-
-              if @new_jsonvar[:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children] = [@node_json]
+            if a[0] == 0
+              if @new_jsonvar[:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[3]][:children][a[2]][:children][a[1]][:children] = [@node_json]
               else
-                @new_jsonvar[:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children][0] = @node_json
+                @new_jsonvar[:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = @node_json
               end
             else
-
-              if @new_jsonvar[:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children] = [ {}, @node_json ]
+              if @new_jsonvar[:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, @node_json ]
               else
-                @new_jsonvar[:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children] << @node_json
+                @new_jsonvar[:children][a[3]][:children][a[2]][:children][a[1]][:children] << @node_json
               end
-
             end
             
           when 5
-
-            if node.node_path[0] == "0"
-
-              if @new_jsonvar[:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children] = [@node_json]
+            if a[0] == 0
+              if @new_jsonvar[:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [@node_json]
               else
-                @new_jsonvar[:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children][0] = @node_json
+                @new_jsonvar[:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = @node_json
               end
             else
-
-              if @new_jsonvar[:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children] = [ {}, @node_json ]
+              if @new_jsonvar[:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, @node_json ]
               else
-                @new_jsonvar[:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children] << @node_json
+                @new_jsonvar[:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << @node_json
               end
-
             end
             
           when 6
 
-            if node.node_path[0] == "0"
-
-              if @new_jsonvar[:children][node.node_path[5].to_i][:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][node.node_path[5].to_i][:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children] = [@node_json]
+            if a[0] == 0
+              if @new_jsonvar[:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [@node_json]
               else
-                @new_jsonvar[:children][node.node_path[5].to_i][:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children][0] = @node_json
+                @new_jsonvar[:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = @node_json
               end
             else
-
-              if @new_jsonvar[:children][node.node_path[5].to_i][:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][node.node_path[5].to_i][:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children] = [ {}, @node_json ]
+              if @new_jsonvar[:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, @node_json ]
               else
-                @new_jsonvar[:children][node.node_path[5].to_i][:children][node.node_path[4].to_i][:children][node.node_path[3].to_i][:children][node.node_path[2].to_i][:children][node.node_path[1].to_i][:children] << @node_json
+                @new_jsonvar[:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << @node_json
               end
+            end
+            
+          when 7  # when tree height is eight
 
+            if a[0] == 0
+              if @new_jsonvar[:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [@node_json]
+              else
+                @new_jsonvar[:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = @node_json
+              end
+            else
+              if @new_jsonvar[:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, @node_json ]
+              else
+                @new_jsonvar[:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << @node_json
+              end
+            end
+            
+          when 8  # when tree height is nine, like with 129 leaves
+
+            if a[0] == 0
+              if @new_jsonvar[:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [@node_json]
+              else
+                @new_jsonvar[:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = @node_json
+              end
+            else
+              if @new_jsonvar[:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, @node_json ]
+              else
+                @new_jsonvar[:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << @node_json
+              end
             end
             
           else
@@ -243,83 +264,101 @@ class Node < ActiveRecord::Base
           @leaf_json = {:name => "#{truncate_node_hash(leaf.leaf_hash)}", :sum => "#{leaf.credit}",:node_id => "#{leaf.id}"}
           
           #########################################################
+          a = leaf.leaf_path.split(//)  # converts leaf_path string into an array of characters
+          for i in 0..a.count
+            a[i] = a[i].to_i # convert a to an array of integers
+          end
           
           case leaf.leaf_path.length
 
           when 3
-            
-            if leaf.leaf_path[0] == "0"
-            
-              if @new_jsonvar[:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children] = [@leaf_json]
+            if a[0] == 0
+              if @new_jsonvar[:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[2]][:children][a[1]][:children] = [@leaf_json]
               else
-                @new_jsonvar[:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children][0] = @leaf_json
+                @new_jsonvar[:children][a[2]][:children][a[1]][:children][0] = @leaf_json
               end
             else
-              
-              if @new_jsonvar[:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children] = [ {}, @leaf_json ]
+              if @new_jsonvar[:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[2]][:children][a[1]][:children] = [ {}, @leaf_json ]
               else
-                @new_jsonvar[:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children] << @leaf_json
+                @new_jsonvar[:children][a[2]][:children][a[1]][:children] << @leaf_json
               end
-              
             end
             
           when 4
-
-            if leaf.leaf_path[0] == "0"
-
-              if @new_jsonvar[:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children] = [@leaf_json]
+            if a[0] == 0
+              if @new_jsonvar[:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[3]][:children][a[2]][:children][a[1]][:children] = [@leaf_json]
               else
-                @new_jsonvar[:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children][0] = @leaf_json
+                @new_jsonvar[:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = @leaf_json
               end
             else
-
-              if @new_jsonvar[:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children] = [ {}, @leaf_json ]
+              if @new_jsonvar[:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, @leaf_json ]
               else
-                @new_jsonvar[:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children] << @leaf_json
+                @new_jsonvar[:children][a[3]][:children][a[2]][:children][a[1]][:children] << @leaf_json
               end
-
             end
             
           when 5
-
-            if leaf.leaf_path[0] == "0"
-
-              if @new_jsonvar[:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children] = [@leaf_json]
+            if a[0] == 0
+              if @new_jsonvar[:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [@leaf_json]
               else
-                @new_jsonvar[:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children][0] = @leaf_json
+                @new_jsonvar[:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = @leaf_json
               end
             else
-
-              if @new_jsonvar[:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children] = [ {}, @leaf_json ]
+              if @new_jsonvar[:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, @leaf_json ]
               else
-                @new_jsonvar[:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children] << @leaf_json
+                @new_jsonvar[:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << @leaf_json
               end
-
             end
             
           when 6
-
-            if leaf.leaf_path[0] == "0"
-
-              if @new_jsonvar[:children][leaf.leaf_path[5].to_i][:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][leaf.leaf_path[5].to_i][:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children] = [@leaf_json]
+            if a[0] == 0
+              if @new_jsonvar[:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [@leaf_json]
               else
-                @new_jsonvar[:children][leaf.leaf_path[5].to_i][:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children][0] = @leaf_json
+                @new_jsonvar[:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = @leaf_json
               end
             else
-
-              if @new_jsonvar[:children][leaf.leaf_path[5].to_i][:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children].blank?
-                @new_jsonvar[:children][leaf.leaf_path[5].to_i][:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children] = [ {}, @leaf_json ]
+              if @new_jsonvar[:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, @leaf_json ]
               else
-                @new_jsonvar[:children][leaf.leaf_path[5].to_i][:children][leaf.leaf_path[4].to_i][:children][leaf.leaf_path[3].to_i][:children][leaf.leaf_path[2].to_i][:children][leaf.leaf_path[1].to_i][:children] << @leaf_json
+                @new_jsonvar[:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << @leaf_json
               end
-
+            end
+            
+          when 7 # when tree height is eight
+            if a[0] == 0
+              if @new_jsonvar[:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [@leaf_json]
+              else
+                @new_jsonvar[:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = @leaf_json
+              end
+            else
+              if @new_jsonvar[:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, @leaf_json ]
+              else
+                @new_jsonvar[:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << @leaf_json
+              end
+            end
+            
+          when 8 # when tree height is nine, 129 leaves or more
+            if a[0] == 0
+              if @new_jsonvar[:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [@leaf_json]
+              else
+                @new_jsonvar[:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = @leaf_json
+              end
+            else
+              if @new_jsonvar[:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+                @new_jsonvar[:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, @leaf_json ]
+              else
+                @new_jsonvar[:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << @leaf_json
+              end
             end
             
           else

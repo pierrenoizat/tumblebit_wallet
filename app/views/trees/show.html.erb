@@ -5,7 +5,7 @@
 	<p>Name: <%= @tree.name if @tree.name %></p>
 	<p>Root hash: <%= @tree.root_hash if @tree %></p>
 	<p>Height: <%= @tree.height if @tree %></p>
-	<p>Total: <%= @tree.total if @tree %></p>
+	<p>Total: <%= number_with_precision(@tree.total, :precision => 2) if @tree %></p>
 	<p><b><%= @leaf_nodes.count %> Leaves:</b></p>
     <div class="column">
       <table class="table">
@@ -15,6 +15,7 @@
 			<th>Credit</th>
 			<th>Nonce</th>
 			<th>Hash</th>
+			<th>Path to root</th>
 			<% if @leaf_nodes %>
           		<% @leaf_nodes.each do |leaf| %>
             	<tr>
