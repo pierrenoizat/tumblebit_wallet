@@ -29,8 +29,9 @@
 <script>
 var root = <%= raw @tree.nodes.last.to_json %>;
 // width = 1440 is ok for tree height up to eight
+// width = 1920 is ok for tree height up to 10
 var margin = {top: 20, right: 120, bottom: 20, left: 120},
-    width = 1920 - margin.right - margin.left,
+    width = 2140 - margin.right - margin.left,
     height = 800 - margin.top - margin.bottom;
     
 var i = 0,
@@ -78,7 +79,7 @@ function update(source) {
       links = tree.links(nodes);
 
   // Normalize for fixed-depth.
-  nodes.forEach(function(d) { d.y = d.depth * 180; });
+  nodes.forEach(function(d) { d.y = d.depth * 90; });
 
   // Update the nodes…
   var node = svg.selectAll("g.node")

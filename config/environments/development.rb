@@ -41,17 +41,17 @@ Rails.application.configure do
   
   $TREES_URL = "http://localhost:3000/trees/" 
   
-  if File.exists?("app/assets/tree_257.csv")
-    File.delete("app/assets/tree_257.csv") # delete any previous version of "app/assets/tree_257.csv" file
+  if File.exists?("app/assets/tree_1025.csv")
+    File.delete("app/assets/tree_1025.csv") # delete any previous version of "app/assets/tree_1025.csv" file
     end
   
   require "csv"
-  CSV.open("app/assets/tree_257.csv", "ab") do |csv| # output users and their balance to tree_257.csv file
-    for i in 1..257 do
+  CSV.open("app/assets/tree_1025.csv", "ab") do |csv| # output users and their balance to tree_1025.csv file
+    for i in 1..1025 do
       string = Faker::Number.number(4).to_s + rand.to_s
       sum = string.to_f/1000
       csv << ["#{Faker::Internet.email}","#{sum}"]
     end
-  end # of CSV write to tree_257.csv
+  end # of CSV write to tree_1025.csv
   
 end
