@@ -103,17 +103,6 @@ module TreeWorker
       csv << ["TOTAL = " + file_sum.to_s + " BTC"]
       
     end # of CSV.open (writing to tree.csv)
-    
-    ##################### writes leaf_nodes to json file in app tmp folder
-    require 'json'
-    tempHash = { }
-    @leaf_nodes.each do |leaf|
-      tempHash.merge!(leaf.as_json)
-    end
-
-    File.open("tmp/tree_#{tree_id}.json","w") do |f|
-      f.write(tempHash.to_json)
-    end
   
   ############################## get first internal nodes from leaves
   k = 1

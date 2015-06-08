@@ -304,7 +304,7 @@ class Node < ActiveRecord::Base
           end
         end
         
-      when 11 # when tree height is twelve, 1025 leaves or more
+      when 11 # when tree height is twelve, 1 025 leaves or more
         if a[0] == 0
           if new_jvar[:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
             new_jvar[:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [node_json]
@@ -316,6 +316,66 @@ class Node < ActiveRecord::Base
             new_jvar[:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, node_json ]
           else
             new_jvar[:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << node_json
+          end
+        end
+        
+      when 12 # when tree height is thirteen, 2 049 leaves or more
+        if a[0] == 0
+          if new_jvar[:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+            new_jvar[:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [node_json]
+          else
+            new_jvar[:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = node_json
+          end
+        else
+          if new_jvar[:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+            new_jvar[:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, node_json ]
+          else
+            new_jvar[:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << node_json
+          end
+        end
+        
+      when 13 # when tree height is fourteen, 4 097 leaves or more
+        if a[0] == 0
+          if new_jvar[:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+            new_jvar[:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [node_json]
+          else
+            new_jvar[:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = node_json
+          end
+        else
+          if new_jvar[:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+            new_jvar[:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, node_json ]
+          else
+            new_jvar[:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << node_json
+          end
+        end
+        
+      when 14 # when tree height is fifteen, 8 193 leaves or more
+        if a[0] == 0
+          if new_jvar[:children][a[13]][:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+            new_jvar[:children][a[13]][:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [node_json]
+          else
+            new_jvar[:children][a[13]][:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = node_json
+          end
+        else
+          if new_jvar[:children][a[13]][:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+            new_jvar[:children][a[13]][:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, node_json ]
+          else
+            new_jvar[:children][a[13]][:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << node_json
+          end
+        end
+        
+      when 15 # when tree height is sixteen, 16 385 leaves or more
+        if a[0] == 0
+          if new_jvar[:children][a[14]][:children][a[13]][:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+            new_jvar[:children][a[14]][:children][a[13]][:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [node_json]
+          else
+            new_jvar[:children][a[14]][:children][a[13]][:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children][0] = node_json
+          end
+        else
+          if new_jvar[:children][a[14]][:children][a[13]][:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children].blank?
+            new_jvar[:children][a[14]][:children][a[13]][:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] = [ {}, node_json ]
+          else
+            new_jvar[:children][a[14]][:children][a[13]][:children][a[12]][:children][a[11]][:children][a[10]][:children][a[9]][:children][a[8]][:children][a[7]][:children][a[6]][:children][a[5]][:children][a[4]][:children][a[3]][:children][a[2]][:children][a[1]][:children] << node_json
           end
         end
         

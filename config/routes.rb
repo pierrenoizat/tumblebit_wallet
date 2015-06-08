@@ -8,8 +8,12 @@ Rails.application.routes.draw do
       end
     end
     
-  
-  resources :leaf_nodes
+  resources :leaf_nodes do
+    member do
+      get 'display'
+    end
+  end
+    
   resources :nodes
   
   root to: 'visitors#index'

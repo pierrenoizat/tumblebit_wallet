@@ -1,5 +1,10 @@
 class LeafNodesController < ApplicationController
 
+  def display
+    @leaf_node = LeafNode.find(params[:id])
+    @tree = Tree.find(@leaf_node.tree_id)
+  end
+
 
   def index
     @leaf_nodes = LeafNode.all
