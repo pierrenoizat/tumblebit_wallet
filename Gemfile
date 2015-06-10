@@ -42,7 +42,6 @@ gem 'omniauth'
 gem 'omniauth-twitter'
 gem 'figaro'
 
-# gem 'resque', "~> 1.22.0", :require => 'resque/server'
 gem "resque", :require => 'resque/server'
 gem 'redis'
 gem 'redis-store'

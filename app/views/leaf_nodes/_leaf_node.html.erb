@@ -2,7 +2,7 @@
 <td><%= link_to leaf_node.name, leaf_node %></td>
 <td><%= number_with_precision(leaf_node.credit, :precision => 2) %></td> 
 <td><%= leaf_node.nonce %></td>
-<td><%= truncate_node_hash(leaf_node.leaf_hash) %></td>
+<td><%= leaf_node.truncated_leaf_hash %></td>
 <td><%= leaf_node.leaf_path %></td>
 
 <!--<td><%= link_to "Edit", edit_leaf_node_path(leaf_node), :class => 'btn btn-default btn-xs btn-success' %></td>-->

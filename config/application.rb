@@ -38,13 +38,13 @@ module RailsOmniauth
     
     AWS.config(access_key_id: Figaro.env.access_key_id, secret_access_key: Figaro.env.secret_access_key, region: 'eu-west-1')
     
-    config.paperclip_defaults = {
-      :storage => :s3,
-      :s3_protocol => 'http',
-      :s3_credentials => {
-        :bucket => 'hashtree-assets'
-      }
-    }
+    # config.paperclip_defaults = {
+    #  :storage => :s3,
+    #  :s3_protocol => 'http',
+    #  :s3_credentials => {
+    #    :bucket => 'hashtree-assets'
+    #  }
+    # }
     
   end
 end

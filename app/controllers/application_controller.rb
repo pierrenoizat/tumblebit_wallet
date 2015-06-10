@@ -2,31 +2,11 @@ class ApplicationController < ActionController::Base
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
-  
-  include ActionView::Helpers::AssetTagHelper
-  include ActionView::Helpers::NumberHelper
-  include ActionView::Helpers::TextHelper
-  include ActionView::Helpers::DateHelper
 
-  helper_method :truncate_node_hash
   helper_method :current_user
   helper_method :user_signed_in?
   helper_method :correct_user?
   
-  def truncate_node_hash(string)
-
-    if string and string.size >25
-      end_string = string[-12,12]
-      truncated_string = truncate(string, length: 22, omission: '.......') + end_string
-    else
-      if string 
-        truncated_string = string
-      else
-        truncated_string = ''
-      end
-    end
-
-  end # of helper method
 
   private
     def current_user

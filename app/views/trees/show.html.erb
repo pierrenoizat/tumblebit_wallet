@@ -1,6 +1,7 @@
 <div class="container">
   <div class="row">
-    <h3><%= link_to 'Tree', display_tree_path(@tree) %> # <%= @tree.id if @tree %></h3>
+    <!--<h3><%= link_to 'Tree', display_tree_path(@tree) %> # <%= @tree.id if @tree %></h3>-->
+	<h3><%= link_to 'Tree', @tree.url %> # <%= @tree.id if @tree %></h3>
 	<!--<p><%= image_tag @tree.avatar.url(:square) %></p>-->
 	<p>Name: <%= @tree.name if @tree.name %></p>
 	<p>Root hash: <%= @tree.root_hash if @tree %></p>

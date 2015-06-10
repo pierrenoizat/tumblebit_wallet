@@ -5,6 +5,8 @@ Rails.application.routes.draw do
   resources :trees do
       member do
         get 'display'
+        get 'download_json'
+        post 'upload_json'
       end
     end
     

@@ -54,4 +54,12 @@ Rails.application.configure do
     end
   end # of CSV write to tree_8193.csv
   
+  config.paperclip_defaults = {
+    :storage => :s3,
+    :s3_protocol => 'http',
+    :s3_credentials => {
+      :bucket => 'hashtree-test'
+    }
+  }
+  
 end

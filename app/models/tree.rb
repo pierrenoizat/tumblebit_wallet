@@ -2,6 +2,8 @@ class Tree < ActiveRecord::Base
   has_many :nodes
   has_many :leaf_nodes
   
+  # include TreeWorker
+  
   has_attached_file :avatar, styles: {
     thumb: '100x100>',
     square: '200x200#',
@@ -28,6 +30,18 @@ class Tree < ActiveRecord::Base
     :content_type => { :content_type => "text/csv" },
     :size => { :in => 0..499.kilobytes }
     
+  has_attached_file :json_file,
+    :storage => :s3,
+    :s3_permissions => :public_read,
+    :s3_credentials => "#{Rails.root}/config/aws.yml",
+#    :bucket => 'hashtree-test',
+    :bucket => Figaro.env.s3_bucket,
+    :s3_options => { :server => "s3-eu-west-1.amazonaws.com" }
+
+    validates_attachment :json_file, # :presence => true,
+      :content_type => { :content_type => "application/json" },
+      :size => { :in => 0..499.kilobytes }
+    
     def total
       Node.where('height' => self.height-1).find_by_tree_id(self.id).sum 
     end
@@ -35,5 +49,7 @@ class Tree < ActiveRecord::Base
     def root_hash
       Node.where('height' => self.height-1).find_by_tree_id(self.id).node_hash 
     end
+    
+    
   
 end

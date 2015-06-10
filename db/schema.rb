@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150524204738) do
+ActiveRecord::Schema.define(version: 20150610223546) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -44,8 +44,8 @@ ActiveRecord::Schema.define(version: 20150524204738) do
 
   create_table "trees", force: :cascade do |t|
     t.string   "name"
-    t.datetime "created_at",          null: false
-    t.datetime "updated_at",          null: false
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
     t.integer  "depth"
     t.integer  "count"
     t.integer  "error_count"
@@ -58,6 +58,11 @@ ActiveRecord::Schema.define(version: 20150524204738) do
     t.string   "roll_content_type"
     t.integer  "roll_file_size"
     t.datetime "roll_updated_at"
+    t.string   "json_file_file_name"
+    t.string   "json_file_content_type"
+    t.integer  "json_file_file_size"
+    t.datetime "json_file_updated_at"
+    t.string   "url"
   end
 
   create_table "users", force: :cascade do |t|

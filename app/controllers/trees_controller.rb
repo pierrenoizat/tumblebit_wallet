@@ -18,7 +18,7 @@ class TreesController < ApplicationController
         Resque.enqueue(TreeWorker,@tree.id) # launch new job in app/jobs/tree_worker.rb
 
         file_name = "account_list_" + @tree.id.to_s + ".csv"
-        # cant' show tree yet because worker is not finished, showing trees index instead
+
         redirect_to trees_path, notice: "Tree was successfully created: processing file #{file_name}."
        else
          render action: 'new'
@@ -87,13 +87,28 @@ class TreesController < ApplicationController
       end
     end
   end
+  
+  
+  def upload_json
+    @tree = Tree.find(params[:id])
+    puts params
+  end
+  
+  
+  def download_json
+    @tree = Tree.find(params[:id])
+    
+    data = open(@tree.url) 
+    send_data data.read, filename: "#{@tree.name}.json", type: "application/json", disposition: 'attachment', stream: 'true', buffer_size: '4096'
+    
+  end
 
 
 
   private
  
      def tree_params
-       params.require(:tree).permit(:avatar, :roll, :name, :depth, :height, :count, :error_count)
+       params.require(:tree).permit(:avatar, :roll, :json_file, :name, :depth, :height, :count, :error_count)
        #params.require(:tree).permit(leaf_nodes_attributes: [:nonce, :credit, :name, :tree_id])
        #params.require(:tree).permit(nodes_attributes: [:left, :right,:height, :sum, :hash, :tree_id])
      end

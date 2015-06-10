@@ -21,6 +21,7 @@ development:
   aws_secret_access_key: uVsloyBEyjAT0VwRdp/mFnJTck+2NlEMGzzXnf3e
   omniauth_provider_key: nQqzGa1YpyS0tJjiyafJyw2eW
   omniauth_provider_secret: P3HwYhtrVQv8rXTZEWbe6VQF1WERgrq9OPAPmUEowz6cqce1xy
+  S3_BUCKET: hashtree-test
 
 production:
   <<: *default
@@ -31,3 +32,4 @@ production:
   aws_secret_access_key: 'uVsloyBEyjAT0VwRdp/mFnJTck+2NlEMGzzXnf3e'
   omniauth_provider_key: nQqzGa1YpyS0tJjiyafJyw2eW
   omniauth_provider_secret: P3HwYhtrVQv8rXTZEWbe6VQF1WERgrq9OPAPmUEowz6cqce1xy
+  S3_BUCKET: hashtree-assets

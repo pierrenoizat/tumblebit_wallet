@@ -48,17 +48,17 @@ class LeafNode < ActiveRecord::Base
           if brother
 
             new_jvar = {
-                :name => "#{truncate_node_hash(parent.node_hash)}", :node_id => "#{parent.id}", :sum => "#{parent.sum}",
+                :name => "#{parent.truncated_node_hash}", :node_id => "#{parent.id}", :sum => "#{parent.sum}",
                 :children => [
-                  {:name => "#{truncate_node_hash(self.leaf_hash)}", :node_id => "#{self.id}", :sum => "#{self.credit}", :path => "#{self.leaf_path}"},
-                  {:name => "#{truncate_node_hash(brother.leaf_hash)}", :node_id => "#{brother.id}", :sum => "#{brother.credit}", :path => "#{brother.leaf_path}"}
+                  {:name => "#{self.truncated_leaf_hash}", :node_id => "#{self.id}", :sum => "#{self.credit}", :path => "#{self.leaf_path}"},
+                  {:name => "#{brother.truncated_leaf_hash}", :node_id => "#{brother.id}", :sum => "#{brother.credit}", :path => "#{brother.leaf_path}"}
                   ]  
                 }
           else
             new_jvar = {
-                :name => "#{truncate_node_hash(parent.node_hash)}", :node_id => "#{parent.id}", :sum => "#{parent.sum}",
+                :name => "#{parent.truncated_node_hash}", :node_id => "#{parent.id}", :sum => "#{parent.sum}",
                 :children => [
-                    {:name => "#{truncate_node_hash(self.leaf_hash)}", :node_id => "#{self.id}", :sum => "#{self.credit}", :path => "#{self.leaf_path}"}
+                    {:name => "#{self.truncated_leaf_hash}", :node_id => "#{self.id}", :sum => "#{self.credit}", :path => "#{self.leaf_path}"}
                     ]  
                   }
           end
@@ -68,10 +68,10 @@ class LeafNode < ActiveRecord::Base
           parent = selected_nodes.first
           brother = LeafNode.find(parent.left_id)
           new_jvar = {
-              :name => "#{truncate_node_hash(parent.node_hash)}", :node_id => "#{parent.id}", :sum => "#{parent.sum}",
+              :name => "#{parent.truncated_node_hash}", :node_id => "#{parent.id}", :sum => "#{parent.sum}",
               :children => [
-                {:name => "#{truncate_node_hash(brother.leaf_hash)}", :node_id => "#{brother.id}", :sum => "#{brother.credit}", :path => "#{brother.leaf_path}"},
-                {:name => "#{truncate_node_hash(self.leaf_hash)}", :node_id => "#{self.id}", :sum => "#{self.credit}", :path => "#{self.leaf_path}"}
+                {:name => "#{brother.truncated_leaf_hash}", :node_id => "#{brother.id}", :sum => "#{brother.credit}", :path => "#{brother.leaf_path}"},
+                {:name => "#{self.truncated_leaf_hash}", :node_id => "#{self.id}", :sum => "#{self.credit}", :path => "#{self.leaf_path}"}
                 ]  
               }
         end
@@ -102,16 +102,16 @@ class LeafNode < ActiveRecord::Base
             if brother
 
               new_jvar = {
-                      :name => "#{truncate_node_hash(new_node.node_hash)}", :node_id => "#{new_node.id}", :sum => "#{new_node.sum}",
+                      :name => "#{new_node.truncated_node_hash}", :node_id => "#{new_node.id}", :sum => "#{new_node.sum}",
                       :children => [{}, {}]
                     }
 
               new_jvar[:children][0] = jvar
-              new_jvar[:children][1] = {:name => "#{truncate_node_hash(brother.node_hash)}", :node_id => "#{brother.id}", :sum => "#{brother.sum}", :path => "#{brother.node_path}"}
+              new_jvar[:children][1] = {:name => "#{brother.truncated_node_hash}", :node_id => "#{brother.id}", :sum => "#{brother.sum}", :path => "#{brother.node_path}"}
 
             else
               new_jvar = {
-                      :name => "#{truncate_node_hash(new_node.node_hash)}", :node_id => "#{new_node.id}", :sum => "#{new_node.sum}",
+                      :name => "#{new_node.truncated_node_hash}", :node_id => "#{new_node.id}", :sum => "#{new_node.sum}",
                       :children => [{}]  
                         }
               new_jvar[:children][0] = jvar
@@ -122,12 +122,12 @@ class LeafNode < ActiveRecord::Base
             new_node = selected_nodes.first
             brother = Node.find(new_node.left_id)
               new_jvar = {
-                    :name => "#{truncate_node_hash(new_node.node_hash)}", :node_id => "#{new_node.id}", :sum => "#{new_node.sum}",
+                    :name => "#{new_node.truncated_node_hash}", :node_id => "#{new_node.id}", :sum => "#{new_node.sum}",
                     :children => [{}, {}]
                   }
 
               new_jvar[:children][1] = jvar
-              new_jvar[:children][0] = {:name => "#{truncate_node_hash(brother.node_hash)}", :node_id => "#{brother.id}", :sum => "#{brother.sum}", :path => "#{brother.node_path}"}
+              new_jvar[:children][0] = {:name => "#{brother.truncated_node_hash}", :node_id => "#{brother.id}", :sum => "#{brother.sum}", :path => "#{brother.node_path}"}
             end
 
           jvar = new_jvar
@@ -141,8 +141,8 @@ class LeafNode < ActiveRecord::Base
     
     
     
-    def truncate_node_hash(string)
-
+    def truncated_leaf_hash
+      string = self.leaf_hash
       if string and string.size >25
         end_string = string[-4,4] # keeps only last 4 caracters
         truncated_string = truncate(string, length: 8, omission: '...') + end_string # keeps only first 5 caracters, with 3 dots (total length 8)
