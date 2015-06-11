@@ -26,17 +26,12 @@
     <p><%= f.label 'Account List**' %></p>
     <p><%= f.file_field :roll %></p></br></br>
   </div>
+
+<div class="actions">
 	
 	<% if @tree.id %>
-		<div class="field">
-		    <p><%= f.label 'Json file' %></p>
-		    <p><%= f.file_field :json_file %></p></br></br>
-		  </div>
-
-		  <div class="actions">
 		<p><%= f.submit 'Update', class: "btn btn-primary btn-small", style: "background-color:blue;color:white;" %>
 	<% else %>
-		<div class="actions">
 		<p><%= f.submit 'Create', class: "btn btn-primary btn-small", style: "background-color:blue;color:white;" %>
 	<% end %>
 
@@ -45,3 +40,4 @@
 <% end %>
 <aside>* Image in jpg or png format, max file size 500 kbytes</aside>
 <aside>** File in CSV format, max file size 500 kbytes</aside>
+<aside>Input csv file must NOT include a trailing blank line.</aside>

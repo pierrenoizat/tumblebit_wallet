@@ -314,7 +314,7 @@ module TreeWorker
     
     # intialize @my_json, a json, serialized form of the tree with the first two levels of nodes from the root down.
      @my_json = {
-      :name => "#{@node.node_hash}", :node_id => "#{@node.id}", :sum => "#{@node.sum}",
+      :name => "#{@node.truncated_node_hash}", :node_id => "#{@node.id}", :sum => "#{@node.sum}",
       :children => [
           {:name => "#{@node.left}", :node_id => "#{@node.left_id}"},
           {:name => "#{@node.right}", :node_id => "#{@node.right_id}"}
@@ -342,7 +342,7 @@ module TreeWorker
           
       when [ false, true ] # right node is connected to a single, replicate node and left node must have 2 children nodes
         @my_json = {
-          :name => "#{@node.node_hash}", :node_id => "#{@node.id}", :sum => "#{@node.sum}",
+          :name => "#{@node.truncated_node_hash}", :node_id => "#{@node.id}", :sum => "#{@node.sum}",
           :children => [
               {:name => "#{@node.left}", 
                :children => [
@@ -356,7 +356,7 @@ module TreeWorker
             
       when [ false, false ] # both nodes connected each to 2 children
         @my_json = {
-          :name => "#{@node.node_hash}",
+          :name => "#{@node.truncated_node_hash}",
           :children => [
             {:name => "#{@node.left}", 
              :children => [
@@ -376,7 +376,7 @@ module TreeWorker
         puts "I have no idea what to do with that."
       end
       
-      # @my_json =  TreeWorker.append_nodes(@my_json, @node.tree_id) # returns @my_json completed with internal nodes through the leaves
+      @my_json =  TreeWorker.append_nodes(@my_json, @node.tree_id) # returns @my_json completed with internal nodes through the leaves
       
       h = TreeWorker.json_height(@my_json)
       puts "hauteur ", h
@@ -387,7 +387,7 @@ module TreeWorker
       end
       
       # save @my_json to a json file
-      File.open("tmp/tree_#{tree_id}.json","w") do |f|
+      File.open("tmp/tree_#{@tree.id}.json","w") do |f|
             f.write("#{@my_json.to_json}")
           end
       puts "#{@tree.name} upload to S3 started"
@@ -400,8 +400,8 @@ module TreeWorker
       
       bucket = s3.buckets[Figaro.env.s3_bucket]
 
-      obj = bucket.objects["tree_#{tree_id}.json"]
-      obj.write(:file => "#{Rails.root}/tmp/tree_#{tree_id}.json")
+      obj = bucket.objects["tree_#{@tree.id}.json"]
+      obj.write(:file => "#{Rails.root}/tmp/tree_#{@tree.id}.json")
       
       @tree.url = obj.url_for(:read,
                            :response_content_type => "application/json")
@@ -456,7 +456,7 @@ module TreeWorker
             @new_jsonvar = {}
             @node_json = {}
             @new_jsonvar = jvar
-            @node_json = {:name => "#{node.node_hash}", :sum => "#{node.sum}",:node_id => "#{node.id}", :path => "#{node.node_path}" }
+            @node_json = {:name => "#{node.truncated_node_hash}", :sum => "#{node.sum}",:node_id => "#{node.id}", :path => "#{node.node_path}" }
 
             @new_jsonvar = TreeWorker.update_json(jsonvar,@node_json)
 

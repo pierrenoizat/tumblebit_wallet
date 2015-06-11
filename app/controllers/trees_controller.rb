@@ -75,17 +75,19 @@ class TreesController < ApplicationController
     redirect_to trees_path, notice: 'Tree was successfully deleted.'
   end
   
-  def display # method called in app/views/trees/get_tree.html.erb   
+  def display 
     @tree = Tree.find_by_id(params[:id])
-    @nodes = @tree.nodes
-    @leaf_nodes = @tree.leaf_nodes
     
-    unless @nodes
-      respond_to do |format|
-        flash[:success] = "Displaying tree."
-        format.html { render action: 'display'}
-      end
-    end
+    s3 = AWS::S3.new(
+    :access_key_id     => Figaro.env.access_key_id,
+        :secret_access_key => Figaro.env.secret_access_key
+    )
+    
+    bucket = s3.buckets[Figaro.env.s3_bucket]
+    object = bucket.objects["tree_#{@tree.id}.json"]
+
+    @json_tree = object.read
+
   end
   
   
@@ -98,8 +100,15 @@ class TreesController < ApplicationController
   def download_json
     @tree = Tree.find(params[:id])
     
-    data = open(@tree.url) 
-    send_data data.read, filename: "#{@tree.name}.json", type: "application/json", disposition: 'attachment', stream: 'true', buffer_size: '4096'
+    s3 = AWS::S3.new(
+    :access_key_id     => Figaro.env.access_key_id,
+        :secret_access_key => Figaro.env.secret_access_key
+    )
+    
+    bucket = s3.buckets[Figaro.env.s3_bucket]
+    object = bucket.objects["tree_#{@tree.id}.json"]
+    
+    send_data object.read, filename: "#{@tree.name}.json", type: "application/json", disposition: 'attachment', stream: 'true', buffer_size: '4096'
     
   end
 

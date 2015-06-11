@@ -27,7 +27,7 @@
 <script src="http://d3js.org/d3.v3.min.js"></script>
 
 <script>
-var root = <%= raw @tree.nodes.last.to_json %>;
+var root = <%= raw @json_tree %>;
 // width = 1440 is ok for tree height up to eight
 // width = 1920 is ok for tree height up to 10
 var margin = {top: 20, right: 120, bottom: 20, left: 120},
