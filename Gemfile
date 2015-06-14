@@ -54,3 +54,5 @@ gem 'aws-sdk-resources', '~> 2'
 gem 'paperclip'
 gem "cocaine", "= 0.5.7" # required for imagemagick
 gem "d3-rails"
+
+gem 'will_paginate', '~> 3.0.6'

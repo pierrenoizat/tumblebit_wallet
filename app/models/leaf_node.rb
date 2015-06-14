@@ -18,6 +18,85 @@ class LeafNode < ActiveRecord::Base
     self.nonce ||= OpenSSL::Random.random_bytes(16).unpack("H*").first
   end
   
+  
+  def related_nodes
+    
+        @tree = Tree.find_by_id(self.tree_id)
+        height = @tree.height
+        h = height-1
+        nodes = []
+        path = self.leaf_path
+
+        a = path.split(//)  # converts leaf_path string into an array of characters
+        for i in 0..a.count
+          a[i] = a[i].to_i # convert a to an array of integers
+        end
+
+        nodes = Node.where('height' => 1).all
+
+        if a[0] == 0  # leaf is a left or single child
+
+          selected_nodes = nodes.select { |node| node.tree_id == @tree.id and node.left_id == self.id }
+          nodes = []
+          parent = selected_nodes.first
+         
+          nodes << parent
+          
+        else # leaf is a right child
+
+          selected_nodes = nodes.select { |node| node.tree_id == @tree.id and node.right_id == self.id }
+          nodes = []
+          parent = selected_nodes.first
+          
+          nodes << parent
+        end
+
+        node = parent
+
+        while node.height < (@tree.height - 1)  # while node is NOT the root
+
+          path = node.node_path
+
+          a = path.split(//)  # converts node_path string into an array of characters
+          for i in 0..a.count
+            a[i] = a[i].to_i # convert a to an array of integers
+          end
+          new_nodes = Node.where('height' => node.height + 1).all
+
+          if a[0] == 0  # node is a left or single child
+
+            selected_nodes = new_nodes.select { |value| value.tree_id == @tree.id and value.left_id == node.id }
+            new_node = selected_nodes.first
+            if new_node.right_id.blank?
+              brother = nil
+            else
+              brother = Node.find(new_node.right_id)
+            end
+
+            if brother
+              nodes << brother
+            end
+            nodes << new_node
+            
+          else # node is a right child
+
+            selected_nodes = new_nodes.select { |value| value.tree_id == @tree.id and value.right_id == node.id }
+            new_node = selected_nodes.first
+            brother = Node.find(new_node.left_id)
+            nodes << brother
+            nodes << new_node
+            end
+
+          node = new_node
+
+        end # while
+
+        nodes
+
+      end # of method related_nodes
+      
+      
+  
   def as_json(*args)
         @tree = Tree.find_by_id(self.tree_id)
         height = @tree.height
@@ -28,7 +107,7 @@ class LeafNode < ActiveRecord::Base
 
         path = self.leaf_path
 
-        a = path.split(//)  # converts node_path string into an array of characters
+        a = path.split(//)  # converts leaf_path string into an array of characters
         for i in 0..a.count
           a[i] = a[i].to_i # convert a to an array of integers
         end
@@ -79,7 +158,7 @@ class LeafNode < ActiveRecord::Base
         jvar = new_jvar
         node = parent
 
-        while node.height < (@tree.height - 1)  # node is NOT the root
+        while node.height < (@tree.height - 1)  # while node is NOT the root
 
           path = node.node_path
 
@@ -154,6 +233,36 @@ class LeafNode < ActiveRecord::Base
         end
       end
 
-    end # of helper method
+    end
+    
+    
+    def brother
+      
+      path = self.leaf_path
+
+      a = path.split(//)  # converts leaf_path string into an array of characters
+      a[0] = a[0].to_i
+
+      nodes = Node.where('height' => 1).all
+
+      if a[0] == 0  # leaf is a left or single child
+
+        selected_nodes = nodes.select { |node| node.tree_id == self.tree_id and node.left_id == self.id }
+        parent = selected_nodes.first
+        if parent.right_id.blank?
+          brother = nil
+        else
+          brother = LeafNode.find(parent.right_id)
+        end
+        
+      else # leaf is a right child
+
+        selected_nodes = nodes.select { |node| node.tree_id == self.tree_id and node.right_id == self.id }
+        parent = selected_nodes.first
+        
+        brother = LeafNode.find(parent.left_id)
+      end
+      
+    end # of method brother
   
 end

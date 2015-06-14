@@ -94,23 +94,10 @@ module TreeWorker
     @tree.count = count
     @tree.save
     
+    
+    
     ##################### writes account names and their balance to tree_#{string}.csv file in app tmp folder
-    
-    require 'openssl'
-    
-    string = OpenSSL::Digest::SHA256.new.digest(tree_id.to_s).unpack('H*').first
-    string = string[0..5]
-    CSV.open("tmp/tree_#{string}.csv", "ab") do |csv| 
-      csv << ["Tree as of " + "#{Time.now}"]
-      csv << ["#{count.to_s + " users"}"]
-
-      @leaf_nodes.each do |leaf|
-        csv << [leaf.name, leaf.credit, leaf.nonce, leaf.leaf_hash]
-        end
-
-      csv << ["TOTAL = " + file_sum.to_s + " BTC"]
-      
-    end # of CSV.open (writing to tree.csv)
+    # TreeWorker.dump_to_csv(@tree)
   
   ############################## get first internal nodes from leaves
   k = 1
@@ -314,7 +301,7 @@ module TreeWorker
     
     # intialize @my_json, a json, serialized form of the tree with the first two levels of nodes from the root down.
      @my_json = {
-      :name => "#{@node.truncated_node_hash}", :node_id => "#{@node.id}", :sum => "#{@node.sum}",
+      :name => "#{@node.node_hash}", :node_id => "#{@node.id}", :sum => "#{@node.sum}",
       :children => [
           {:name => "#{@node.left}", :node_id => "#{@node.left_id}"},
           {:name => "#{@node.right}", :node_id => "#{@node.right_id}"}
@@ -328,7 +315,7 @@ module TreeWorker
         
       when [ true, false ] # left node is connected to a single, replicate node and right node must have 2 children nodes
         @my_json = {
-          :name => "#{@node.truncated_node_hash}", :node_id => "#{@node.id}", :sum => "#{@node.sum}",
+          :name => "#{@node.node_hash}", :node_id => "#{@node.id}", :sum => "#{@node.sum}",
           :children => [
               {:name => "#{@node.left}", :children => [{:name => "#{@node.left}", :sum => "#{@node.left_child.sum}", :node_id => "#{@node.left_child.left_id}"}]},
               {:name => "#{@node.right}", 
@@ -342,7 +329,7 @@ module TreeWorker
           
       when [ false, true ] # right node is connected to a single, replicate node and left node must have 2 children nodes
         @my_json = {
-          :name => "#{@node.truncated_node_hash}", :node_id => "#{@node.id}", :sum => "#{@node.sum}",
+          :name => "#{@node.node_hash}", :node_id => "#{@node.id}", :sum => "#{@node.sum}",
           :children => [
               {:name => "#{@node.left}", 
                :children => [
@@ -356,7 +343,7 @@ module TreeWorker
             
       when [ false, false ] # both nodes connected each to 2 children
         @my_json = {
-          :name => "#{@node.truncated_node_hash}",
+          :name => "#{@node.node_hash}",
           :children => [
             {:name => "#{@node.left}", 
              :children => [
@@ -391,11 +378,12 @@ module TreeWorker
             f.write("#{@my_json.to_json}")
           end
       puts "#{@tree.name} upload to S3 started"
+      
       # upload to Amazon S3
       
       s3 = AWS::S3.new(
-      :access_key_id     => 'AKIAISHH6QIJ3R7Q2HXQ',
-          :secret_access_key => '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'
+      :access_key_id     => Figaro.env.access_key_id,
+          :secret_access_key => Figaro.env.secret_access_key
       )
       
       bucket = s3.buckets[Figaro.env.s3_bucket]
@@ -456,7 +444,7 @@ module TreeWorker
             @new_jsonvar = {}
             @node_json = {}
             @new_jsonvar = jvar
-            @node_json = {:name => "#{node.truncated_node_hash}", :sum => "#{node.sum}",:node_id => "#{node.id}", :path => "#{node.node_path}" }
+            @node_json = {:name => "#{node.node_hash}", :sum => "#{node.sum}",:node_id => "#{node.id}", :path => "#{node.node_path}" }
 
             @new_jsonvar = TreeWorker.update_json(jsonvar,@node_json)
 
@@ -706,6 +694,27 @@ module TreeWorker
 
       end # of method update_json(jvar,node_json)
       
+      
+      
+      def TreeWorker.dump_to_csv(tree)
+        require 'openssl'
+        leaf_nodes = tree.leaf_nodes
+        string = OpenSSL::Digest::SHA256.new.digest(tree_id.to_s).unpack('H*').first
+        string = string[0..5]
+        
+        CSV.open("tmp/tree_#{string}.csv", "ab") do |csv| 
+          csv << ["Tree as of " + "#{Time.now}"]
+          csv << ["#{count.to_s + " users"}"]
+
+          leaf_nodes.each do |leaf|
+            csv << [leaf.name, leaf.credit, leaf.nonce, leaf.leaf_hash]
+            end
+
+          csv << ["TOTAL = " + file_sum.to_s + " BTC"]
+
+          end # of CSV.open (writing to tree.csv)
+          
+        end# of method dump_to_csv(tree)
     
   
 end # of module

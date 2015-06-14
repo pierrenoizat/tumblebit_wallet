@@ -49,6 +49,12 @@ var element = document.getElementById("title");
 var result = linkString.link(linkUrl);
 element.innerHTML = result;
 
+linkUrl = "<%= $LEAF_NODES_URL %>" + "<%= @leaf_node.id %>";
+linkString = "<%= @leaf_node.name %>";
+element = document.getElementById("timer");
+result = linkString.link(linkUrl);
+element.innerHTML = result;
+
 var svg = d3.select("body").append("svg")
     .attr("width", width + margin.right + margin.left)
     .attr("height", height + margin.top + margin.bottom)
@@ -93,7 +99,14 @@ function update(source) {
 
   nodeEnter.append("circle")
       .attr("r", 1e-6)
-      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+      .style("fill", function(d) { 
+		if (d._children) {
+			return "lightsteelblue";
+		}
+		else {
+			return (d.name == "<%= @leaf_node.truncated_leaf_hash %>" && d.children == null) ? "lightgreen" : "#fff";
+			}
+		});
 
   nodeEnter.append("text")
       .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
@@ -109,7 +122,15 @@ function update(source) {
 
   nodeUpdate.select("circle")
       .attr("r", 4.5)
-      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+      .style("fill", function(d) { 
+	
+		if (d._children) {
+			return "lightsteelblue";
+		}
+		else {
+			return (d.name == "<%= @leaf_node.truncated_leaf_hash %>" && d.children == null) ? "lightgreen" : "#fff";
+			}
+	});
 
   nodeUpdate.select("text")
       .style("fill-opacity", 1);

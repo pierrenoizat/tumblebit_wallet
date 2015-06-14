@@ -42,14 +42,16 @@ class TreesController < ApplicationController
     @tree = Tree.find(params[:id])
     
     @nodes = @tree.nodes
-    @leaf_nodes = @tree.leaf_nodes
+    @leaf_nodes = @tree.leaf_nodes.paginate(:page => params[:page], :per_page => 30)
+    # @leaf_nodes = @tree.leaf_nodes.paginate(:page => params[:page])
     
-    unless @nodes
-      respond_to do |format|
-        flash[:success] = "Processing file: please refresh the page until it is finished processing."
-        format.html { render action: 'show'}
-      end
-    end
+    
+    # unless @nodes
+    #   respond_to do |format|
+    #    flash[:success] = "Processing file: please refresh the page until it is finished processing."
+    #    format.html { render action: 'show'}
+    #  end
+    # end
     
   end
   

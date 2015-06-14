@@ -85,4 +85,7 @@ Rails.application.configure do
     }
   }
   
+  $TREES_URL = "http://localhost:3000/trees/"
+  $LEAF_NODES_URL = "http://localhost:3000/leaf_nodes/" 
+  
 end

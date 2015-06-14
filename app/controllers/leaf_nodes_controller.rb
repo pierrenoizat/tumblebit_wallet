@@ -25,6 +25,8 @@ class LeafNodesController < ApplicationController
 
   def show
     @leaf_node = LeafNode.find(params[:id])
+    @nodes = @leaf_node.related_nodes
+    @tree = Tree.find(@leaf_node.tree_id)
   end
   
   def new

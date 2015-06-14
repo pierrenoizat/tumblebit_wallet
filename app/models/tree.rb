@@ -28,7 +28,7 @@ class Tree < ActiveRecord::Base
   
   validates_attachment :roll, # :presence => true,
     :content_type => { :content_type => "text/csv" },
-    :size => { :in => 0..499.kilobytes }
+    :size => { :in => 0..1499.kilobytes }
     
   has_attached_file :json_file,
     :storage => :s3,
@@ -40,7 +40,7 @@ class Tree < ActiveRecord::Base
 
     validates_attachment :json_file, # :presence => true,
       :content_type => { :content_type => "application/json" },
-      :size => { :in => 0..499.kilobytes }
+      :size => { :in => 0..1499.kilobytes }
     
     def total
       Node.where('height' => self.height-1).find_by_tree_id(self.id).sum 

@@ -1,0 +1,87 @@
+<div class="container">
+  <div class="row">
+	<h3><%= @leaf_node.name %></h3>
+	<h4>Account access key: <%= @leaf_node.nonce %></h4>
+    <h4><%= link_to 'Tree', @tree %> # <%= @tree.id if @tree %></h4>
+	<!--<h3><%= link_to 'Tree', @tree.url %> # <%= @tree.id if @tree %></h3>-->
+	<!--<p><%= image_tag @tree.avatar.url(:square) %></p>-->
+	<p>Tree name: <%= @tree.name if @tree.name %></p>
+	<p>Tree height: <%= @tree.height if @tree %></p>
+	<p>Tree total: <%= number_with_precision(@tree.total, :precision => 2) if @tree %></p>
+	<p><b>Tree has <%= @tree.leaf_nodes.count %> leaves</b></p>
+    <div class="column">
+      <table class="table">
+        <tbody>
+			<th>Id</th>
+			<th> </th>
+			<th> </th>
+			<th>Hash</th>
+			<th>Credit</th>
+			<th>Path to root</th>
+			<tr>
+				<td><%= @leaf_node.id %></td>
+				<td></td>
+				<td></td>
+				<td><%= @leaf_node.leaf_hash %></td>
+				<td><%= number_with_precision(@leaf_node.credit, :precision => 2) %></td> 
+				<td><%= @leaf_node.leaf_path %></td>
+				<td><%= link_to "Root path graph", display_leaf_node_path(@leaf_node), :class => 'btn btn-default btn-xs btn-success' %></td>
+			</tr>
+        </tbody>
+      </table>
+    </div>
+	</div>
+	
+	<% if @leaf_node.brother %>
+	<div class="row">
+	<div class="column">
+      <table class="table">
+        <tbody>
+			<th>Sister leaf:</th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<tr>
+				<td><%= @leaf_node.brother.id %></td>
+				<td></td>
+				<td></td>
+				<td><%= @leaf_node.brother.leaf_hash %></td>
+				<td></td>
+				<td><%= number_with_precision(@leaf_node.brother.credit, :precision => 2) %></td> 
+				<td><%= @leaf_node.brother.leaf_path %></td>
+				<td></td>
+			</tr>
+        </tbody>
+      </table>
+    </div>
+	</div>
+	<% end %>
+	
+  </div>
+</div>
+
+<div class="container">
+	<div class="row">
+	<p><b><%= @nodes.count %> Interior nodes linking your account leaf to the root:</b></p>
+    <div class="column">
+      <table class="table table-nonfluid">
+        <tbody>
+			<th>Id</th>
+			<th>Left Id</th>
+			<th>Right Id</th>
+			<th>Hash</th>
+			<th>Height</th>
+			<th>Sum</th>
+			<th class="col-sm-2">Node path to root</th>
+          	<% @nodes.each do |node| %>
+            <tr>
+              <%= render node %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+   </div>
+</div>

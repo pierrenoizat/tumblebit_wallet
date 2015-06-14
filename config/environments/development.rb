@@ -39,20 +39,21 @@ Rails.application.configure do
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
   
-  $TREES_URL = "http://localhost:3000/trees/" 
+  $TREES_URL = "http://localhost:3000/trees/"
+  $LEAF_NODES_URL = "http://localhost:3000/leaf_nodes/" 
   
-  if File.exists?("app/assets/tree_8193.csv")
-    File.delete("app/assets/tree_8193.csv") # delete any previous version of "app/assets/tree_8193.csv" file
+  if File.exists?("app/assets/tree_17.csv")
+    File.delete("app/assets/tree_17.csv") # delete any previous version of "app/assets/tree_8193.csv" file
     end
   
   require "csv"
-  CSV.open("app/assets/tree_8193.csv", "ab") do |csv| # output users and their balance to tree_8193.csv file
-    for i in 1..8193 do
+  CSV.open("app/assets/tree_17.csv", "ab") do |csv| # output users and their balance to tree_17.csv file
+    for i in 1..17 do
       string = Faker::Number.number(4).to_s + rand.to_s
       sum = string.to_f/1000
       csv << ["#{Faker::Internet.email}","#{sum}"]
     end
-  end # of CSV write to tree_8193.csv
+  end # of CSV write to tree_17.csv
   
   config.paperclip_defaults = {
     :storage => :s3,

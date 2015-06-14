@@ -18,24 +18,28 @@
 			<th>Hash</th>
 			<th>Path to root</th>
 			<% if @leaf_nodes %>
-          		<% @leaf_nodes.each do |leaf| %>
-            	<tr>
-              	<%= render leaf %>
-            	</tr>
-          		<% end %>
+				
+				<% @leaf_nodes.each do |leaf| %>
+				            	<tr>
+				              	<%= render leaf %>
+				            	</tr>
+				          		<% end %>
+				
 			<% else %>
 			<tr>
           	File is not finished processing: please refresh the page.
         	</tr>
 			<% end %>
         </tbody>
+		
       </table>
+	<div class='flickr_pagination'><%= will_paginate @leaf_nodes %></div>
     </div>
-
+	
   </div>
 </div>
 
-<% if @nodes.count < 1025 %>
+<% if @nodes.count < 129 %>
 <div class="container">
 	<div class="row">
 	<p><b><%= @nodes.count %> Nodes:</b></p>
