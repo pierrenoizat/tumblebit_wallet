@@ -1,11 +1,9 @@
 module TreeWorker
   @queue = :id
   
-  
-  include ActionView::Helpers::AssetTagHelper
-  include ActionView::Helpers::NumberHelper
-  include ActionView::Helpers::TextHelper
-  include ActionView::Helpers::DateHelper
+  # extend module, include would apply to a class
+  extend ActionView::Helpers::NumberHelper
+  extend ActionView::Helpers::TextHelper
 
   require 'json'
 
@@ -308,6 +306,14 @@ module TreeWorker
           ]  
       }
       
+      @compressed_json = {
+        :name => "#{@node.truncated_node_hash}", :node_id => "#{@node.id}", :sum => "#{@node.sum}",
+        :children => [
+            {:name => "#{TreeWorker.truncated_node(@node.left)}", :node_id => "#{@node.left_id}"},
+            {:name => "#{TreeWorker.truncated_node(@node.right)}", :node_id => "#{@node.right_id}"}
+            ]  
+        }
+      
       h -= 2
 
       a = Array[ @node.left_child.single_child?, @node.right_child.single_child? ]
@@ -327,6 +333,19 @@ module TreeWorker
               ]  
           }
           
+        @compressed_json = {
+            :name => "#{@node.truncated_node_hash}", :node_id => "#{@node.id}", :sum => "#{@node.sum}",
+            :children => [
+                {:name => "#{TreeWorker.truncated_node(@node.left)}", :children => [{:name => "#{TreeWorker.truncated_node(@node.left)}", :sum => "#{@node.left_child.sum}", :node_id => "#{@node.left_child.left_id}"}]},
+                {:name => "#{TreeWorker.truncated_node(@node.right)}", 
+                 :children => [
+                   {:name => "#{TreeWorker.truncated_node(@node.right_child.left)}", :sum => "#{@node.right_child.left_child.sum}",:node_id => "#{@node.right_child.left_id}",:left_id => "#{@node.right_child.left_child.left_id}",:right_id => "#{@node.right_child.left_child.right_id}"},
+                   {:name => "#{TreeWorker.truncated_node(@node.right_child.right)}", :sum => "#{@node.right_child.right_child.sum}",:node_id => "#{@node.right_child.right_id}",:left_id => "#{@node.right_child.right_child.left_id}",:right_id => "#{@node.right_child.right_child.right_id}"}
+                  ]
+                  }
+                ]  
+            }
+          
       when [ false, true ] # right node is connected to a single, replicate node and left node must have 2 children nodes
         @my_json = {
           :name => "#{@node.node_hash}", :node_id => "#{@node.id}", :sum => "#{@node.sum}",
@@ -340,6 +359,19 @@ module TreeWorker
               {:name => "#{@node.right}", :children => [{:name => "#{@node.right}", :sum => "#{@node.right_child.sum}",:node_id => "#{@node.right_child.left_id}"}]}
               ]  
             }
+            
+        @compressed_json = {
+              :name => "#{@node.truncated_node_hash}", :node_id => "#{@node.id}", :sum => "#{@node.sum}",
+              :children => [
+                  {:name => "#{TreeWorker.truncated_node(@node.left)}", 
+                   :children => [
+                     {:name => "#{TreeWorker.truncated_node(@node.left_child.left)}", :sum => "#{@node.left_child.left_child.sum}",:node_id => "#{@node.left_child.left_id}",:left_id => "#{@node.left_child.left_child.left_id}",:right_id => "#{@node.left_child.left_child.right_id}"},
+                     {:name => "#{TreeWorker.truncated_node(@node.left_child.right)}", :sum => "#{@node.left_child.right_child.sum}",:node_id => "#{@node.left_child.right_id}",:left_id => "#{@node.left_child.right_child.left_id}",:right_id => "#{@node.left_child.right_child.right_id}"}
+                    ]
+                    },
+                  {:name => "#{TreeWorker.truncated_node(@node.right)}", :children => [{:name => "#{TreeWorker.truncated_node(@node.right)}", :sum => "#{@node.right_child.sum}",:node_id => "#{@node.right_child.left_id}"}]}
+                  ]  
+                }
             
       when [ false, false ] # both nodes connected each to 2 children
         @my_json = {
@@ -359,24 +391,53 @@ module TreeWorker
               }
             ]  
           }
+          
+        @compressed_json = {
+            :name => "#{@node.truncated_node_hash}",
+            :children => [
+              {:name => "#{TreeWorker.truncated_node(@node.left)}", 
+               :children => [
+                 {:name => "#{TreeWorker.truncated_node(@node.left_child.left)}", :sum => "#{@node.left_child.left_child.sum}",:node_id => "#{@node.left_child.left_id}",:left_id => "#{@node.left_child.left_child.left_id}",:right_id => "#{@node.left_child.left_child.right_id}"},
+                 {:name => "#{TreeWorker.truncated_node(@node.left_child.right)}", :sum => "#{@node.left_child.right_child.sum}",:node_id => "#{@node.left_child.right_id}",:left_id => "#{@node.left_child.right_child.left_id}",:right_id => "#{@node.left_child.right_child.right_id}"}
+                  ]
+              },
+              {:name => "#{truncated_node(@node.right)}", 
+               :children => [
+                 {:name => "#{TreeWorker.truncated_node(@node.right_child.left)}", :sum => "#{@node.right_child.left_child.sum}",:node_id => "#{@node.right_child.left_id}",:left_id => "#{@node.right_child.left_child.left_id}",:right_id => "#{@node.right_child.left_child.right_id}"},
+                 {:name => "#{TreeWorker.truncated_node(@node.right_child.right)}", :sum => "#{@node.right_child.right_child.sum}",:node_id => "#{@node.right_child.right_id}",:left_id => "#{@node.right_child.right_child.left_id}",:right_id => "#{@node.right_child.right_child.right_id}"}
+                ]
+                }
+              ]  
+            }
+          
       else
         puts "I have no idea what to do with that."
       end
       
       @my_json =  TreeWorker.append_nodes(@my_json, @node.tree_id) # returns @my_json completed with internal nodes through the leaves
+      @compressed_json = TreeWorker.append_truncated_nodes(@compressed_json, @node.tree_id)
       
       h = TreeWorker.json_height(@my_json)
+      
       puts "hauteur ", h
       k = @tree.height - 4
       while k > 0
         @my_json = TreeWorker.append_nodes(@my_json, @node.tree_id)
+        @compressed_json = TreeWorker.append_truncated_nodes(@compressed_json, @node.tree_id)
         k -= 1
       end
       
-      # save @my_json to a json file
+      # save @my_json to a json file in tmp folder
       File.open("tmp/tree_#{@tree.id}.json","w") do |f|
             f.write("#{@my_json.to_json}")
           end
+          
+          
+      # save @compressed_json to another json file in tmp folder
+      File.open("tmp/compressed_tree_#{@tree.id}.json","w") do |f|
+            f.write("#{@compressed_json.to_json}")
+          end
+              
       puts "#{@tree.name} upload to S3 started"
       
       # upload to Amazon S3
@@ -393,10 +454,19 @@ module TreeWorker
       
       @tree.url = obj.url_for(:read,
                            :response_content_type => "application/json")
-      @tree.save
+      
+      # TODO upload @compressed_json to @tree.json_file
+      
+      obj = bucket.objects["compressed_tree_#{@tree.id}.json"]
+      obj.write(:file => "#{Rails.root}/tmp/compressed_tree_#{@tree.id}.json")
+      
+      @tree.compressed = obj.url_for(:read,
+                           :response_content_type => "application/json")
       
       puts "#{@tree.name} analysis job successfully completed"
       puts @tree.url
+      
+      puts @tree.compressed
           
       @my_json
 
@@ -473,7 +543,56 @@ module TreeWorker
 
       end  # of method append_nodes
 
+      def TreeWorker.append_truncated_nodes(jvar, id) # var = current json representation of the tree with tree.id = id
 
+        h = TreeWorker.json_height(jvar)
+        @tree = Tree.find_by_id(id)
+
+        # get nodes where node.height = tree.height-h-2, first nodes to be appended
+        @nodes = Node.where('height' => @tree.height - h - 2).all
+        unless @nodes.blank?
+        @nodes = @nodes.select { |node| node.tree_id == id }
+        end
+
+        if @nodes.count > 0
+          # append nodes, if tree height > 4, i.e if there are nodes with height > 3
+
+          @nodes.each do |node|  ########################################
+
+            jsonvar = jvar
+            @new_jsonvar = {}
+            @node_json = {}
+            @new_jsonvar = jvar
+            @node_json = {:name => "#{node.truncated_node_hash}", :sum => "#{node.sum}",:node_id => "#{node.id}", :path => "#{node.node_path}" }
+
+            @new_jsonvar = TreeWorker.update_json(jsonvar,@node_json)
+
+          end # of do |node| #############################################
+
+        else
+          # append leaf nodes
+
+          @leaf_nodes = LeafNode.where('tree_id' => id).all
+
+          @leaf_nodes.each do |leaf| ######################################
+
+            jsonvar = jvar
+            @new_jsonvar = {}
+            @node_json = {}
+            @new_jsonvar = jvar
+            @node_json = {:name => "#{leaf.truncated_leaf_hash}", :sum => "#{leaf.credit}",:node_id => "#{leaf.id}", :path => "#{leaf.leaf_path}" }
+
+            @new_jsonvar = TreeWorker.update_json(jsonvar,@node_json)
+
+          end # of do |leaf|  ###########################################
+
+        end
+
+        @new_jsonvar
+
+      end  # of method append_truncated_nodes
+      
+      
 
       def TreeWorker.update_json(jvar,node_json)
 
@@ -715,6 +834,22 @@ module TreeWorker
           end # of CSV.open (writing to tree.csv)
           
         end# of method dump_to_csv(tree)
+        
+        
+        def TreeWorker.truncated_node(string)
+
+          if string and string.size >25
+            end_string = string[-4,4] # keeps only last 4 caracters
+            truncated_string = truncate(string, length: 8, omission: '...') + end_string # keeps only first 5 caracters, with 3 dots (total length 8)
+          else
+            if string 
+              truncated_string = string
+            else
+              truncated_string = ''
+            end
+          end
+
+        end # of helper method
     
   
 end # of module

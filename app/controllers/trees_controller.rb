@@ -11,7 +11,6 @@ class TreesController < ApplicationController
   
   def create
       @tree = Tree.new(tree_params)
-      
 
       if @tree.save
  
@@ -24,6 +23,7 @@ class TreesController < ApplicationController
          render action: 'new'
       end
   end
+  
 
   def edit
     @tree = Tree.find(params[:id])
@@ -37,23 +37,18 @@ class TreesController < ApplicationController
       render :edit
     end
   end
+  
+  
 
   def show
     @tree = Tree.find(params[:id])
     
     @nodes = @tree.nodes
     @leaf_nodes = @tree.leaf_nodes.paginate(:page => params[:page], :per_page => 30)
-    # @leaf_nodes = @tree.leaf_nodes.paginate(:page => params[:page])
-    
-    
-    # unless @nodes
-    #   respond_to do |format|
-    #    flash[:success] = "Processing file: please refresh the page until it is finished processing."
-    #    format.html { render action: 'show'}
-    #  end
-    # end
     
   end
+  
+  
   
   def destroy
     @tree = Tree.find_by_id(params[:id])
@@ -86,7 +81,7 @@ class TreesController < ApplicationController
     )
     
     bucket = s3.buckets[Figaro.env.s3_bucket]
-    object = bucket.objects["tree_#{@tree.id}.json"]
+    object = bucket.objects["compressed_tree_#{@tree.id}.json"]
 
     @json_tree = object.read
 

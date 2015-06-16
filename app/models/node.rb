@@ -2,12 +2,8 @@ class Node < ActiveRecord::Base
   belongs_to :tree
   has_many :leaf_nodes
   
-  include ActionView::Helpers::AssetTagHelper
   include ActionView::Helpers::NumberHelper
   include ActionView::Helpers::TextHelper
-  include ActionView::Helpers::DateHelper
-  
-    
     
     def left_child
       # @tree = Tree.find_by_id(self.tree_id)
@@ -55,8 +51,7 @@ class Node < ActiveRecord::Base
         end
       end
 
-    end # of helper method
+    end
     
     
-  
 end

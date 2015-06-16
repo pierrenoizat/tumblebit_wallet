@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150610223546) do
+ActiveRecord::Schema.define(version: 20150615214734) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -63,6 +63,7 @@ ActiveRecord::Schema.define(version: 20150610223546) do
     t.integer  "json_file_file_size"
     t.datetime "json_file_updated_at"
     t.string   "url"
+    t.string   "compressed"
   end
 
   create_table "users", force: :cascade do |t|

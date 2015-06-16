@@ -34,8 +34,9 @@ class Tree < ActiveRecord::Base
     :storage => :s3,
     :s3_permissions => :public_read,
     :s3_credentials => "#{Rails.root}/config/aws.yml",
+    :bucket => 'hashtree-assets',
 #    :bucket => 'hashtree-test',
-    :bucket => Figaro.env.s3_bucket,
+#    :bucket => Figaro.env.s3_bucket,
     :s3_options => { :server => "s3-eu-west-1.amazonaws.com" }
 
     validates_attachment :json_file, # :presence => true,

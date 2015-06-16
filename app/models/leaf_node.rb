@@ -3,10 +3,8 @@ class LeafNode < ActiveRecord::Base
   belongs_to :node
   # after_initialize :set_nonce, :if => :new_record?
   
-  include ActionView::Helpers::AssetTagHelper
   include ActionView::Helpers::NumberHelper
   include ActionView::Helpers::TextHelper
-  include ActionView::Helpers::DateHelper
   
   require 'json'
   

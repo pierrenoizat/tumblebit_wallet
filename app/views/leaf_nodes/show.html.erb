@@ -66,7 +66,7 @@
 	<div class="row">
 	<p><b><%= @nodes.count %> Interior nodes linking your account leaf to the root:</b></p>
     <div class="column">
-      <table class="table table-nonfluid">
+      <table class="table">
         <tbody>
 			<th>Id</th>
 			<th>Left Id</th>
@@ -74,7 +74,7 @@
 			<th>Hash</th>
 			<th>Height</th>
 			<th>Sum</th>
-			<th class="col-sm-2">Node path to root</th>
+			<th>Node path to root</th>
           	<% @nodes.each do |node| %>
             <tr>
               <%= render node %>
