@@ -186,6 +186,7 @@ GEM
       thor (>= 0.18.1, < 2.0)
     raindrops (0.13.0)
     rake (10.4.2)
+    redcarpet (3.0.0)
     redis (3.2.1)
     redis-namespace (1.5.2)
       redis (~> 3.0, >= 3.0.4)
@@ -300,6 +301,7 @@ DEPENDENCIES
   rails (= 4.2.0)
   rails_12factor
   rails_layout
+  redcarpet (~> 3.0.0)
   redis
   redis-store
   resque

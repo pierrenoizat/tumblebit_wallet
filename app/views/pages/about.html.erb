@@ -1,9 +1,6 @@
 <% content_for :title do %>About<% end %>
-<h3>About binary hash trees</h3>
-<p>
-The root path of each node can be followed on the tree graph: a zero points to the top node while a one points to the bottom node.</br>
-If there is only a single parent, then the root path includes a zero to represent the link between the node and its single parent.</br>
-For instance, in a tree of height 5, a root path like "0000" represents the top edge of the tree graph linking the root to the top leaf node.</br>
-The position of the leaf nodes are randomized so that nothing can be inferred about the accounts from their respective position in the tree graph.</br>
-Tree graphs are built using the D3 javascript library.</br>
-</p>
+<!-- Posts are created in db/seeds.rb -->
+<% @post = Post.find_by_title("About") %>
+<%= markdown(@post.body) %>
+<% @tree= Tree.first %>
+<p>Checkout this example: visit <%= link_to 'this tree', tree_path(@tree) %> with the access key <%= @tree.leaf_nodes.last.nonce.to_s %></p>

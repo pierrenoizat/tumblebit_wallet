@@ -44,7 +44,7 @@ class TreesController < ApplicationController
     @tree = Tree.find(params[:id])
     
     @nodes = @tree.nodes
-    @leaf_nodes = @tree.leaf_nodes.paginate(:page => params[:page], :per_page => 30)
+    @leaf_nodes = @tree.leaf_nodes.paginate(:page => params[:page], :per_page => $NODES_PER_PAGE)
     
   end
   

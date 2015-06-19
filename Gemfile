@@ -56,3 +56,4 @@ gem "cocaine", "= 0.5.7" # required for imagemagick
 gem "d3-rails"
 
 gem 'will_paginate', '~> 3.0.6'
+gem 'redcarpet', '~> 3.0.0'

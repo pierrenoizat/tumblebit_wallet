@@ -8,6 +8,14 @@ class LeafNode < ActiveRecord::Base
   
   require 'json'
   
+  def self.search(query)
+    where("nonce like ?", "%#{query}%") 
+  end
+  
+  def to_param
+    self.nonce
+   end
+  
   def leaf_hash
     leaf_hash = OpenSSL::Digest::SHA256.new.digest("#{self.name}|#{self.credit.to_s}|#{self.nonce}").unpack('H*').first # 256-bit hash,
   end

@@ -1,14 +1,33 @@
 class LeafNodesController < ApplicationController
 
+  def search
+    @leaf_node = LeafNode.find_by_nonce(params[:id])
+  end
+
   def display
-    @leaf_node = LeafNode.find(params[:id])
+    @leaf_node = LeafNode.find_by_nonce(params[:id])
     @tree = Tree.find(@leaf_node.tree_id)
   end
 
 
+
   def index
-    @leaf_nodes = LeafNode.all
+      if params[:search]
+        @leaf_nodes = LeafNode.search(params[:search]).order("created_at DESC")
+        @leaf_node = @leaf_nodes.first
+        @nodes = @leaf_node.related_nodes
+        @tree = Tree.find(@leaf_node.tree_id)
+        if @leaf_nodes.count == 1
+          render :show
+        else
+          render :index, notice: 'Duplicate leaf node.'
+        end
+      else
+        @leaf_nodes = LeafNode.all.order('created_at DESC')
+      end
   end
+  
+  
 
   def edit
     @leaf_node = LeafNode.find(params[:id])
@@ -24,7 +43,9 @@ class LeafNodesController < ApplicationController
   end
 
   def show
-    @leaf_node = LeafNode.find(params[:id])
+    # @leaf_node = LeafNode.find(params[:id])
+    @leaf_node = LeafNode.find_by_nonce(params[:id])
+    
     @nodes = @leaf_node.related_nodes
     @tree = Tree.find(@leaf_node.tree_id)
   end

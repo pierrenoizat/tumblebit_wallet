@@ -5,6 +5,12 @@
 	<!--<p><%= image_tag @tree.avatar.url(:square) %></p>-->
 	<p><td><%= link_to 'Download json file', download_json_tree_path(@tree), :class => "btn btn-primary btn-xs" %></td>
 	<td><%= link_to 'Tree graph', display_tree_path(@tree), :class => 'btn btn-default btn-xs btn-success' %></td></p>
+	<p><h4>Search for your account with its access key: </h4>
+
+	<%= form_tag(leaf_nodes_path, :method => "get", id: "search-form") do %>
+	  <%= text_field_tag :search, params[:search], placeholder: "Access key", style: "width:300px;height:21px;" %>
+	  <%= submit_tag "Search", :name => nil, :class => 'btn btn-default btn-xs' %>
+	<% end %></p>
 	<p>Name: <%= @tree.name if @tree.name %></p>
 	<p>Root hash: <%= @tree.root_hash if @tree %></p>
 	<p>Height: <%= @tree.height if @tree %></p>
@@ -14,9 +20,9 @@
       <table class="table">
         <tbody>
 			<th>Id</th>
-			<th>Name</th>
-			<th>Credit</th>
-			<th>Nonce</th>
+			<!--<th>Name</th>-->
+			<!--<th>Credit</th>-->
+			<!--<th>Nonce</th>-->
 			<th>Hash</th>
 			<th>Path to root</th>
 			<% if @leaf_nodes %>

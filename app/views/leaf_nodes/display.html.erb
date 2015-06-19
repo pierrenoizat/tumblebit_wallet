@@ -49,7 +49,7 @@ var element = document.getElementById("title");
 var result = linkString.link(linkUrl);
 element.innerHTML = result;
 
-linkUrl = "<%= $LEAF_NODES_URL %>" + "<%= @leaf_node.id %>";
+linkUrl = "<%= $LEAF_NODES_URL %>" + "<%= @leaf_node.nonce %>";
 linkString = "<%= @leaf_node.name %>";
 element = document.getElementById("timer");
 result = linkString.link(linkUrl);
