@@ -1,3 +1,854 @@
-<h3>Welcome</h3>
-<p><%= link_to 'Users:', users_path %> <%= User.count %> registered</p>
-<p>Checkout this example: visit <%= link_to 'this tree', tree_path(@tree) %> with the access key <%= @tree.leaf_nodes.last.nonce.to_s %></p>
+
+
+    <!-- SIDEBAR
+    ============================== -->
+
+
+    <!-- WRAPPER
+    ============================== -->
+
+
+      <!-- NAVBAR
+      ============================== -->
+      
+
+
+      <!-- HERO
+      ============================== -->
+      <div class="hero hero_agency" id="home">
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-12">
+
+              <!-- Hero heading -->
+              <h1 class="heading hero__heading animated fadeInUp">Welcome to merkletre.es</h1>
+
+              <!-- Hero subheading -->
+              
+                <p class="heading__sub hero-heading__sub animated fadeInUp delay_1"><%= link_to 'Users:', users_path %> <%= User.count %> registered.</p>
+
+              <!-- Hero buttons -->
+              <a href="<%= tree_path(@tree) %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Example tree</a> 
+              <p class="heading__sub hero-heading__sub" style="color:white;">Checkout the example tree with the access key: <%= @tree.leaf_nodes.last.nonce.to_s %></p>
+
+            </div>
+          </div> <!-- / .row -->
+        </div> <!-- / .container -->
+      </div> <!-- / .hero -->
+
+    
+      <div class="section" id="about">
+
+        <!-- ABOUT
+        ============================== -->
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-12">
+              <h4 class="heading">About Merkle trees</h4>
+              <p class="heading__sub">
+                Pellentesque mollis diam at egestas lacinia. In a pharetra risus. Aenean in libero. <br />Nam sollicitudin at erat quis maximus. Nam aliquet ornare nibh, sit amet.
+              </p>
+            </div>
+          </div> <!-- / .row -->
+        </div> <!-- / .container -->
+
+
+        <!-- FEATURES
+        ============================== -->
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-4">
+              <div class="features__item wow fadeIn">
+                <div class="features-item__icon">
+                  <span class="oi oi-project"></span>
+                </div>
+                <div class="features-item__body">
+                  <div class="features-item-body__title">
+                    Nam molestie lacinia lorem
+                  </div>
+                  <div class="features-item-body__summary">
+                    Morbi vitae congue justo. In eleifend mauris quam, non lacinia velit scelerisque nec. Aenean ut sem ut mauris fermentum blandit vitae vitae velit.
+                  </div>
+                </div> <!-- / .features-item__body -->
+              </div> <!-- / .features__item -->
+            </div>
+            <div class="col-sm-4">
+              <div class="features__item wow fadeIn">
+                <div class="features-item__icon">
+                  <span class="oi oi-code"></span>
+                </div>
+                <div class="features-item__body">
+                  <div class="features-item-body__title">
+                    Nam maximus tellus at ligula
+                  </div>
+                  <div class="features-item-body__summary">
+                    Morbi vitae congue justo. In eleifend mauris quam, non lacinia velit scelerisque nec. Aenean ut sem ut mauris fermentum blandit vitae vitae velit.
+                  </div>
+                </div> <!-- / .features-item__body -->
+              </div> <!-- / .features__item -->
+            </div>
+            <div class="col-sm-4">
+              <div class="features__item wow fadeIn">
+                <div class="features-item__icon">
+                  <span class="oi oi-envelope-open"></span>
+                </div>
+                <div class="features-item__body">
+                  <div class="features-item-body__title">
+                    Praesent a ex a mauris porta
+                  </div>
+                  <div class="features-item-body__summary">
+                    Morbi vitae congue justo. In eleifend mauris quam, non lacinia velit scelerisque nec. Aenean ut sem ut mauris fermentum blandit vitae vitae velit.
+                  </div>
+                </div>  <!-- / .features-item__body -->
+              </div> <!-- / .features__item -->
+            </div>
+            <div class="col-sm-4">
+              <div class="features__item wow fadeIn">
+                <div class="features-item__icon">
+                  <span class="oi oi-cart"></span>
+                </div>
+                <div class="features-item__body">
+                  <div class="features-item-body__title">
+                    Nam tortor nisl, bibendum id
+                  </div>
+                  <div class="features-item-body__summary">
+                    Morbi vitae congue justo. In eleifend mauris quam, non lacinia velit scelerisque nec. Aenean ut sem ut mauris fermentum blandit vitae vitae velit.
+                  </div>
+                </div> <!-- / .features-item__body -->
+              </div> <!-- / .features__item -->
+            </div>
+            <div class="col-sm-4">
+              <div class="features__item wow fadeIn">
+                <div class="features-item__icon">
+                  <span class="oi oi-chat"></span>
+                </div>
+                <div class="features-item__body">
+                  <div class="features-item-body__title">
+                    Praesent scelerisque tempus
+                  </div>
+                  <div class="features-item-body__summary">
+                    Morbi vitae congue justo. In eleifend mauris quam, non lacinia velit scelerisque nec. Aenean ut sem ut mauris fermentum blandit vitae vitae velit.
+                  </div>
+                </div> <!-- / .features-item__body -->
+              </div> <!-- / .features__item -->
+            </div>
+            <div class="col-sm-4">
+              <div class="features__item wow fadeIn">
+                <div class="features-item__icon">
+                  <span class="oi oi-graph"></span>
+                </div>
+                <div class="features-item__body">
+                  <div class="features-item-body__title">
+                    Praesent rutrum erat eu nunc
+                  </div>
+                  <div class="features-item-body__summary">
+                    Morbi vitae congue justo. In eleifend mauris quam, non lacinia velit scelerisque nec. Aenean ut sem ut mauris fermentum blandit vitae vitae velit.
+                  </div>
+                </div>  <!-- / .features-item__body -->
+              </div> <!-- / .features__item -->
+            </div>
+          </div> <!-- / .row -->
+        </div> <!-- / .container -->
+
+      </div> <!-- / .section -->
+
+      <div class="section">
+        <div class="container">
+          <div class="row"> 
+            <div class="row-same-height">
+              <div class="col-sm-5 col-sm-height col-middle">
+                <h4 class="heading heading_left">Fully responsive</h4>
+                <p class="heading__sub">
+                  Sed erat tortor, bibendum at sem in, malesuada ultricies eros. Integer maximus scelerisque sapien ut porta. Nulla tempor rutrum enim vitae lobortis. Quisque varius, ante in aliquet semper.
+                </p>
+                <a href="#" class="btn btn-default heading__btn">Primary action</a>
+              </div>
+              <div class="col-sm-7 col-sm-height col-middle">
+                <!--<img src="img/showcase.png" alt="..." class="img-responsive">-->
+				<%= image_tag "showcase.png", class: "img-responsive" %>
+              </div>
+            </div> <!-- / .row-same-height -->
+          </div> <!-- / .row -->
+        </div> <!-- / .container -->
+      </div> <!-- / .section -->
+
+
+      <!-- PORTFOLIO
+      ============================== -->
+      <div class="section" id="portfolio">
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-12">
+              <h4 class="heading">Our portfolio</h4>
+              <p class="heading__sub">
+                Curabitur feugiat risus eu lorem gravida elementum. Etiam mollis faucibus odio eu viverra.<br /> Nulla eu ligula ac lacus porttitor aliquam in sit amet orci.
+              </p>
+            </div>
+          </div> <!-- / .row -->
+        </div> <!-- / .container -->
+
+        <div class="portfolio__items">
+
+          <div class="col-xs-6 col-sm-4 col-md-3">
+            <div class="portfolio__item">
+              <div class="portfolio-item__img">
+                <a href="img/portfolio_1.jpg" data-lightbox="portfolio">
+					<%= image_tag "portfolio_1.jpg", class: "img-responsive" %>
+                  <div class="portfolio-item__mask">
+                    <div class="portfolio-item-mask__content">
+                      <div class="portfolio-item-mask__title">
+                        In cursus diam at ante consectetur
+                      </div>
+                      <div class="portfolio-item-mask__summary">
+                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
+                      </div>
+                    </div> <!-- / .portfolio-item-mask__content -->
+                  </div> <!-- / .portfolio-item__mask -->
+                </a>
+              </div> <!-- / .portfolio-item__img -->
+            </div> <!-- / .portfolio__item -->
+          </div>
+
+          <div class="col-xs-6 col-sm-4 col-md-3">
+            <div class="portfolio__item">
+              <div class="portfolio-item__img">
+                <a href="img/portfolio_2.jpg" data-lightbox="portfolio">
+                  <%= image_tag "portfolio_2.jpg", class: "img-responsive" %>
+                  <div class="portfolio-item__mask">
+                    <div class="portfolio-item-mask__content">
+                      <div class="portfolio-item-mask__title">
+                        In cursus diam at ante consectetur
+                      </div>
+                      <div class="portfolio-item-mask__summary">
+                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
+                      </div>
+                    </div> <!-- / .portfolio-item-mask__content -->
+                  </div> <!-- / .portfolio-item__mask -->
+                </a>
+              </div> <!-- / .portfolio-item__img -->
+            </div> <!-- / .portfolio__item -->
+          </div>
+
+          <div class="col-xs-6 col-sm-4 col-md-3">
+            <div class="portfolio__item">
+              <div class="portfolio-item__img">
+                <a href="img/portfolio_3.jpg" data-lightbox="portfolio">
+                  <%= image_tag "portfolio_3.jpg", class: "img-responsive" %>
+                  <div class="portfolio-item__mask">
+                    <div class="portfolio-item-mask__content">
+                      <div class="portfolio-item-mask__title">
+                        In cursus diam at ante consectetur
+                      </div>
+                      <div class="portfolio-item-mask__summary">
+                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
+                      </div>
+                    </div> <!-- / .portfolio-item-mask__content -->
+                  </div> <!-- / .portfolio-item__mask -->
+                </a>
+              </div> <!-- / .portfolio-item__img -->
+            </div> <!-- / .portfolio__item -->
+          </div>
+
+          <div class="col-xs-6 col-sm-4 col-md-3">
+            <div class="portfolio__item">
+              <div class="portfolio-item__img">
+                <a href="img/portfolio_4.jpg" data-lightbox="portfolio">
+                  <%= image_tag "portfolio_4.jpg", class: "img-responsive" %>
+                  <div class="portfolio-item__mask">
+                    <div class="portfolio-item-mask__content">
+                      <div class="portfolio-item-mask__title">
+                        In cursus diam at ante consectetur
+                      </div>
+                      <div class="portfolio-item-mask__summary">
+                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
+                      </div>
+                    </div> <!-- / .portfolio-item-mask__content -->
+                  </div> <!-- / .portfolio-item__mask -->
+                </a>
+              </div> <!-- / .portfolio-item__img -->
+            </div> <!-- / .portfolio__item -->
+          </div>
+
+          <div class="col-xs-6 col-sm-4 col-md-3">
+            <div class="portfolio__item">
+              <div class="portfolio-item__img">
+                <a href="img/portfolio_5.jpg" data-lightbox="portfolio">
+                  <%= image_tag "portfolio_5.jpg", class: "img-responsive" %>
+                  <div class="portfolio-item__mask">
+                    <div class="portfolio-item-mask__content">
+                      <div class="portfolio-item-mask__title">
+                        In cursus diam at ante consectetur
+                      </div>
+                      <div class="portfolio-item-mask__summary">
+                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
+                      </div>
+                    </div> <!-- / .portfolio-item-mask__content -->
+                  </div> <!-- / .portfolio-item__mask -->
+                </a>
+              </div> <!-- / .portfolio-item__img -->
+            </div> <!-- / .portfolio__item -->
+          </div>
+
+          <div class="col-xs-6 col-sm-4 col-md-3">
+            <div class="portfolio__item">
+              <div class="portfolio-item__img">
+                <a href="img/portfolio_6.jpg" data-lightbox="portfolio">
+                  <%= image_tag "portfolio_6.jpg", class: "img-responsive" %>
+                  <div class="portfolio-item__mask">
+                    <div class="portfolio-item-mask__content">
+                      <div class="portfolio-item-mask__title">
+                        In cursus diam at ante consectetur
+                      </div>
+                      <div class="portfolio-item-mask__summary">
+                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
+                      </div>
+                    </div> <!-- / .portfolio-item-mask__content -->
+                  </div> <!-- / .portfolio-item__mask -->
+                </a>
+              </div> <!-- / .portfolio-item__img -->
+            </div> <!-- / .portfolio__item -->
+          </div>
+
+          <div class="col-xs-6 col-sm-4 col-md-3">
+            <div class="portfolio__item">
+              <div class="portfolio-item__img">
+                <a href="img/portfolio_7.jpg" data-lightbox="portfolio">
+                  <%= image_tag "portfolio_7.jpg", class: "img-responsive" %>
+                  <div class="portfolio-item__mask">
+                    <div class="portfolio-item-mask__content">
+                      <div class="portfolio-item-mask__title">
+                        In cursus diam at ante consectetur
+                      </div>
+                      <div class="portfolio-item-mask__summary">
+                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
+                      </div>
+                    </div> <!-- / .portfolio-item-mask__content -->
+                  </div> <!-- / .portfolio-item__mask -->
+                </a>
+              </div> <!-- / .portfolio-item__img -->
+            </div> <!-- / .portfolio__item -->
+          </div>
+
+          <div class="col-xs-6 col-sm-4 col-md-3">
+            <div class="portfolio__item">
+              <div class="portfolio-item__img">
+                <a href="img/portfolio_8.jpg" data-lightbox="portfolio">
+                  <%= image_tag "portfolio_8.jpg", class: "img-responsive" %>
+                  <div class="portfolio-item__mask">
+                    <div class="portfolio-item-mask__content">
+                      <div class="portfolio-item-mask__title">
+                        In cursus diam at ante consectetur
+                      </div>
+                      <div class="portfolio-item-mask__summary">
+                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
+                      </div>
+                    </div> <!-- / .portfolio-item-mask__content -->
+                  </div> <!-- / .portfolio-item__mask -->
+                </a>
+              </div> <!-- / .portfolio-item__img -->
+            </div> <!-- / .portfolio__item -->
+          </div>
+
+          <div class="clearfix"></div>
+
+        </div> <!-- / .portfolio__items -->
+
+      </div> <!-- / .section -->
+
+
+      <!-- DOWNLOAD
+      ============================== -->
+      <div class="section section_alt section_download" id="download">
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
+              <h4 class="heading">Get started now</h4>
+              <p class="heading__sub">
+                Phasellus gravida sem magna, nec maximus quam tincidunt non. Cras molestie nec libero nec hendrerit. Morbi imperdiet, lorem nec rhoncus vehicula, quam orci finibus dolor, non malesuada orci turpis eleifend neque.
+              </p>
+              <a href="#contact" class="btn btn-lg btn-primary heading__btn wow fadeInUp">Primary action</a>
+            </div>
+          </div> <!-- / .row -->
+        </div> <!-- / .container -->
+      </div> <!-- / .section -->
+
+
+      <!-- PRICING
+      ============================== -->
+      <div class="section" id="pricing">
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-12">
+              <h4 class="heading">Available pricing options</h4>
+              <p class="heading__sub">
+                Vivamus quam neque, aliquet ac faucibus ut, vestibulum. Nulla quis laoreet diam.<br /> Donec sed egestas ex, nec facilisis ante. Vivamus imperdiet odio.
+              </p>
+            </div>
+          </div> <!-- / .row -->
+          <div class="row">
+            <div class="pricing__items">
+              <div class="col-sm-3">
+                <div class="pricing__item pricing__item_one">
+                  <div class="pricing-item__title">
+                    Ut semper tellus quis diam tincidunt iaculis
+                  </div>
+                  <div class="pricing-item__price">
+                    $10<span>/mo</span>
+                  </div>
+                  <div class="pricing-item__summary">
+                    Praesent scelerisque dui nec nibh maximus elementum. Suspendisse sagittis odio sed volutpat ornare. Fusce ac vestibulum nibh.
+                  </div>
+                  <a href="#" class="btn btn-default">
+                    <span class="oi oi-cart"></span> Purchase now
+                  </a>
+                </div> <!-- / .pricing__items -->
+              </div>
+              <div class="col-sm-3">
+                <div class="pricing__item pricing__item_two">
+                  <div class="pricing-item__title">
+                    Praesent scelerisque dui nec nibh maximu
+                  </div>
+                  <div class="pricing-item__price">
+                    $20<span>/mo</span>
+                  </div>
+                  <div class="pricing-item__summary">
+                    Praesent scelerisque dui nec nibh maximus elementum. Suspendisse sagittis odio sed volutpat ornare. Fusce ac vestibulum nibh.
+                  </div>
+                  <a href="#" class="btn btn-default">
+                    <span class="oi oi-cart"></span> Purchase now
+                  </a>
+                </div> <!-- / .pricing__items -->
+              </div>
+              <div class="col-sm-3">
+                <div class="pricing__item pricing__item_three">
+                  <div class="pricing-item__title">
+                    Suspendisse sagittis odio sed volutpat ornare
+                  </div>
+                  <div class="pricing-item__price">
+                    $30<span>/mo</span>
+                  </div>
+                  <div class="pricing-item__summary">
+                    Praesent scelerisque dui nec nibh maximus elementum. Suspendisse sagittis odio sed volutpat ornare. Fusce ac vestibulum nibh.
+                  </div>
+                  <a href="#" class="btn btn-default">
+                    <span class="oi oi-cart"></span> Purchase now
+                  </a>
+                </div> <!-- / .pricing__items -->
+              </div>
+              <div class="col-sm-3">
+                <div class="pricing__item pricing__item_four">
+                  <div class="pricing-item__title">
+                    Nulla at magna accumsan, viverra ligula
+                  </div>
+                  <div class="pricing-item__price">
+                    $40<span>/mo</span>
+                  </div>
+                  <div class="pricing-item__summary">
+                    Praesent scelerisque dui nec nibh maximus elementum. Suspendisse sagittis odio sed volutpat ornare. Fusce ac vestibulum nibh.
+                  </div>
+                  <a href="#" class="btn btn-default">
+                    <span class="oi oi-cart"></span> Purchase now
+                  </a>
+                </div> <!-- / .pricing__items -->
+              </div>
+            </div>
+          </div> <!-- / .row -->
+        </div> <!-- / .container -->
+
+      </div> <!-- / .section -->
+
+
+      <!-- TEAM
+      ============================== -->
+      <div class="section" id="team">
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-12">
+              <h4 class="heading">Meet the professionals</h4>
+              <p class="heading__sub">
+                Donec blandit ex vitae lectus malesuada ullamcorper. Praesent tempor pharetra leo, id mollis.<br /> Aliquam at venenatis velit. Praesent tincidunt aliquet lectus, et auctor ex.
+              </p>
+            </div>
+          </div> <!-- / .row -->
+          <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+              <div class="row">
+                <div class="col-xs-6 col-sm-4">
+                  <div class="team__item">
+                    <div class="team-item__img">
+                      <%= image_tag "team_1.jpg", class: "img-responsive" %>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="team-item__name">Jane Doe</div>
+                        <div class="team-item__position">Project Manager</div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="team-item__contact">
+                          <a class="team-item-contact__link" href="#">
+                            <i class="fa fa-twitter"></i>
+                          </a>
+                          <a class="team-item-contact__link team-item-contact__link_facebook" href="#">
+                            <i class="fa fa-facebook"></i>
+                          </a>
+                          <div class="clearfix"></div>
+                        </div>
+                      </div>
+                    </div> <!-- / .row -->
+                  </div> <!-- / .team__item --> 
+                </div>
+
+                <div class="col-xs-6 col-sm-4">
+                  <div class="team__item">
+                    <div class="team-item__img">
+                      <%= image_tag "team_2.jpg", class: "img-responsive" %>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="team-item__name">John Doe</div>
+                        <div class="team-item__position">UI/UX Designer</div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="team-item__contact">
+                          <a class="team-item-contact__link" href="#">
+                            <i class="fa fa-twitter"></i>
+                          </a>
+                          <a class="team-item-contact__link team-item-contact__link_facebook" href="#">
+                            <i class="fa fa-facebook"></i>
+                          </a>
+                          <div class="clearfix"></div>
+                        </div>
+                      </div>
+                    </div> <!-- / .row -->
+                  </div> <!-- / .team__item --> 
+                </div>
+
+                <div class="col-xs-6 col-sm-4">
+                  <div class="team__item">
+                    <div class="team-item__img">
+                      <%= image_tag "team_3.jpg", class: "img-responsive" %>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="team-item__name">Richard Roe</div>
+                        <div class="team-item__position">Senior Developer</div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="team-item__contact">
+                          <a class="team-item-contact__link" href="#">
+                            <i class="fa fa-twitter"></i>
+                          </a>
+                          <a class="team-item-contact__link team-item-contact__link_facebook" href="#">
+                            <i class="fa fa-facebook"></i>
+                          </a>
+                          <div class="clearfix"></div>
+                        </div>
+                      </div>
+                    </div> <!-- / .row -->
+                  </div> <!-- / .team__item --> 
+                </div>
+
+                <div class="col-xs-6 col-sm-4 visible-xs">
+                  <div class="team__item">
+                    <div class="team-item__img">
+                      <%= image_tag "team_4.jpg", class: "img-responsive" %>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="team-item__name">Judy Roe</div>
+                        <div class="team-item__position">Project Manager</div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="team-item__contact">
+                          <a class="team-item-contact__link" href="#">
+                            <i class="fa fa-twitter"></i>
+                          </a>
+                          <a class="team-item-contact__link team-item-contact__link_facebook" href="#">
+                            <i class="fa fa-facebook"></i>
+                          </a>
+                          <div class="clearfix"></div>
+                        </div>
+                      </div>
+                    </div> <!-- / .row -->
+                  </div> <!-- / .team__item --> 
+                </div>
+
+              </div> <!-- / .row -->
+            </div>
+
+          </div> <!-- / .row -->
+        </div> <!-- / .container -->
+      </div> <!-- / .section -->
+
+
+      <!-- SKILLS
+      ============================== -->
+      <div class="section" id="skills">
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-12">
+              <h4 class="heading">Our key skills</h4>
+              <p class="heading__sub">
+                Maecenas varius fringilla eros. Ut feugiat sagittis porta. Nulla est sapien, eleifend a interdum et.. <br />Cum sociis natoque penatibus et magnis dis parturient montes, nascetur.
+              </p>
+            </div>
+          </div> <!-- / .row -->
+          <div class="row">
+
+            <div class="col-xs-6 col-sm-3 col-md-2 col-md-offset-2">
+              <div class="skills__item js-skills__item_first">
+                <div class="skills-item__title">HTML</div>
+                <span class="skills-item__donut">11/12</span>
+              </div>
+            </div>
+
+            <div class="col-xs-6 col-sm-3 col-md-2">
+              <div class="skills__item">
+                <div class="skills-item__title">CSS</div>
+                <span class="skills-item__donut" data-peity='{ "fill": ["#C06C84", "#EEE"] }'>10/12</span>
+              </div>
+            </div>
+
+            <div class="col-xs-6 col-sm-3 col-md-2">
+              <div class="skills__item">
+                <div class="skills-item__title">JS</div>
+                <span class="skills-item__donut" data-peity='{ "fill": ["#6C5B7B", "#EEE"] }'>9/12</span>
+              </div>
+            </div>
+
+            <div class="col-xs-6 col-sm-3 col-md-2">
+              <div class="skills__item">
+                <div class="skills-item__title">PHP</div>
+                <span class="skills-item__donut" data-peity='{ "fill": ["#355C7D", "#EEE"] }'>8/12</span>
+              </div>
+            </div>
+
+          </div> <!-- / .row -->
+        </div> <!-- / .container -->
+      </div> <!-- / .section -->
+
+
+      <!-- TESTIMONIALS
+      ============================== -->
+      <div class="section" id="testimonials">
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-12">
+              <div class="review__icon">
+                <span class="oi oi-double-quote-serif-left"></span>
+              </div>
+              <h4 class="heading">What others say about us</h4>
+            </div>
+          </div> <!-- / .row -->
+          <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+
+              <!-- Wrapper for slides -->
+              <div id="review__carousel" class="owl-carousel owl-theme">
+
+                <div class="item">
+                  <div class="review__item">
+                    <div class="review-item__quot">
+                      Fusce eget mattis diam. In interdum, ipsum eget convallis semper, nulla lorem venenatis tellus, at feugiat sapien leo eget felis. Cras nec finibus ante. Proin ac nulla pellentesque, laoreet mauris.
+                    </div>
+                    <div class="review-item__about">
+                      <div class="review-item-about__avatar">
+                        <%= image_tag "author_1.jpg", class: "img-responsive" %>
+                      </div>
+                      <div class="review-item-about__content">
+                        <div class="review-item-about__name">Jane Roe</div>
+                        <div class="review-item-about__position">Front-end developer</div>
+                      </div>
+                      <div class="clearfix"></div>
+                    </div>
+                  </div> <!-- / .review__item -->
+                </div>
+                
+                <div class="item">
+                  <div class="review__item">
+                    <div class="review-item__quot">
+                      Fusce eget mattis diam. In interdum, ipsum eget convallis semper, nulla lorem venenatis tellus, at feugiat sapien leo eget felis. Cras nec finibus ante. Proin ac nulla pellentesque, laoreet mauris.
+                    </div>
+                    <div class="review-item__about">
+                      <div class="review-item-about__avatar">
+                        <%= image_tag "author_2.jpg", class: "img-responsive" %>
+                      </div>
+                      <div class="review-item-about__content">
+                        <div class="review-item-about__name">John Doe</div>
+                        <div class="review-item-about__position">Front-end developer</div>
+                      </div>
+                      <div class="clearfix"></div>
+                    </div>
+                  </div> <!-- / .review__item -->
+                </div>
+
+                <div class="item">
+                  <div class="review__item">
+                    <div class="review-item__quot">
+                      Fusce eget mattis diam. In interdum, ipsum eget convallis semper, nulla lorem venenatis tellus, at feugiat sapien leo eget felis. Cras nec finibus ante. Proin ac nulla pellentesque, laoreet mauris.
+                    </div>
+                    <div class="review-item__about">
+                      <div class="review-item-about__avatar">
+                        <%= image_tag "author_3.jpg", class: "img-responsive" %>
+                      </div>
+                      <div class="review-item-about__content">
+                        <div class="review-item-about__name">Elena Doe</div>
+                        <div class="review-item-about__position">Front-end developer</div>
+                      </div>
+                      <div class="clearfix"></div>
+                    </div>
+                  </div> <!-- / .review__item -->
+                </div>
+
+                <div class="item">
+                  <div class="review__item">
+                    <div class="review-item__quot">
+                      Fusce eget mattis diam. In interdum, ipsum eget convallis semper, nulla lorem venenatis tellus, at feugiat sapien leo eget felis. Cras nec finibus ante. Proin ac nulla pellentesque, laoreet mauris.
+                    </div>
+                    <div class="review-item__about">
+                      <div class="review-item-about__avatar">
+                        <%= image_tag "author_4.jpg", class: "img-responsive" %>
+                      </div>
+                      <div class="review-item-about__content">
+                        <div class="review-item-about__name">Kate Doe</div>
+                        <div class="review-item-about__position">Front-end developer</div>
+                      </div>
+                      <div class="clearfix"></div>
+                    </div>
+                  </div> <!-- / .review__item -->
+                </div>
+
+              </div> <!-- / .review__carousel -->
+
+            </div>
+          </div> <!-- / .row -->
+        </div>
+      </div>
+
+
+      <!-- SUBSCRIBE
+      ============================== -->
+      <div class="section" id="subscribe">
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-12">
+
+              <h4 class="heading">Newsletter signup</h4>
+
+              <form class="form-inline form_alt subscribe__form">
+                <div class="form-group">
+                  <label class="sr-only" for="subscribe__name">Name</label>
+                  <input type="text" class="form-control input-lg" id="subscribe__name" placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                  <label class="sr-only" for="subscribe__email">Email address</label>
+                  <input type="email" class="form-control input-lg" id="subscribe__email" placeholder="Enter your email">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                  Subscribe</button>
+              </form>
+
+            </div>
+          </div> <!-- / .row -->
+        </div> <!-- / .container -->
+      </div> <!-- / .section -->
+
+
+      <!-- CONTACT US
+      ============================== -->
+      <div class="container" id="contact">
+
+        <div class="row">
+          <div class="col-xs-12">
+            <h4 class="heading">Feel free to contact us</h4>
+            <p class="heading__sub">
+              Donec blandit ex vitae lectus malesuada ullamcorper. Praesent tempor pharetra leo, id mollis.<br />Aliquam at venenatis velit. Praesent tincidunt aliquet lectus, et auctor ex. 
+            </p>
+          </div>
+        </div> <!-- / .row -->
+
+        <div class="row">
+          <div class="col-sm-12 col-md-10 col-lg-8 col-md-offset-1 col-lg-offset-2">
+
+            <!-- Alert message -->
+            <div class="alert contact-form__alert" id="form_message" role="alert"></div>
+
+            <!-- Contact form -->
+            <!-- Please carefully read the README.txt file
+             in order to setup the PHP contact form properly -->
+            <form role="form" class="contact__form" id="form_sendemail">
+              <div class="row">
+                <div class="col-sm-6">
+
+                  <!-- Email -->
+                  <div class="form-group">
+                    <label for="email" class="sr-only">Your email address</label>
+                    <input type="email" name="email" class="form-control" id="email" placeholder="E-mail">
+                    <span class="help-block"></span>
+                  </div>
+
+                  <!-- Name -->
+                  <div class="form-group">
+                    <label for="name" class="sr-only">Your name</label>
+                    <input type="text" name="name" class="form-control" id="name" placeholder="Full Name">
+                    <span class="help-block"></span>
+                  </div>
+
+                  <!-- reCAPTCHA -->
+                  <!--<div class="form-group" id="form-captcha">-->
+                  <!--  <div class="g-recaptcha" data-sitekey="YOUR_PUBLIC_KEY"></div>-->
+                  <!--  <span class="help-block"></span>-->
+                  <!--</div>-->
+                  <!-- /reCAPTCHA -->
+
+                </div>
+
+                <div class="col-sm-6">
+
+                  <!-- Message -->
+                  <div class="form-group">
+                    <label for="message" class="sr-only">Your message</label>
+                    <textarea name="message" class="form-control" rows="9" id="message" placeholder="Message"></textarea>
+                    <span class="help-block"></span>
+                  </div>
+                </div>
+
+              </div> <!-- / .row -->
+              
+              <div class="text-center">
+                <button type="submit" class="btn btn-primary">
+                  Send message
+                </button>
+                <div class="clearfix"></div>
+              </div>
+
+            </form>
+          </div>
+        </div> <!-- / .row -->
+      </div> <!-- / .container -->
+
+
+      <!-- FOOTER
+      ============================== -->
+      <footer>
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-6">
+              &copy; 2015 Paymium.com. All Rights Reserved.
+            </div>
+            <div class="col-sm-6">
+              <div class="footer__social">
+                <a href="https://twitter.com/intent/follow?original_referer=https%3A%2F%2Fabout.twitter.com%2Fresources%2Fbuttons&region=follow_link&screen_name=PierreNoizat&tw_p=followbutton" class="footer-social__link footer-social__link_twitter">
+	
+                  <i class="fa fa-twitter"></i>
+                </a>
+
+                <a href="https://fr-fr.facebook.com/Paymium" class="footer-social__link footer-social__link_facebook" target="blank" >
+                  <i class="fa fa-facebook"></i>
+                </a>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>

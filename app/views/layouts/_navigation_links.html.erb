@@ -1,13 +1,15 @@
 <%# add navigation links to this file %>
-<li><%= link_to 'About', page_path('about') %></li>
-<li><%= link_to 'New tree', new_tree_path %></li>
-<li><%= link_to 'Trees', trees_path %></li>
-<% if user_signed_in? %>
-  <li><%= link_to 'Sign out', signout_path %></li>
-<% else %>
-  <li><%= link_to 'Sign in', signin_path %></li>
-<% end %>
-<% if user_signed_in? %>
-  <li><%= link_to 'Users', users_path %></li>
-<% end %>
 
+<li class="active"><a href="<%= root_path %>">Home</a></li>
+  <li><a href="<%= page_path('about') %>" style="color:#4682b4" >About</a></li>
+  <li><a href="<%= new_tree_path %>" style="color:#4682b4" >New tree</a></li>
+  <li><a href="<%= trees_path %>" style="color:#4682b4" >Trees</a></li>
+<% if user_signed_in? %>
+  <li><a href="<%= signout_path %>" style="color:#4682b4" >Sign out</a></li>
+<% else %>
+  <li><a href="<%= signin_path %>" style="color:#4682b4" >Sign in</a></li>
+<% end %>
+<% if user_signed_in? %>
+  <li><a href="<%= users_path %>" style="color:#4682b4" >Users</a></li>
+<% end %>
+  

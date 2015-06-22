@@ -8,7 +8,7 @@
 	<p><h4>Search for your account with its access key: </h4>
 
 	<%= form_tag(leaf_nodes_path, :method => "get", id: "search-form") do %>
-	  <%= text_field_tag :search, params[:search], placeholder: "Access key", style: "width:300px;height:21px;" %>
+	  <%= text_field_tag :search, params[:search], placeholder: "Access key", style: "width:300px;" %>
 	  <%= submit_tag "Search", :name => nil, :class => 'btn btn-default btn-xs' %>
 	<% end %></p>
 	<p>Name: <%= @tree.name if @tree.name %></p>
@@ -41,7 +41,7 @@
         </tbody>
 		
       </table>
-	<div class='flickr_pagination'><%= will_paginate @leaf_nodes %></div>
+	<div class='apple_pagination'><%= will_paginate @leaf_nodes %></div>
     </div>
 	
   </div>

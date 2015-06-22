@@ -1,5 +1,4 @@
 // import the CSS framework
-@import "bootstrap-sprockets";
 @import "bootstrap";
 
 // make all images responsive by default
@@ -10,40 +9,46 @@ img {
 // override for the 'Home' navigation link
 .navbar-brand {
   font-size: inherit;
+  color: blue;
   }
 
-// THESE ARE EXAMPLES YOU CAN MODIFY
-// create your own classes
-// to make views framework-neutral
-.column {
-  @extend .col-md-6;
-  @extend .text-center;
+.navbar-default {
+  font-size: inherit;
+  background-color: #000;
+  /*font-family: "Museo300Regular", Helvetica, Arial, sans-serif;*/
+  font-family: 'Montserrat', sans-serif;
+  font-weight: bold;
+  color: blue;
   }
-.form {
-  @extend .col-md-6;
+
+.navbar-inverse {
+  font-size: inherit;
+  background-color: #000;
+  /*color: $gray-light;*/
+  color: blue;
+  font-weight: bold;
   }
-.form-centered {
-  @extend .col-md-6;
-  @extend .text-center;
-  }
-.submit {
-  @extend .btn;
-  @extend .btn-primary;
-  @extend .btn-lg;
-  }
-// apply styles to HTML elements
-// to make views framework-neutral
-main {
-  @extend .container;
-  background-color: white;
-  padding-bottom: 80px;
-  width: 100%;
-  margin-top: 51px; // accommodate the navbar
-  }
-section {
-  @extend .row;
-  margin-top: 20px;
-  }
+
+.navbar-brand {
+	position: absolute;
+	bottom: 15px;
+	background: url(/assets/images/tagomagohoriz2.jpg) no-repeat;
+	width: 184px;
+	height: 25px;
+	background-size: 100%;
+	text-indent: -9999px;
+	display: block;
+	margin: 0;
+	margin-top: 5px;
+	margin-bottom: 10px;
+	padding: 0;
+	position: absolute;
+	-webkit-transition: opacity 0.1s ease-out;  /* Chrome 1-25, Safari 3.2+ */
+	-moz-transition: opacity 0.1s ease-out;  /* Firefox 4-15 */
+	-o-transition: opacity 0.1s ease-out;  /* Opera 10.50–12.00 */
+	transition: opacity 0.1s ease-out;  /* Chrome 26, Firefox 16+, IE 10+, Opera 12.10+ */
+}
+
 
 // page link styles for will_paginate
 

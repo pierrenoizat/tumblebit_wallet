@@ -24,7 +24,7 @@
 				<td></td>
 				<td><%= @leaf_node.leaf_hash %></td>
 				<td><%= number_with_precision(@leaf_node.credit, :precision => 2) %></td> 
-				<td><%= @leaf_node.leaf_path %></td>
+				<td><%= link_to @leaf_node.leaf_path, display_leaf_node_path(@leaf_node) %></td>
 				<td><%= link_to "Root path graph", display_leaf_node_path(@leaf_node), :class => 'btn btn-default btn-xs btn-success' %></td>
 			</tr>
         </tbody>
