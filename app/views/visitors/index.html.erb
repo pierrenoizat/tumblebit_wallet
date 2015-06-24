@@ -21,7 +21,7 @@
             <div class="col-xs-12">
 
               <!-- Hero heading -->
-              <h1 class="heading hero__heading animated fadeInUp">Welcome to merkletre.es</h1>
+              <h1 class="heading hero__heading animated fadeInUp">Welcome to hashtre.es</h1>
 
               <!-- Hero subheading -->
               
@@ -44,9 +44,9 @@
         <div class="container">
           <div class="row">
             <div class="col-xs-12">
-              <h4 class="heading">About Merkle trees</h4>
+              <h4 class="heading">About hash trees</h4>
               <p class="heading__sub">
-                Pellentesque mollis diam at egestas lacinia. In a pharetra risus. Aenean in libero. <br />Nam sollicitudin at erat quis maximus. Nam aliquet ornare nibh, sit amet.
+                Trees are our friends. When they are digital, they can be made of hashes. <br />Then, we use those hash trees to build trust.
               </p>
             </div>
           </div> <!-- / .row -->
@@ -157,15 +157,14 @@
           <div class="row"> 
             <div class="row-same-height">
               <div class="col-sm-5 col-sm-height col-middle">
-                <h4 class="heading heading_left">Fully responsive</h4>
+                <h4 class="heading heading_left">Interactive Data Visualization</h4>
                 <p class="heading__sub">
-                  Sed erat tortor, bibendum at sem in, malesuada ultricies eros. Integer maximus scelerisque sapien ut porta. Nulla tempor rutrum enim vitae lobortis. Quisque varius, ante in aliquet semper.
+                  Trees are drawn as SVG graphs using D3, a JavaScript library for manipulating documents based on data. D3 helps us bring data to life using HTML, SVG, and CSS. D3’s emphasis on web standards gives us the full capabilities of modern browsers without tying us to a proprietary framework, combining powerful visualization components and a data-driven approach to DOM manipulation.
                 </p>
-                <a href="#" class="btn btn-default heading__btn">Primary action</a>
+                <a href="<%= display_tree_path(@tree) %>" class="btn btn-default heading__btn">Sample tree graph</a>
               </div>
               <div class="col-sm-7 col-sm-height col-middle">
-                <!--<img src="img/showcase.png" alt="..." class="img-responsive">-->
-				<%= image_tag "showcase.png", class: "img-responsive" %>
+				<%= image_tag "sample_merkle_tree_svg.png", class: "img-responsive" %>
               </div>
             </div> <!-- / .row-same-height -->
           </div> <!-- / .row -->
@@ -179,7 +178,7 @@
         <div class="container">
           <div class="row">
             <div class="col-xs-12">
-              <h4 class="heading">Our portfolio</h4>
+              <h4 class="heading">Our portfolio of trees</h4>
               <p class="heading__sub">
                 Curabitur feugiat risus eu lorem gravida elementum. Etiam mollis faucibus odio eu viverra.<br /> Nulla eu ligula ac lacus porttitor aliquam in sit amet orci.
               </p>
@@ -192,8 +191,8 @@
           <div class="col-xs-6 col-sm-4 col-md-3">
             <div class="portfolio__item">
               <div class="portfolio-item__img">
-                <a href="img/portfolio_1.jpg" data-lightbox="portfolio">
-					<%= image_tag "portfolio_1.jpg", class: "img-responsive" %>
+                <a href="#" data-lightbox="portfolio">
+					<%= image_tag "beach_tree.jpg", class: "img-responsive" %>
                   <div class="portfolio-item__mask">
                     <div class="portfolio-item-mask__content">
                       <div class="portfolio-item-mask__title">
@@ -212,8 +211,8 @@
           <div class="col-xs-6 col-sm-4 col-md-3">
             <div class="portfolio__item">
               <div class="portfolio-item__img">
-                <a href="img/portfolio_2.jpg" data-lightbox="portfolio">
-                  <%= image_tag "portfolio_2.jpg", class: "img-responsive" %>
+                <a href="#" data-lightbox="portfolio">
+                  <%= image_tag "duo_of_trees.jpg", class: "img-responsive" %>
                   <div class="portfolio-item__mask">
                     <div class="portfolio-item-mask__content">
                       <div class="portfolio-item-mask__title">
@@ -232,8 +231,8 @@
           <div class="col-xs-6 col-sm-4 col-md-3">
             <div class="portfolio__item">
               <div class="portfolio-item__img">
-                <a href="img/portfolio_3.jpg" data-lightbox="portfolio">
-                  <%= image_tag "portfolio_3.jpg", class: "img-responsive" %>
+                <a href="#" data-lightbox="portfolio">
+                  <%= image_tag "hands-holding-a-small-tree.jpg", class: "img-responsive" %>
                   <div class="portfolio-item__mask">
                     <div class="portfolio-item-mask__content">
                       <div class="portfolio-item-mask__title">
@@ -252,8 +251,8 @@
           <div class="col-xs-6 col-sm-4 col-md-3">
             <div class="portfolio__item">
               <div class="portfolio-item__img">
-                <a href="img/portfolio_4.jpg" data-lightbox="portfolio">
-                  <%= image_tag "portfolio_4.jpg", class: "img-responsive" %>
+                <a href="#" data-lightbox="portfolio">
+                  <%= image_tag "oak.jpg", class: "img-responsive" %>
                   <div class="portfolio-item__mask">
                     <div class="portfolio-item-mask__content">
                       <div class="portfolio-item-mask__title">
@@ -272,8 +271,8 @@
           <div class="col-xs-6 col-sm-4 col-md-3">
             <div class="portfolio__item">
               <div class="portfolio-item__img">
-                <a href="img/portfolio_5.jpg" data-lightbox="portfolio">
-                  <%= image_tag "portfolio_5.jpg", class: "img-responsive" %>
+                <a href="#" data-lightbox="portfolio">
+                  <%= image_tag "tree-wallpaper.jpg", class: "img-responsive" %>
                   <div class="portfolio-item__mask">
                     <div class="portfolio-item-mask__content">
                       <div class="portfolio-item-mask__title">
@@ -292,8 +291,8 @@
           <div class="col-xs-6 col-sm-4 col-md-3">
             <div class="portfolio__item">
               <div class="portfolio-item__img">
-                <a href="img/portfolio_6.jpg" data-lightbox="portfolio">
-                  <%= image_tag "portfolio_6.jpg", class: "img-responsive" %>
+                <a href="#" data-lightbox="portfolio">
+                  <%= image_tag "tree_sunset.jpg", class: "img-responsive" %>
                   <div class="portfolio-item__mask">
                     <div class="portfolio-item-mask__content">
                       <div class="portfolio-item-mask__title">
@@ -312,8 +311,8 @@
           <div class="col-xs-6 col-sm-4 col-md-3">
             <div class="portfolio__item">
               <div class="portfolio-item__img">
-                <a href="img/portfolio_7.jpg" data-lightbox="portfolio">
-                  <%= image_tag "portfolio_7.jpg", class: "img-responsive" %>
+                <a href="#" data-lightbox="portfolio">
+                  <%= image_tag "row_of_trees.jpg", class: "img-responsive" %>
                   <div class="portfolio-item__mask">
                     <div class="portfolio-item-mask__content">
                       <div class="portfolio-item-mask__title">
@@ -332,8 +331,8 @@
           <div class="col-xs-6 col-sm-4 col-md-3">
             <div class="portfolio__item">
               <div class="portfolio-item__img">
-                <a href="img/portfolio_8.jpg" data-lightbox="portfolio">
-                  <%= image_tag "portfolio_8.jpg", class: "img-responsive" %>
+                <a href="#" data-lightbox="portfolio">
+                  <%= image_tag "frosty-trees.jpg", class: "img-responsive" %>
                   <div class="portfolio-item__mask">
                     <div class="portfolio-item-mask__content">
                       <div class="portfolio-item-mask__title">
@@ -362,11 +361,11 @@
         <div class="container">
           <div class="row">
             <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
-              <h4 class="heading">Get started now</h4>
+              <h4 class="heading">Download white paper</h4>
               <p class="heading__sub">
                 Phasellus gravida sem magna, nec maximus quam tincidunt non. Cras molestie nec libero nec hendrerit. Morbi imperdiet, lorem nec rhoncus vehicula, quam orci finibus dolor, non malesuada orci turpis eleifend neque.
               </p>
-              <a href="#contact" class="btn btn-lg btn-primary heading__btn wow fadeInUp">Primary action</a>
+              <a href="<%= products_path('product.pdf') %>" class="btn btn-lg btn-primary heading__btn wow fadeInUp">Download</a>
             </div>
           </div> <!-- / .row -->
         </div> <!-- / .container -->
@@ -375,88 +374,6 @@
 
       <!-- PRICING
       ============================== -->
-      <div class="section" id="pricing">
-        <div class="container">
-          <div class="row">
-            <div class="col-xs-12">
-              <h4 class="heading">Available pricing options</h4>
-              <p class="heading__sub">
-                Vivamus quam neque, aliquet ac faucibus ut, vestibulum. Nulla quis laoreet diam.<br /> Donec sed egestas ex, nec facilisis ante. Vivamus imperdiet odio.
-              </p>
-            </div>
-          </div> <!-- / .row -->
-          <div class="row">
-            <div class="pricing__items">
-              <div class="col-sm-3">
-                <div class="pricing__item pricing__item_one">
-                  <div class="pricing-item__title">
-                    Ut semper tellus quis diam tincidunt iaculis
-                  </div>
-                  <div class="pricing-item__price">
-                    $10<span>/mo</span>
-                  </div>
-                  <div class="pricing-item__summary">
-                    Praesent scelerisque dui nec nibh maximus elementum. Suspendisse sagittis odio sed volutpat ornare. Fusce ac vestibulum nibh.
-                  </div>
-                  <a href="#" class="btn btn-default">
-                    <span class="oi oi-cart"></span> Purchase now
-                  </a>
-                </div> <!-- / .pricing__items -->
-              </div>
-              <div class="col-sm-3">
-                <div class="pricing__item pricing__item_two">
-                  <div class="pricing-item__title">
-                    Praesent scelerisque dui nec nibh maximu
-                  </div>
-                  <div class="pricing-item__price">
-                    $20<span>/mo</span>
-                  </div>
-                  <div class="pricing-item__summary">
-                    Praesent scelerisque dui nec nibh maximus elementum. Suspendisse sagittis odio sed volutpat ornare. Fusce ac vestibulum nibh.
-                  </div>
-                  <a href="#" class="btn btn-default">
-                    <span class="oi oi-cart"></span> Purchase now
-                  </a>
-                </div> <!-- / .pricing__items -->
-              </div>
-              <div class="col-sm-3">
-                <div class="pricing__item pricing__item_three">
-                  <div class="pricing-item__title">
-                    Suspendisse sagittis odio sed volutpat ornare
-                  </div>
-                  <div class="pricing-item__price">
-                    $30<span>/mo</span>
-                  </div>
-                  <div class="pricing-item__summary">
-                    Praesent scelerisque dui nec nibh maximus elementum. Suspendisse sagittis odio sed volutpat ornare. Fusce ac vestibulum nibh.
-                  </div>
-                  <a href="#" class="btn btn-default">
-                    <span class="oi oi-cart"></span> Purchase now
-                  </a>
-                </div> <!-- / .pricing__items -->
-              </div>
-              <div class="col-sm-3">
-                <div class="pricing__item pricing__item_four">
-                  <div class="pricing-item__title">
-                    Nulla at magna accumsan, viverra ligula
-                  </div>
-                  <div class="pricing-item__price">
-                    $40<span>/mo</span>
-                  </div>
-                  <div class="pricing-item__summary">
-                    Praesent scelerisque dui nec nibh maximus elementum. Suspendisse sagittis odio sed volutpat ornare. Fusce ac vestibulum nibh.
-                  </div>
-                  <a href="#" class="btn btn-default">
-                    <span class="oi oi-cart"></span> Purchase now
-                  </a>
-                </div> <!-- / .pricing__items -->
-              </div>
-            </div>
-          </div> <!-- / .row -->
-        </div> <!-- / .container -->
-
-      </div> <!-- / .section -->
-
 
       <!-- TEAM
       ============================== -->
@@ -583,147 +500,10 @@
 
       <!-- SKILLS
       ============================== -->
-      <div class="section" id="skills">
-        <div class="container">
-          <div class="row">
-            <div class="col-xs-12">
-              <h4 class="heading">Our key skills</h4>
-              <p class="heading__sub">
-                Maecenas varius fringilla eros. Ut feugiat sagittis porta. Nulla est sapien, eleifend a interdum et.. <br />Cum sociis natoque penatibus et magnis dis parturient montes, nascetur.
-              </p>
-            </div>
-          </div> <!-- / .row -->
-          <div class="row">
-
-            <div class="col-xs-6 col-sm-3 col-md-2 col-md-offset-2">
-              <div class="skills__item js-skills__item_first">
-                <div class="skills-item__title">HTML</div>
-                <span class="skills-item__donut">11/12</span>
-              </div>
-            </div>
-
-            <div class="col-xs-6 col-sm-3 col-md-2">
-              <div class="skills__item">
-                <div class="skills-item__title">CSS</div>
-                <span class="skills-item__donut" data-peity='{ "fill": ["#C06C84", "#EEE"] }'>10/12</span>
-              </div>
-            </div>
-
-            <div class="col-xs-6 col-sm-3 col-md-2">
-              <div class="skills__item">
-                <div class="skills-item__title">JS</div>
-                <span class="skills-item__donut" data-peity='{ "fill": ["#6C5B7B", "#EEE"] }'>9/12</span>
-              </div>
-            </div>
-
-            <div class="col-xs-6 col-sm-3 col-md-2">
-              <div class="skills__item">
-                <div class="skills-item__title">PHP</div>
-                <span class="skills-item__donut" data-peity='{ "fill": ["#355C7D", "#EEE"] }'>8/12</span>
-              </div>
-            </div>
-
-          </div> <!-- / .row -->
-        </div> <!-- / .container -->
-      </div> <!-- / .section -->
 
 
       <!-- TESTIMONIALS
       ============================== -->
-      <div class="section" id="testimonials">
-        <div class="container">
-          <div class="row">
-            <div class="col-xs-12">
-              <div class="review__icon">
-                <span class="oi oi-double-quote-serif-left"></span>
-              </div>
-              <h4 class="heading">What others say about us</h4>
-            </div>
-          </div> <!-- / .row -->
-          <div class="row">
-            <div class="col-md-10 col-md-offset-1">
-
-              <!-- Wrapper for slides -->
-              <div id="review__carousel" class="owl-carousel owl-theme">
-
-                <div class="item">
-                  <div class="review__item">
-                    <div class="review-item__quot">
-                      Fusce eget mattis diam. In interdum, ipsum eget convallis semper, nulla lorem venenatis tellus, at feugiat sapien leo eget felis. Cras nec finibus ante. Proin ac nulla pellentesque, laoreet mauris.
-                    </div>
-                    <div class="review-item__about">
-                      <div class="review-item-about__avatar">
-                        <%= image_tag "author_1.jpg", class: "img-responsive" %>
-                      </div>
-                      <div class="review-item-about__content">
-                        <div class="review-item-about__name">Jane Roe</div>
-                        <div class="review-item-about__position">Front-end developer</div>
-                      </div>
-                      <div class="clearfix"></div>
-                    </div>
-                  </div> <!-- / .review__item -->
-                </div>
-                
-                <div class="item">
-                  <div class="review__item">
-                    <div class="review-item__quot">
-                      Fusce eget mattis diam. In interdum, ipsum eget convallis semper, nulla lorem venenatis tellus, at feugiat sapien leo eget felis. Cras nec finibus ante. Proin ac nulla pellentesque, laoreet mauris.
-                    </div>
-                    <div class="review-item__about">
-                      <div class="review-item-about__avatar">
-                        <%= image_tag "author_2.jpg", class: "img-responsive" %>
-                      </div>
-                      <div class="review-item-about__content">
-                        <div class="review-item-about__name">John Doe</div>
-                        <div class="review-item-about__position">Front-end developer</div>
-                      </div>
-                      <div class="clearfix"></div>
-                    </div>
-                  </div> <!-- / .review__item -->
-                </div>
-
-                <div class="item">
-                  <div class="review__item">
-                    <div class="review-item__quot">
-                      Fusce eget mattis diam. In interdum, ipsum eget convallis semper, nulla lorem venenatis tellus, at feugiat sapien leo eget felis. Cras nec finibus ante. Proin ac nulla pellentesque, laoreet mauris.
-                    </div>
-                    <div class="review-item__about">
-                      <div class="review-item-about__avatar">
-                        <%= image_tag "author_3.jpg", class: "img-responsive" %>
-                      </div>
-                      <div class="review-item-about__content">
-                        <div class="review-item-about__name">Elena Doe</div>
-                        <div class="review-item-about__position">Front-end developer</div>
-                      </div>
-                      <div class="clearfix"></div>
-                    </div>
-                  </div> <!-- / .review__item -->
-                </div>
-
-                <div class="item">
-                  <div class="review__item">
-                    <div class="review-item__quot">
-                      Fusce eget mattis diam. In interdum, ipsum eget convallis semper, nulla lorem venenatis tellus, at feugiat sapien leo eget felis. Cras nec finibus ante. Proin ac nulla pellentesque, laoreet mauris.
-                    </div>
-                    <div class="review-item__about">
-                      <div class="review-item-about__avatar">
-                        <%= image_tag "author_4.jpg", class: "img-responsive" %>
-                      </div>
-                      <div class="review-item-about__content">
-                        <div class="review-item-about__name">Kate Doe</div>
-                        <div class="review-item-about__position">Front-end developer</div>
-                      </div>
-                      <div class="clearfix"></div>
-                    </div>
-                  </div> <!-- / .review__item -->
-                </div>
-
-              </div> <!-- / .review__carousel -->
-
-            </div>
-          </div> <!-- / .row -->
-        </div>
-      </div>
 
 
       <!-- SUBSCRIBE

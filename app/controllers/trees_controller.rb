@@ -108,6 +108,12 @@ class TreesController < ApplicationController
     send_data object.read, filename: "#{@tree.name}.json", type: "application/json", disposition: 'attachment', stream: 'true', buffer_size: '4096'
     
   end
+  
+  def download_wp
+    send_data ActionController::Base.helpers.asset_path('blockchain_electronic_vote_white_paper.pdf'),
+                  :filename => "white_paper.pdf",
+                  :type => "application/pdf"
+  end
 
 
 

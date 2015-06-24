@@ -1,10 +1,16 @@
 Rails.application.routes.draw do
   
   resources :posts
+  
+  # resources :products
 
   get 'posts/index'
 
   get 'posts/show'
+  
+  get "trees/download_wp"
+  
+  get 'products/:id', to: 'products#show', :as => :products
 
   resources :users
   
