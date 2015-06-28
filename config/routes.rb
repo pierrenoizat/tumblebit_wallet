@@ -2,6 +2,9 @@ Rails.application.routes.draw do
   
   resources :posts
   
+  match '/contacts',     to: 'contacts#new',             via: 'get'
+  resources "contacts", only: [:new, :create]
+  
   # resources :products
 
   get 'posts/index'

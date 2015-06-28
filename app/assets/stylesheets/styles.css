@@ -7247,74 +7247,7 @@ body {
 .portfolio-item-mask__summary {
   font-size: 12px;
 }
-/* Lightbox controls */
-/* General */
-.lightboxOverlay {
-  opacity: 1;
-  filter: alpha(opacity=100);
-  background-color: rgba(0, 0, 0, 0.6);
-}
-.lb-outerContainer {
-  border-radius: 0;
-}
-/* Loading */
-.lb-cancel {
-  background: url(../img/loading.gif) no-repeat;
-}
-/* Previous & next slides */
-.lb-nav a.lb-prev,
-.lb-nav a.lb-next {
-  position: relative;
-  width: 10%;
-  background: none;
-  color: white;
-}
-.lb-nav a.lb-prev:hover,
-.lb-nav a.lb-next:hover,
-.lb-nav a.lb-prev:focus,
-.lb-nav a.lb-next:focus {
-  text-decoration: none;
-}
-.lb-nav a.lb-prev::before,
-.lb-nav a.lb-next::before {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin-top: -12px;
-  margin-left: -12px;
-  font-family: "Icons";
-  font-size: 24px;
-}
-.lb-nav a.lb-prev::before {
-  content: "\e035";
-}
-.lb-nav a.lb-next::before {
-  content: "\e036";
-}
-/* Close */
-.lb-data .lb-close {
-  position: relative;
-  background: none;
-  color: white;
-  opacity: 1;
-  filter: alpha(opacity=100);
-  -webkit-transition: none;
-  -o-transition: none;
-  transition: none;
-}
-.lb-data .lb-close:hover,
-.lb-data .lb-close:focus {
-  text-decoration: none;
-}
-.lb-data .lb-close::before {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin-top: -7.5px;
-  margin-left: -7.5px;
-  content: "\e0db";
-  font-family: "Icons";
-}
+
 /**
  * Download
  */

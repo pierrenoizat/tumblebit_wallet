@@ -8,11 +8,11 @@
     <meta name="author" content="">
     <link rel="icon" href="ico/favicon.ico">
 
-    <title>Merkletre.es</title>
+    <title>Hashtre.es</title>
 
 	<%= stylesheet_link_tag 'plugins/animate.css', media: 'all', 'data-turbolinks-track' => true %>
 	<%= stylesheet_link_tag 'plugins/owl.carousel.css', media: 'all', 'data-turbolinks-track' => true %>
-	<%= stylesheet_link_tag 'plugins/lightbox.css', media: 'all', 'data-turbolinks-track' => true %>
+
 	<%= stylesheet_link_tag 'open-iconic/font/css/open-iconic-bootstrap.css', media: 'all', 'data-turbolinks-track' => true %>
 	<%= stylesheet_link_tag 'font-awesome/css/font-awesome.min.css', media: 'all', 'data-turbolinks-track' => true %>
 
@@ -37,7 +37,7 @@
 	<%= javascript_include_tag 'plugins/wow.min.js', 'data-turbolinks-track' => true %>
 	<%= javascript_include_tag 'plugins/owl.carousel.min.js', 'data-turbolinks-track' => true %>
 	<%= javascript_include_tag 'plugins/jquery.peity.min.js', 'data-turbolinks-track' => true %>
-	<%= javascript_include_tag 'plugins/lightbox.min.js', 'data-turbolinks-track' => true %>
+
 	<%= javascript_include_tag 'bootstrap/bootstrap.min.js', 'data-turbolinks-track' => true %>
     <%= javascript_include_tag 'plugins/smoothscroll.js', 'data-turbolinks-track' => true %>
 	<%= javascript_include_tag 'plugins/contact.js', 'data-turbolinks-track' => true %>
@@ -59,7 +59,7 @@
 	  fjs.parentNode.insertBefore(js, fjs);
 	}(document, 'script', 'facebook-jssdk'));</script>
 	
-    <main role="main" style="padding-top: 100px;padding-left: 20px">
+    <main role="main" style="padding-top: 100px;">
        <%= render 'layouts/messages' %>
        <%= yield %>
     </main>

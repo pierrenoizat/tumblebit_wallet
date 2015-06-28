@@ -1,6 +1,7 @@
 <% content_for :title do %>About<% end %>
 <!-- Posts are created in db/seeds.rb -->
 <% @post = Post.find_by_title("About") %>
-<%= markdown(@post.body) %>
+<div style="padding-left: 20px" >
+<%= markdown(@post.body) %></div>
 <% @tree= Tree.first %>
-<p>Checkout this example: visit <%= link_to 'this tree', tree_path(@tree) %> with the access key <%= @tree.leaf_nodes.last.nonce.to_s %></p>
+<p style="padding-left: 20px" >Checkout this example: visit <%= link_to 'this tree', tree_path(@tree) %> with the access key <%= @tree.leaf_nodes.last.nonce.to_s %></p></br>

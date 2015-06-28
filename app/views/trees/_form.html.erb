@@ -30,9 +30,9 @@
 <div class="actions">
 	
 	<% if @tree.id %>
-		<p><%= f.submit 'Update', class: "btn btn-primary btn-small", style: "background-color:blue;color:white;" %>
+		<p><%= f.submit 'Update', class: "btn btn-lg btn-primary heading__btn wow fadeInUp", style: "background-color:blue;color:white;" %>
 	<% else %>
-		<p><%= f.submit 'Create', class: "btn btn-primary btn-small", style: "background-color:blue;color:white;" %>
+		<p><%= f.submit 'Create', class: "btn btn-lg btn-primary heading__btn wow fadeInUp" %>
 	<% end %>
 
 	<a class="btn btn-default btn-xs btn-success" href=<%= "#{trees_path}" %> style="background-color:gainsboro;color:black;" >Cancel</a></p>

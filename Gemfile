@@ -57,3 +57,5 @@ gem "d3-rails"
 
 gem 'will_paginate', '~> 3.0.6'
 gem 'redcarpet', '~> 3.0.0'
+
+gem 'mail_form'

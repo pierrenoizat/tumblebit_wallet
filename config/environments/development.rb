@@ -15,6 +15,19 @@ Rails.application.configure do
 
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false
+  
+  # Uncomment this to test e-mails in development mode
+   config.action_mailer.delivery_method = :smtp
+
+  config.action_mailer.smtp_settings = {
+    :address => "smtp.gmail.com",
+    :port => 587,
+    :domain => "google.com",
+    :authentication => "plain",
+    :user_name => "hashtrees", # email will be sent from hashtrees@gmail.com
+    :password => Figaro.env.mail_password,
+    :enable_starttls_auto  => true # changed from true 27 april 2013
+  }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
@@ -40,6 +53,7 @@ Rails.application.configure do
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
   
+  $MAIN_URL = "http://localhost:3000"
   $TREES_URL = "http://localhost:3000/trees/"
   $LEAF_NODES_URL = "http://localhost:3000/leaf_nodes/" 
   

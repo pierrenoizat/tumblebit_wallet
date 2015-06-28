@@ -77,6 +77,21 @@ Rails.application.configure do
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
   
+  config.action_mailer.raise_delivery_errors = false
+  
+  # Uncomment this to test e-mails in development mode
+   config.action_mailer.delivery_method = :smtp
+
+  config.action_mailer.smtp_settings = {
+    :address => "smtp.gmail.com",
+    :port => 587,
+    :domain => "google.com",
+    :authentication => "plain",
+    :user_name => "hashtrees", # email will be sent from hashtrees@gmail.com
+    :password => Figaro.env.mail_password,
+    :enable_starttls_auto  => true # changed from true 27 april 2013
+  }
+  
   config.paperclip_defaults = {
     :storage => :s3,
     :s3_protocol => 'http',
@@ -85,6 +100,7 @@ Rails.application.configure do
     }
   }
   
+  $MAIN_URL = "http://localhost:3000"
   $TREES_URL = "http://localhost:3000/trees/"
   $LEAF_NODES_URL = "http://localhost:3000/leaf_nodes/" 
   

@@ -22,6 +22,7 @@ development:
   omniauth_provider_key: nQqzGa1YpyS0tJjiyafJyw2eW
   omniauth_provider_secret: P3HwYhtrVQv8rXTZEWbe6VQF1WERgrq9OPAPmUEowz6cqce1xy
   S3_BUCKET: hashtree-test
+  mail_password: AVZCmkJutGeueyrpK8JH2x
 
 production:
   <<: *default
@@ -33,3 +34,4 @@ production:
   omniauth_provider_key: nQqzGa1YpyS0tJjiyafJyw2eW
   omniauth_provider_secret: P3HwYhtrVQv8rXTZEWbe6VQF1WERgrq9OPAPmUEowz6cqce1xy
   S3_BUCKET: hashtree-assets
+  mail_password: AVZCmkJutGeueyrpK8JH2x
