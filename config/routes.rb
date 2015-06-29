@@ -1,8 +1,10 @@
 Rails.application.routes.draw do
   
   resources :posts
+  resources :visitors
   
   match '/contacts',     to: 'contacts#new',             via: 'get'
+  match '/contacts',     to: 'contacts#create',          via: 'post'
   resources "contacts", only: [:new, :create]
   
   # resources :products

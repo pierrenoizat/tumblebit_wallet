@@ -64,10 +64,10 @@
                 </div>
                 <div class="features-item__body">
                   <div class="features-item-body__title">
-                    Nam molestie lacinia lorem
+                    Prepare your list
                   </div>
                   <div class="features-item-body__summary">
-                    Morbi vitae congue justo. In eleifend mauris quam, non lacinia velit scelerisque nec. Aenean ut sem ut mauris fermentum blandit vitae vitae velit.
+                    A hastree is a cryptographic proof of a list's integrity. The list must include an account identifier (account number or login) and some critically important attribute of the account like the account balance.
                   </div>
                 </div> <!-- / .features-item__body -->
               </div> <!-- / .features__item -->
@@ -79,29 +79,15 @@
                 </div>
                 <div class="features-item__body">
                   <div class="features-item-body__title">
-                    Nam maximus tellus at ligula
+                    Format your list file
                   </div>
                   <div class="features-item-body__summary">
-                    Morbi vitae congue justo. In eleifend mauris quam, non lacinia velit scelerisque nec. Aenean ut sem ut mauris fermentum blandit vitae vitae velit.
+                    On hastre.es, the list must be formatted as a csv file with the account identifier first followed by the account balance. The two attributes must be separated by a comma and each account must be listed on a new line. There must be NO empty line at the end of the file.
                   </div>
                 </div> <!-- / .features-item__body -->
               </div> <!-- / .features__item -->
             </div>
-            <div class="col-sm-4">
-              <div class="features__item wow fadeIn">
-                <div class="features-item__icon">
-                  <span class="oi oi-envelope-open"></span>
-                </div>
-                <div class="features-item__body">
-                  <div class="features-item-body__title">
-                    Praesent a ex a mauris porta
-                  </div>
-                  <div class="features-item-body__summary">
-                    Morbi vitae congue justo. In eleifend mauris quam, non lacinia velit scelerisque nec. Aenean ut sem ut mauris fermentum blandit vitae vitae velit.
-                  </div>
-                </div>  <!-- / .features-item__body -->
-              </div> <!-- / .features__item -->
-            </div>
+            
             <div class="col-sm-4">
               <div class="features__item wow fadeIn">
                 <div class="features-item__icon">
@@ -109,44 +95,16 @@
                 </div>
                 <div class="features-item__body">
                   <div class="features-item-body__title">
-                    Nam tortor nisl, bibendum id
+                    Bring your own tree!
                   </div>
                   <div class="features-item-body__summary">
-                    Morbi vitae congue justo. In eleifend mauris quam, non lacinia velit scelerisque nec. Aenean ut sem ut mauris fermentum blandit vitae vitae velit.
+                    First, sign in with your twitter account. Then you will be authorized to upload your own account list as a csv file and to name a new tree. If it is correctly formatted, your csv file will serve as a basis for the computation of your brand new tree.
                   </div>
                 </div> <!-- / .features-item__body -->
               </div> <!-- / .features__item -->
             </div>
-            <div class="col-sm-4">
-              <div class="features__item wow fadeIn">
-                <div class="features-item__icon">
-                  <span class="oi oi-chat"></span>
-                </div>
-                <div class="features-item__body">
-                  <div class="features-item-body__title">
-                    Praesent scelerisque tempus
-                  </div>
-                  <div class="features-item-body__summary">
-                    Morbi vitae congue justo. In eleifend mauris quam, non lacinia velit scelerisque nec. Aenean ut sem ut mauris fermentum blandit vitae vitae velit.
-                  </div>
-                </div> <!-- / .features-item__body -->
-              </div> <!-- / .features__item -->
-            </div>
-            <div class="col-sm-4">
-              <div class="features__item wow fadeIn">
-                <div class="features-item__icon">
-                  <span class="oi oi-graph"></span>
-                </div>
-                <div class="features-item__body">
-                  <div class="features-item-body__title">
-                    Praesent rutrum erat eu nunc
-                  </div>
-                  <div class="features-item-body__summary">
-                    Morbi vitae congue justo. In eleifend mauris quam, non lacinia velit scelerisque nec. Aenean ut sem ut mauris fermentum blandit vitae vitae velit.
-                  </div>
-                </div>  <!-- / .features-item__body -->
-              </div> <!-- / .features__item -->
-            </div>
+            
+            
           </div> <!-- / .row -->
         </div> <!-- / .container -->
 
@@ -159,7 +117,7 @@
               <div class="col-sm-5 col-sm-height col-middle">
                 <h4 class="heading heading_left">Interactive Data Visualization</h4>
                 <p class="heading__sub">
-                  Trees are drawn as SVG graphs using D3, a JavaScript library for manipulating documents based on data. D3 helps us bring data to life using HTML, SVG, and CSS. D3’s emphasis on web standards gives us the full capabilities of modern browsers without tying us to a proprietary framework, combining powerful visualization components and a data-driven approach to DOM manipulation.
+                  Trees are drawn as interactive SVG graphs using D3, a JavaScript library for manipulating documents based on data. D3 helps us bring data to life using HTML, SVG, and CSS. D3’s emphasis on web standards gives us the full capabilities of modern browsers without tying us to a proprietary framework, combining powerful visualization components and a data-driven approach to DOM manipulation.
                 </p>
                 <a href="<%= display_tree_path(@tree) %>" class="btn btn-default heading__btn">Sample tree graph</a>
               </div>
@@ -430,8 +388,9 @@
                           <a class="team-item-contact__link" href="https://twitter.com/intent/follow?original_referer=https%3A%2F%2Fabout.twitter.com%2Fresources%2Fbuttons&region=follow_link&screen_name=PierreNoizat&tw_p=followbutton" target="blank" >
                             <i class="fa fa-twitter"></i>
                           </a>
-                          <a href="https://fr-fr.facebook.com/Paymium" class="team-item-contact__link team-item-contact__link_facebook" target="blank" >
-                            <i class="fa fa-facebook"></i>
+                          <a href="https://github.com/pierrenoizat" class="team-item-contact__link team-item-contact__link_facebook" target="blank" >
+						  <!--<a href="https://fr-fr.facebook.com/Paymium" class="team-item-contact__link team-item-contact__link_facebook" target="blank" >-->
+                            <i class="fa fa-github"></i>
                           </a>
                           <div class="clearfix"></div>
                         </div>
@@ -492,18 +451,24 @@
 
               <h4 class="heading">Newsletter signup</h4>
 
-              <form class="form-inline form_alt subscribe__form">
-                <div class="form-group">
-                  <label class="sr-only" for="subscribe__name">Name</label>
-                  <input type="text" class="form-control input-lg" id="subscribe__name" placeholder="Enter your name">
-                </div>
-                <div class="form-group">
-                  <label class="sr-only" for="subscribe__email">Email address</label>
-                  <input type="email" class="form-control input-lg" id="subscribe__email" placeholder="Enter your email">
-                </div>
-                <button type="submit" class="btn btn-primary">
-                  Subscribe</button>
-              </form>
+
+			    <div class="form-inline form_alt subscribe__form">
+			      <%= simple_form_for @visitor do |f| %>
+			        <%= f.error_notification %>
+			
+					<div class="form-group">
+	                  <label class="sr-only" for="subscribe__name">Name</label>
+					  <%= f.input :name, label: false, :class => "form-control input-lg", :id => "subscribe__name", :placeholder => 'Enter your name' %>
+	                </div>
+	
+					<div class="form-group">
+	                  <label class="sr-only" for="subscribe__email">Email address</label>
+					  <%= f.input :email, label: false, :class => "form-control input-lg", :id => "subscribe__email", :placeholder => 'Enter your email' %>
+	                </div>
+
+			        <%= f.button :submit, "Subscribe", :class => "btn btn-primary" %>
+			      <% end %>
+			    </div>
 
             </div>
           </div> <!-- / .row -->
@@ -531,58 +496,49 @@
             <div class="alert contact-form__alert" id="form_message" role="alert"></div>
 
             <!-- Contact form -->
-            <!-- Please carefully read the README.txt file
-             in order to setup the PHP contact form properly -->
-            <form role="form" class="contact__form" id="form_sendemail">
-              <div class="row">
-                <div class="col-sm-6">
 
-                  <!-- Email -->
-                  <div class="form-group">
-                    <label for="email" class="sr-only">Your email address</label>
-                    <input type="email" name="email" class="form-control" id="email" placeholder="E-mail">
-                    <span class="help-block"></span>
-                  </div>
 
-                  <!-- Name -->
-                  <div class="form-group">
-                    <label for="name" class="sr-only">Your name</label>
-                    <input type="text" name="name" class="form-control" id="name" placeholder="Full Name">
-                    <span class="help-block"></span>
-                  </div>
+	<%= simple_form_for @contact, :html => {:class => 'contact__form', :id =>"form_sendemail" } do |f| %>
+	<div class="row">
+        <div class="col-sm-6">
+	<div class="form-group">
+        <label for="name" class="sr-only">Your name</label>
+        <%= f.input :name, :required => true, :name =>"name", :class => "form-control", :id => "name" , :placeholder => "Full Name" %>
+        <span class="help-block"></span>
+      </div>
+	    
+		<div class="form-group">
+          <label for="email" class="sr-only">Your email address</label>
+          <%= f.input :email, :required => true, :name => "email", :class => "form-control", :id => "email", :placeholder => "E-mail" %>
+          <span class="help-block"></span>
+        </div>
+	
+	    </div>
+	
+	<div class="col-sm-6">
+		<div class="form-group">
+            <label for="message" class="sr-only">Your message</label>
+	    <%= f.input :message, :as => :text, :required => true, :name => "message", :class => "form-control", :rows => "9", :id => "message", :placeholder => "Message" %>
+		<span class="help-block"></span>
+      </div>
+    </div>
 
-                  <!-- reCAPTCHA -->
-                  <!--<div class="form-group" id="form-captcha">-->
-                  <!--  <div class="g-recaptcha" data-sitekey="YOUR_PUBLIC_KEY"></div>-->
-                  <!--  <span class="help-block"></span>-->
-                  <!--</div>-->
-                  <!-- /reCAPTCHA -->
-
-                </div>
-
-                <div class="col-sm-6">
-
-                  <!-- Message -->
-                  <div class="form-group">
-                    <label for="message" class="sr-only">Your message</label>
-                    <textarea name="message" class="form-control" rows="9" id="message" placeholder="Message"></textarea>
-                    <span class="help-block"></span>
-                  </div>
-                </div>
-
-              </div> <!-- / .row -->
-              
-              <div class="text-center">
-                <button type="submit" class="btn btn-primary">
-                  Send message
-                </button>
-                <div class="clearfix"></div>
-              </div>
-
-            </form>
-          </div>
-        </div> <!-- / .row -->
-      </div> <!-- / .container -->
+  </div> <!-- / .row -->
+	
+	
+	    <div class= "hidden">
+	      <%= f.input :nickname, :hint => 'Leave this field blank!' %>
+	    </div>
+	    <div>
+		
+	      <div class="text-center">
+	      <%= f.button :submit, 'Send message', :class=> "btn btn-primary", :controller => "contacts", :action => "create" %>
+			<div class="clearfix"></div>
+        </div>
+	</div>
+   </div>
+  </div>
+	  <% end %>
 
 
       <!-- FOOTER

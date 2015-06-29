@@ -59,3 +59,5 @@ gem 'will_paginate', '~> 3.0.6'
 gem 'redcarpet', '~> 3.0.0'
 
 gem 'mail_form'
+gem 'email_validator'
+gem 'gibbon'

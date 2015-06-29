@@ -23,6 +23,10 @@ development:
   omniauth_provider_secret: P3HwYhtrVQv8rXTZEWbe6VQF1WERgrq9OPAPmUEowz6cqce1xy
   S3_BUCKET: hashtree-test
   mail_password: AVZCmkJutGeueyrpK8JH2x
+  mandrill_secret_key: sk_live_SnI9df4qawcOi0XSbKiyMFN2
+  mandrill_publishable_key: pk_live_ufKjtmGzwCo0TyAVDuIsXluU
+  mailchimp_api_key: 232fcc4b8428121e4ab1fee4c1f7e429-us10
+  mailchimp_list_id: 662cd16a99
 
 production:
   <<: *default
@@ -35,3 +39,7 @@ production:
   omniauth_provider_secret: P3HwYhtrVQv8rXTZEWbe6VQF1WERgrq9OPAPmUEowz6cqce1xy
   S3_BUCKET: hashtree-assets
   mail_password: AVZCmkJutGeueyrpK8JH2x
+  mandrill_secret_key: sk_live_SnI9df4qawcOi0XSbKiyMFN2
+  mandrill_publishable_key: pk_live_ufKjtmGzwCo0TyAVDuIsXluU
+  mailchimp_api_key: 232fcc4b8428121e4ab1fee4c1f7e429-us10
+  mailchimp_list_id: 662cd16a99

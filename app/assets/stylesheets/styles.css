@@ -7497,7 +7497,8 @@ body {
 footer {
   margin-top: 40px;
   padding: 40px 0;
-  background-color: #eee;
+ /* background-color: #eee;*/
+  background-color: white;
   color: #9a9a9a;
   line-height: 30px;
   text-align: center;

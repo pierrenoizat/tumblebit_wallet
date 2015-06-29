@@ -6,16 +6,15 @@ class ContactsController < ApplicationController
   def create
     @contact = Contact.new(params[:contact])
     @contact.request = request
+    boolean = false
     
-    boolean = (@contact.name and @contact.email)
-    if boolean
-      string = @contact.email
-      boolean = (string == /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i.match(string)[0])
-    end
+    boolean = EmailValidator.valid?(@contact.email) # boolean
     
-    if Notifier.form_received(@contact).deliver and boolean
+    if (Notifier.form_received(@contact).deliver and boolean)
       flash.now[:notice] = 'Thanks for your message!'
     else
+      @contact.email = ""
+      flash.now[:notice] = 'There was a problem with the email address you entered.'
       render :new
     end
     
