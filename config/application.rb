@@ -48,5 +48,8 @@ module RailsOmniauth
     #  }
     # }
     
+    $TREES_URL = $MAIN_URL + "/trees/"
+    $LEAF_NODES_URL = $MAIN_URL + "/leaf_nodes/"
+    
   end
 end
