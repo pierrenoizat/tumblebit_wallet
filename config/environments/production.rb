@@ -103,5 +103,7 @@ Rails.application.configure do
   }
   
   $MAIN_URL = "https://solvency-cedar-14.herokuapp.com"
+  $TREES_URL = $MAIN_URL + "/trees/"
+  $LEAF_NODES_URL = $MAIN_URL + "/leaf_nodes/"
   
 end
