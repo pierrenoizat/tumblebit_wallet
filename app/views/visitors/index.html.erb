@@ -32,7 +32,7 @@
               <a href="<%= tree_path(@tree) %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Example tree</a> 
               <p class="heading__sub hero-heading__sub" style="color:white;">Checkout the example tree with the access key: <%= @tree.leaf_nodes.last.nonce.to_s %></p>
 <% else %>
-			<a href="<%= tree_path(@tree) %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Create your first tree</a> 
+			<a href="<%= new_tree_path %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Create your first tree</a> 
 <% end %>
 
             </div>
