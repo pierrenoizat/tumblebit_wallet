@@ -7,3 +7,6 @@ require "redis"
 
 #$redis = Redis.new(:host => 'angelfish.redistogo.com', :port => 10315, :password => "652f4c27327c7cb52ac7042b0fb31ca2")
 $redis = Redis.new(:host => 'localhost', :port => 6379)
+
+uri = URI.parse(ENV["REDISTOGO_URL"])
+REDIS = Redis.new(:url => uri)

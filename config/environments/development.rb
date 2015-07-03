@@ -53,9 +53,11 @@ Rails.application.configure do
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
   
+  ENV["REDISTOGO_URL"] = 'redis://username:password@my.host:6389'
+  
   $MAIN_URL = "http://localhost:3000"
-  $TREES_URL = "http://localhost:3000/trees/"
-  $LEAF_NODES_URL = "http://localhost:3000/leaf_nodes/" 
+  $TREES_URL = $MAIN_URL + "/trees/"
+  $LEAF_NODES_URL = $MAIN_URL + "/leaf_nodes/"
   
   if File.exists?("app/assets/tree_17.csv")
     File.delete("app/assets/tree_17.csv") # delete any previous version of "app/assets/tree_8193.csv" file
