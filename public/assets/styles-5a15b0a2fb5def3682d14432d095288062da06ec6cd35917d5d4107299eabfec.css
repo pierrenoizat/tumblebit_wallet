@@ -9,6 +9,7 @@ Created:        27/05/2015
 Last change:    27/05/2015
 -------------------------------------------------------------------*/
 /*! normalize.css v3.0.2 | MIT License | git.io/normalize */
+
 html {
   font-family: sans-serif;
   -ms-text-size-adjust: 100%;
@@ -4167,7 +4168,6 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 .navbar-brand {
   float: left;
   padding: 23.5px 15px;
-  
   font-size: 17px;
   line-height: 23px;
   height: 70px;
@@ -6987,6 +6987,14 @@ body {
 .hero_agency {
   background-image: url("bg_1.jpg");
   text-align: center;
+}
+
+.imgBox {
+  background-image: url("bg_1.jpg");
+}
+
+.imgBox:hover {
+  background-image: url("bg_1.jpg");
 }
 
 /* Hero :: Sign Up */

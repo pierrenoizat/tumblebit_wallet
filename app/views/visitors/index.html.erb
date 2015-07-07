@@ -29,7 +29,7 @@
 
               <!-- Hero buttons -->
 <% if @tree %>
-              <a href="<%= tree_path(@tree) %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Example tree</a> 
+              <a href="<%= tree_path(@tree) %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Example tree</a></br></br>
               <p class="heading__sub hero-heading__sub" style="color:white;">Checkout the example tree with the access key: <% if @tree.leaf_nodes.last %><%= @tree.leaf_nodes.last.nonce.to_s %><% end %></p>
 <% else %>
 			<a href="<%= new_tree_path %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Create your first tree</a> 
@@ -387,7 +387,7 @@
                     <div class="row">
                       <div class="col-md-6">
                         <div class="team-item__name">Pierre Noizat</div>
-                        <div class="team-item__position">Lead Developer</div>
+                        <div class="team-item__position">Hash Tree Grower</div>
                       </div>
                       <div class="col-md-6">
                         <div class="team-item__contact">
