@@ -28,8 +28,12 @@
                 <p class="heading__sub hero-heading__sub animated fadeInUp delay_1"><%= link_to 'Users:', users_path %> <%= User.count %> registered.</p>
 
               <!-- Hero buttons -->
-              <a href="<%= tree_path(@tree) %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Example tree</a> 
-              <p class="heading__sub hero-heading__sub" style="color:white;">Checkout the example tree with the access key: <%= @tree.leaf_nodes.last.nonce.to_s %></p>
+<% if @tree %>
+              <a href="<%= tree_path(@tree) %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Example tree</a></br></br>
+              <p class="heading__sub hero-heading__sub" style="color:white;">Checkout the example tree with the access key: <% if @tree.leaf_nodes.last %><%= @tree.leaf_nodes.last.nonce.to_s %><% end %></p>
+<% else %>
+			<a href="<%= new_tree_path %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Create your first tree</a> 
+<% end %>
 
             </div>
           </div> <!-- / .row -->
@@ -119,7 +123,9 @@
                 <p class="heading__sub">
                   Trees are drawn as interactive SVG graphs using D3, a JavaScript library for manipulating documents based on data. D3 helps us bring data to life using HTML, SVG, and CSS. D3’s emphasis on web standards gives us the full capabilities of modern browsers without tying us to a proprietary framework, combining powerful visualization components and a data-driven approach to DOM manipulation.
                 </p>
+<% if @tree %>
                 <a href="<%= display_tree_path(@tree) %>" class="btn btn-default heading__btn">Sample tree graph</a>
+<% end %>
               </div>
               <div class="col-sm-7 col-sm-height col-middle">
 				<%= image_tag "sample_merkle_tree_svg.png", class: "img-responsive" %>
@@ -355,8 +361,8 @@
                     </div>
                     <div class="row">
                       <div class="col-md-6">
-                        <div class="team-item__name">Jane Doe</div>
-                        <div class="team-item__position">Project Manager</div>
+                        <div class="team-item__name">David François</div>
+                        <div class="team-item__position">Bitcoin Guru</div>
                       </div>
                       <div class="col-md-6">
                         <div class="team-item__contact">
@@ -381,7 +387,7 @@
                     <div class="row">
                       <div class="col-md-6">
                         <div class="team-item__name">Pierre Noizat</div>
-                        <div class="team-item__position">Lead Developer</div>
+                        <div class="team-item__position">Hash Tree Grower</div>
                       </div>
                       <div class="col-md-6">
                         <div class="team-item__contact">
@@ -406,8 +412,8 @@
                     </div>
                     <div class="row">
                       <div class="col-md-6">
-                        <div class="team-item__name">Richard Roe</div>
-                        <div class="team-item__position">Marketing Manager</div>
+                        <div class="team-item__name">Nicolas Papon</div>
+                        <div class="team-item__position">Code Artist</div>
                       </div>
                       <div class="col-md-6">
                         <div class="team-item__contact">

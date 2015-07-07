@@ -12,7 +12,7 @@ staging:
   <<: *defaults
 
 production:
-  host: angelfish.redistogo.com
+  host: carp.redistogo.com
   username: redistogo
-  password: 652f4c27327c7cb52ac7042b0fb31ca2
-  port: 10315
+  password: cf788336025d71514759c9aebafa080a
+  port: 9645

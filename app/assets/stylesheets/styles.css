@@ -4167,6 +4167,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 .navbar-brand {
   float: left;
   padding: 23.5px 15px;
+  
   font-size: 17px;
   line-height: 23px;
   height: 70px;
@@ -6987,6 +6988,7 @@ body {
   background-image: url("bg_1.jpg");
   text-align: center;
 }
+
 /* Hero :: Sign Up */
 .hero_sign-up {
   padding-bottom: 388px;

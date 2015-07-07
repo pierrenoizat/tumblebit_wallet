@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="icon" href="ico/favicon.ico">
+	<%= favicon_link_tag 'favicon.ico' %>
+
 
     <title>Hashtre.es</title>
 
@@ -44,7 +45,7 @@
     <%= csrf_meta_tags %>
   </head>
   <body data-spy="scroll" data-target=".navbar" data-offset="71">
-	
+	<div style="position: fixed; top:0; right:0; z-index: 9999999;"><%= image_tag "beta.png", style: "width:100px;" %></div>
    <div class="wrapper">
     <header>
       <%= render 'layouts/navigation' %>
