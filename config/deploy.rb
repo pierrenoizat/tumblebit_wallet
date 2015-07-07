@@ -8,7 +8,7 @@ set :repo_url, 'git@github.com:Paymium/hashtree'
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
 
 # Default deploy_to directory is /var/www/my_app_name
-set :deploy_to, '/app/hashtree'
+set :deploy_to, '/app/hashtrees'
 
 # Default value for :scm is :git
 # set :scm, :git
