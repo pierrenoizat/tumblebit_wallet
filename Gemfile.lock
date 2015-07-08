@@ -334,6 +334,7 @@ DEPENDENCIES
   rails (= 4.2.0)
   rails_12factor
   rails_layout
+  rake
   redcarpet (~> 3.0.0)
   redis
   redis-store
