@@ -59,4 +59,5 @@ end
 group :production do
   gem 'unicorn'
   gem 'rails_12factor'
+  gem 'exception_notification'
 end

@@ -104,6 +104,9 @@ GEM
     email_validator (1.6.0)
       activemodel
     erubis (2.7.0)
+    exception_notification (4.1.0)
+      actionmailer (>= 3.0.4)
+      activesupport (>= 3.0.4)
     execjs (2.5.2)
     factory_girl (4.5.0)
       activesupport (>= 3.0.0)
@@ -318,6 +321,7 @@ DEPENDENCIES
   d3-rails
   database_cleaner
   email_validator
+  exception_notification
   factory_girl_rails
   faker
   fastercsv
