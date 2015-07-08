@@ -152,6 +152,7 @@ GEM
     minitest (5.6.1)
     multi_json (1.11.0)
     multi_xml (0.5.5)
+    mysql2 (0.3.18)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
     net-ssh (2.9.2)
@@ -327,6 +328,7 @@ DEPENDENCIES
   jquery-rails
   launchy
   mail_form
+  mysql2
   omniauth
   omniauth-twitter
   paperclip
