@@ -4,7 +4,11 @@
 <div style="padding-left: 20px" >
 <%= markdown(@post.body) %></div>
 <% @tree= Tree.first %>
+<% if @tree %>
+	<% if @tree.leaf_nodes %>
 <p style="padding-left: 20px" >Checkout this example: visit <%= link_to 'this tree', tree_path(@tree) %> with the access key <%= @tree.leaf_nodes.last.nonce.to_s %></p></br>
+	<% end %>
+<% end %>
 <% @post = Post.find_by_title("Getting started 1") %>
 <div style="padding-left: 20px" >
 <%= markdown(@post.body) %>
