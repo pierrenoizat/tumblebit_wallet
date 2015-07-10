@@ -32,6 +32,7 @@ gem 'email_validator'
 gem 'gibbon'
 gem 'capistrano'
 gem 'capistrano-rails'
+gem "net-ssh", "~> 2.7.0"
 
 group :development do
   gem 'better_errors'
@@ -61,3 +62,5 @@ group :production do
   gem 'rails_12factor'
   gem 'exception_notification'
 end
+
+
