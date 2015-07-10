@@ -32,6 +32,7 @@ gem 'email_validator'
 gem 'gibbon'
 gem 'capistrano'
 gem 'capistrano-rails'
+gem "font-awesome-rails"
 
 group :development do
   gem 'better_errors'
