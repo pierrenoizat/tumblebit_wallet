@@ -33,6 +33,7 @@ gem 'gibbon'
 gem 'capistrano'
 gem 'capistrano-rails'
 gem "font-awesome-rails"
+gem 'pg'
 
 group :development do
   gem 'better_errors'
