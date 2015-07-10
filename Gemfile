@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gem 'rails', '4.2.0'
 gem 'rake'
-gem 'mysql2'
+
 gem 'sass-rails', '~> 5.0'
 gem 'uglifier', '>= 1.3.0'
 gem 'coffee-rails', '~> 4.1.0'
@@ -33,13 +33,13 @@ gem 'gibbon'
 gem 'capistrano'
 gem 'capistrano-rails'
 gem "font-awesome-rails"
-gem 'pg'
 
 group :development do
   gem 'better_errors'
   gem 'quiet_assets'
   gem 'rails_layout'
   gem 'spring-commands-rspec'
+  gem 'pg'
 end
 
 group :development, :test do
@@ -62,6 +62,7 @@ group :production do
   gem 'unicorn'
   gem 'rails_12factor'
   gem 'exception_notification'
+  gem 'mysql2'
 end
 
 
