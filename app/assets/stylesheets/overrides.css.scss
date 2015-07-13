@@ -9,7 +9,6 @@ Created:        27/05/2015
 Last change:    27/05/2015
 -------------------------------------------------------------------*/
 /*! normalize.css v3.0.2 | MIT License | git.io/normalize */
-
 html {
   font-family: sans-serif;
   -ms-text-size-adjust: 100%;
@@ -4168,6 +4167,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 .navbar-brand {
   float: left;
   padding: 23.5px 15px;
+  
   font-size: 17px;
   line-height: 23px;
   height: 70px;
@@ -6985,13 +6985,14 @@ body {
 }
 /* Hero :: Agency */
 .hero_agency {
-  background-image: url("bg_1.jpg");
+  background-image: url(image-path('bg_1.jpg')) no-repeat;
   text-align: center;
 }
+
 /* Hero :: Sign Up */
 .hero_sign-up {
   padding-bottom: 388px;
-  background-image: url(../img/bg_2.jpg);
+  background-image: url(image-path('bg_2.jpg'));
   text-align: center;
 }
 @media (min-width: 768px) {
@@ -7032,7 +7033,7 @@ body {
 }
 /* Hero :: App */
 .hero_app {
-  background-image: url(../img/bg_3.jpg);
+  background-image: url(image-path('bg_3.jpg'));
   text-align: left;
   overflow: hidden;
 }
@@ -7582,7 +7583,7 @@ footer a {
 .coming-soon__wrapper {
   position: relative;
   min-height: 100%;
-  background: url(../img/bg_1.jpg) center center / cover no-repeat;
+	background: url(image-path('bg_1.jpg')) center center / cover no-repeat;;
   color: rgba(255, 255, 255, 0.6);
 }
 .coming-soon__wrapper::before {
@@ -7658,3 +7659,4 @@ footer a {
   color: #9a9a9a;
   text-align: center;
 }
+

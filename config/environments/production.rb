@@ -1,15 +1,14 @@
 Rails.application.configure do
-  
-  Rails.application.config.middleware.use ExceptionNotification::Rack,
-    :email => {
+
+  Rails.application.config.middleware.use(ExceptionNotification::Rack, :email => {
     :email_prefix => "[Hashtrees] ",
     :sender_address => %{Hashtrees <no-reply@hashtre.es>},
     :exception_recipients => %w{pierre.noizat@paymium.com david.francois@paymium.com}
-  }
+  })
 
-    # Settings specified here will take precedence over those in config/application.rb.
+  # Settings specified here will take precedence over those in config/application.rb.
 
-    # Code is not reloaded between requests.
+  # Code is not reloaded between requests.
   config.cache_classes = true
 
   # Eager load code on boot. This eager loads most of Rails and
@@ -38,7 +37,7 @@ Rails.application.configure do
 
   # Do not fallback to assets pipeline if a precompiled asset is missed.
   config.assets.compile = true
-  
+
   # Asset digests allow you to set far-future HTTP expiration dates on all assets,
   # yet still be able to expire them through the digest params.
   config.assets.digest = true
@@ -84,11 +83,11 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
-  
+
   config.action_mailer.raise_delivery_errors = false
-  
+
   # Uncomment this to test e-mails in development mode
-   config.action_mailer.delivery_method = :smtp
+  config.action_mailer.delivery_method = :smtp
 
   config.action_mailer.smtp_settings = {
     :address => "smtp.gmail.com",
@@ -99,7 +98,7 @@ Rails.application.configure do
     :password => Figaro.env.mail_password,
     :enable_starttls_auto  => true # changed from true 27 april 2013
   }
-  
+
   config.paperclip_defaults = {
     :storage => :s3,
     :s3_protocol => 'http',
@@ -107,9 +106,9 @@ Rails.application.configure do
       :bucket => 'hashtree-assets'
     }
   }
-  
+
   $MAIN_URL = "http://hashtre.es"
   $TREES_URL = $MAIN_URL + "/trees/"
   $LEAF_NODES_URL = $MAIN_URL + "/leaf_nodes/"
-  
+
 end
