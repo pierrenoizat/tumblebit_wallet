@@ -166,7 +166,6 @@ GEM
     mono_logger (1.1.0)
     multi_json (1.11.2)
     multi_xml (0.5.5)
-    mysql2 (0.3.18)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
     net-ssh (2.9.2)
@@ -352,7 +351,6 @@ DEPENDENCIES
   launchy
   less-rails
   mail_form
-  mysql2
   omniauth
   omniauth-twitter
   paperclip
@@ -379,3 +377,6 @@ DEPENDENCIES
   unicorn
   web-console (~> 2.0)
   will_paginate (~> 3.0.6)
+
+BUNDLED WITH
+   1.11.2
