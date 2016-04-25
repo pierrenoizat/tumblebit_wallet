@@ -60,7 +60,7 @@ Post.create(
 
     This application requires:
 
-    - Ruby 2.2.0
+    - Ruby 2.3.0
     - Rails 4.2.0}
 )
 
@@ -120,5 +120,5 @@ Post.create(
   body:
   %Q{### License
 
-    © Paymium 2011-2015 Soon to be released under the [MIT license](http://opensource.org/licenses/mit-license.php)}
+    © Paymium 2011-2016 Soon to be released under the [MIT license](http://opensource.org/licenses/mit-license.php)}
 )
