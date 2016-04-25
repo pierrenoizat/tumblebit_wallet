@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-
+ruby '2.3.0'
 gem 'rails', '4.2.0'
 gem 'rake'
 
@@ -12,7 +12,7 @@ gem 'jquery-rails'
 gem 'turbolinks'
 gem 'jbuilder', '~> 2.0'
 gem 'bootstrap-sass'
-gem 'high_voltage'
+gem 'high_voltage' # for static pages
 gem 'simple_form'
 gem 'omniauth'
 gem 'omniauth-twitter'
