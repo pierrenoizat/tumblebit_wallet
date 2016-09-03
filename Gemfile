@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.3.0'
+ruby '2.2.0'
 gem 'rails', '4.2.0'
 gem 'rake'
 
@@ -37,6 +37,7 @@ gem 'capistrano-rails'
 gem 'font-awesome-rails'
 # gem 'mysql2'
 gem 'pg'
+gem 'btcruby', '~> 1.5'
 
 group :development do
   gem 'better_errors'
@@ -52,7 +53,6 @@ group :development, :test do
   gem 'byebug'
   gem 'web-console', '~> 2.0'
   gem 'spring'
-  gem 'pg'
 end
 
 group :test do

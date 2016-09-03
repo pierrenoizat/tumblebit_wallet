@@ -1,0 +1,16 @@
+<div class="container">
+  <div class="row">
+    <h3>Scripts</h3>
+    <div class="column">
+      <table class="table">
+        <tbody>
+          <% @scripts.each do |script| %>
+            <tr>
+              <%= render script %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

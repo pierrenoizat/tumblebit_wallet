@@ -1,0 +1,14 @@
+<div class="container">
+  <div class="row">
+	<h3>Script # <%= @script.id if @script %></h3>
+	<p>Title: <%= @script.title if @script.title %></p>
+	<p>Text: <%= @script.text if @script %></p>
+	<p>Expiry: <%= @script.expiry_date if @script %></p>
+	<% @public_keys.each do |key| %>  	
+		<p>Name: <%= key.name if key.name %></p>
+		<p>Compressed Public Key: <%= key.compressed if key.compressed %></p>
+	 <% end %>
+	<p>P2SH Address: <%= @script.hash_address if @script %></p>
+   </div>
+</div>
+

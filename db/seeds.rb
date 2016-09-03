@@ -39,7 +39,7 @@ Post.create(
   title: "About",
   published_at: Time.now,
   body: 
-  %Q{### About hashtre.es
+  %Q{### About bitcoinscri.pt
 
     The root path of each node can be followed on the tree graph: a zero points to the top node while a one points to the bottom node.
 
@@ -60,7 +60,7 @@ Post.create(
 
     This application requires:
 
-    - Ruby 2.3.0
+    - Ruby 2.2.0
     - Rails 4.2.0}
 )
 

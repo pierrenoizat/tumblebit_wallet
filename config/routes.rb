@@ -19,6 +19,13 @@ Rails.application.routes.draw do
 
   resources :users
   
+  resources :scripts do
+    resources :public_keys
+      member do
+        get 'display'
+      end
+    end
+  
   resources :trees do
       member do
         get 'display'

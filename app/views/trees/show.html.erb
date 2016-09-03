@@ -1,8 +1,7 @@
 <div class="container">
   <div class="row">
 	<h3>Tree # <%= @tree.id if @tree %></h3>
-	<!--<h3><%= link_to 'Tree', @tree.url %> # <%= @tree.id if @tree %></h3>-->
-	<!--<p><%= image_tag @tree.avatar.url(:square) %></p>-->
+	<p><%= image_tag @tree.avatar.url(:thumb) if @tree.avatar.exists? %></p>
 	<p><td><%= link_to 'Download json file', download_json_tree_path(@tree), :class => "btn btn-primary btn-xs" %></td>
 	<td><%= link_to 'Tree graph', display_tree_path(@tree), :class => 'btn btn-default btn-xs btn-success' %></td></p>
 	<p><h4>Search for your account with its access key: </h4>

@@ -6,9 +6,10 @@ class ApplicationController < ActionController::Base
   helper_method :current_user
   helper_method :user_signed_in?
   helper_method :correct_user?
-  
+  helper_method :user_admin?
 
   private
+  
     def current_user
       begin
         @current_user ||= User.find(session[:user_id]) if session[:user_id]
@@ -19,6 +20,12 @@ class ApplicationController < ActionController::Base
 
     def user_signed_in?
       return true if current_user
+    end
+    
+    def user_admin?
+      if current_user
+        current_user.uid == Figaro.env.admin_uid
+      end
     end
 
     def correct_user?
