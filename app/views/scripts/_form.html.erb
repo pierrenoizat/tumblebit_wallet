@@ -13,41 +13,66 @@
 
   <div class="field">
     <p><%= f.label 'Title' %></p>
-    <p><%= f.text_field :title %></p></br></br>
+    <p><%= f.text_field :title %></p>
+  </div>
+
+  <div class="field">
+    <p><%= f.label 'Category' %></p>
+    <p><%= f.select(:category, Script.categories.keys.map { |category| [category.titleize, category]}) %></p>
   </div>
 
   <div class="field">
     <p><%= f.label 'Text' %></p>
-    <p><%= f.text_field :text %></p></br></br>
+    <p><%= f.text_field :text %></p>
   </div>
 
  <div class="field">
-    <p><%= f.label 'Expiry' %></p>
-    <p><%= f.date_select(:expiry_date, {:start_year => 2010, :end_year => Date.today.year, :default => @script.expiry_date, :use_two_digit_numbers => true}, {:style => "width: 90px;"}) %></p></br></br>
+    <p><%= f.label 'Expiry (UTC)' %></p>
+    <p><%= f.datetime_select(:expiry_date, {:start_year => Date.today.year, :end_year => 2024, :default => @script.expiry_date, :use_two_digit_numbers => true, :prompt => {:year => "year", :month => "month", :day => "day", :hour => "hour", :minute => "minute"}}, {:style => "width: 80px;"}) %></p>
   </div>
 
-<div class="actions">
+
 	
 	<% if @script.id %>
-		<p><%= f.submit 'Update', :class => "btn btn-primary" %>
+		<%= f.submit 'Update', :class => "btn btn-primary" %>
 	<% else %>
-		<p><%= f.submit 'Create', :class => "btn btn-primary" %>
+		<%= f.submit 'Create', :class => "btn btn-primary" %>
 	<% end %>
+
 <% end %>
+</br>
+<table class="table">
+	 <tbody>
+	<tr>
+		<td>Name</td>
+		<td>Compressed Public Key</td>
+	</tr>
+
+   
+      <% @script.public_keys.each do |key| %>
+		<tr>
+        	<td><%= key.name %></td>
+			<td><%= key.compressed %></td>
+			<td><%= link_to "Delete", key, :data => { :confirm => "Are you sure?" }, :method => :delete, :class => 'btn btn-xs btn-danger' %></td>
+		</tr>
+      <% end %>
+    </tbody>
+</table>
+
 
 <%= form_for([@script, @script.public_keys.build]) do |f| %>
-  <td><div class="field">
-    <%= f.text_field :name, :style => "width:280px;" %>
-  </div></td>
-<td><div class="field">
-    <%= f.text_field :compressed, :style => "width:280px;" %>
-  </div></td>
-	<td><div class="field">
+<table class="table">
+    <tbody>
+  <tr>
+	<td><div class="field"><%= f.text_field :name, :style => "width:80px;" %></div></td>
+	<td><div class="field"><%= f.text_field :compressed, :style => "width:540px;" %></div></td>
 	<%= f.hidden_field :script_id, :value => @script.id %>
-  </div></td>
   <td><div class="actions">
     <%= f.submit "Add Compressed Public Key", :class => "btn btn-primary" %>
 	<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
-                script_path, :class => 'btn' %></div>
-  </td>
+                script_path, :class => 'btn' %></div></td>
+  </tr>
 <% end %>
+
+    </tbody>
+</table>

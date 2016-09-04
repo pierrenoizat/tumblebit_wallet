@@ -7,7 +7,7 @@ Rails.application.routes.draw do
   match '/contacts',     to: 'contacts#create',          via: 'post'
   resources "contacts", only: [:new, :create]
   
-  # resources :products
+  resources :public_keys
 
   get 'posts/index'
 

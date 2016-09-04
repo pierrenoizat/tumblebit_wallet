@@ -40,8 +40,9 @@ class PublicKeysController < ApplicationController
   
   def destroy
     @public_key = PublicKey.find(params[:id])
+    @script = Script.find(@public_key.script_id)
     @public_key.destroy
-    render :nothing
+    redirect_to edit_script_path(@script), notice: 'Public key was successfully deleted.' 
   end
 
   private

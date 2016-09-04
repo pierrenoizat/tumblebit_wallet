@@ -2,13 +2,27 @@
   <div class="row">
 	<h3>Script # <%= @script.id if @script %></h3>
 	<p>Title: <%= @script.title if @script.title %></p>
+	<p>Category: <strong><%= @script.category if @script.category %></strong></p>
 	<p>Text: <%= @script.text if @script %></p>
-	<p>Expiry: <%= @script.expiry_date if @script %></p>
-	<% @public_keys.each do |key| %>  	
-		<p>Name: <%= key.name if key.name %></p>
-		<p>Compressed Public Key: <%= key.compressed if key.compressed %></p>
-	 <% end %>
-	<p>P2SH Address: <%= @script.hash_address if @script %></p>
+	<!--<p>Expiry: <%= @script.expiry_date if @script %></p>-->
+	<p>Expiry: <strong><%= Time.at((@script.expiry_date.to_time.to_i + 20)).utc if @script %></strong></p>
+	
+	<p>Expiry in seconds since epoch time (1/1/1970): <%= (@script.expiry_date.to_time.to_i + 20) %></p>
+	<% if @script.category == "time_locked_2fa" %>
+		<% key = @public_keys.first %>
+		<p>Escrow: <%= key.name if key.name %></p>
+		<p>Escrow (Compressed) Public Key: <strong><%= key.compressed if key.compressed %></strong></p>
+		<% key = @public_keys.last %>
+		<p>User: <%= key.name if key.name %></p>
+		<p>User (Compressed) Public Key: <strong><%= key.compressed if key.compressed %></strong></p>
+	<% else %>
+		<% @public_keys.each do |key| %>  	
+			<p>Name: <%= key.name if key.name %></p>
+			<p>Compressed Public Key: <%= key.compressed if key.compressed %></p>
+	 		<% end %>
+	<% end %>
+	<p>P2SH Address: <strong><%= @script.hash_address if @script %></strong></p>
+	<p>Spending Tx after expiry: <%= @script.expired_spending_tx if @script %></p>
    </div>
 </div>
 
