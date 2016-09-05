@@ -1,9 +1,9 @@
-Rails Omniauth App
+bitcoinscri.pt
 ================
 
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
-This application allows users to create and navigate a binary tree build from an account list uploaded to AWS S3.
+This application allows users to create and run simple bitcoin scripts using new opcodes such as CLTV and/or CSV.
 
 Problems? Issues?
 -----------
@@ -20,6 +20,7 @@ This application requires:
 
 - Ruby 2.2.0
 - Rails 4.2.0
+- btcruby
 
 Getting Started
 ---------------
@@ -67,4 +68,4 @@ This particular interior node has this node as its only child.
 
 License
 -------
-© Paymium 2011-2015 Soon to be released under the [MIT license](http://opensource.org/licenses/mit-license.php)
+© Paymium 2011-2016 Released under the [MIT license](http://opensource.org/licenses/mit-license.php)
