@@ -44,6 +44,7 @@ class Script < ActiveRecord::Base
   end
   
   def expired_spending_tx
+    unless self.public_keys.blank?
     BTC::Network.default= BTC::Network.mainnet
     @funding_script = BTC::Script.new
     # @escrow_key=BTC::Key.new(wif:"KwtnGxYSfyCM888BDa94SPDxLE934F3cDBfgJy3h4gGUSrGFzAVw")
@@ -79,6 +80,7 @@ class Script < ActiveRecord::Base
     tx.inputs[0].signature_script << BTC::Script::OP_FALSE # force script execution into checking that expiry was before locktime, then locktime is checked to be in the past as well
     tx.inputs[0].signature_script << @funding_script.data
     tx.to_s
+  end
   end
   
 end

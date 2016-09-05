@@ -9,8 +9,7 @@
 
 
 default: &default
-  recaptcha_public_key: 6Le4VgMTAAAAAG8kuI-hjaqnwBwdCqB6T-G5-CNo
-  recaptcha_private_key: 6Le4VgMTAAAAAL2BVqT3VCegcGWXHKsrzGOWwPf_
+  mail_password: <%= ENV["MAIL_PASSWORD"] %>
 
 development:
   <<: *default
@@ -19,14 +18,12 @@ development:
   secret_access_key: <%= ENV["AWS_SECRET_ACCESS_KEY"] %>
   aws_access_key_id: <%= ENV["AWS_ACCESS_KEY_ID"] %>
   aws_secret_access_key: <%= ENV["AWS_SECRET_ACCESS_KEY"] %>
-  omniauth_provider_key: 7ttqUFUqDSBqSIcSXxPJ2T4r0
-  omniauth_provider_secret: RszZ3AEyy1ibZAlS0IwTFJNthazTnxuEtflKslrZK9vqk0jdua
+  omniauth_provider_key: <%= ENV["TWITTER_OMNIAUTH_KEY"] %>
+  omniauth_provider_secret: <%= ENV["TWITTER_OMNIAUTH_SECRET"] %>
   S3_BUCKET: hashtree-test
-  mail_password: AVZCmkJutGeueyrpK8JH2x
-  mandrill_secret_key: sk_live_SnI9df4qawcOi0XSbKiyMFN2
-  mandrill_publishable_key: pk_live_ufKjtmGzwCo0TyAVDuIsXluU
-  mailchimp_api_key: 232fcc4b8428121e4ab1fee4c1f7e429-us10
-  mailchimp_list_id: 662cd16a99
+  mail_password: <%= ENV["MAIL_PASSWORD"] %>
+  mailchimp_api_key: <%= ENV["MAILCHIMP_API_KEY"] %>
+  mailchimp_list_id: <%= ENV["MAILCHIMP_LIST_ID"] %>
 
 production:
   <<: *default
@@ -35,13 +32,9 @@ production:
   secret_access_key: <%= ENV["AWS_SECRET_ACCESS_KEY"] %>
   aws_access_key_id: <%= ENV["AWS_ACCESS_KEY_ID"] %>
   aws_secret_access_key: <%= ENV["AWS_SECRET_ACCESS_KEY"] %>
-  omniauth_provider_key: 7ttqUFUqDSBqSIcSXxPJ2T4r0
-  omniauth_provider_secret: RszZ3AEyy1ibZAlS0IwTFJNthazTnxuEtflKslrZK9vqk0jdua
+  omniauth_provider_key: <%= ENV["TWITTER_OMNIAUTH_KEY"] %>
+  omniauth_provider_secret: <%= ENV["TWITTER_OMNIAUTH_SECRET"] %>
   S3_BUCKET: hashtree-assets
-  mail_password: AVZCmkJutGeueyrpK8JH2x
-  mandrill_secret_key: sk_live_SnI9df4qawcOi0XSbKiyMFN2
-  mandrill_publishable_key: pk_live_ufKjtmGzwCo0TyAVDuIsXluU
-  mailchimp_api_key: 232fcc4b8428121e4ab1fee4c1f7e429-us10
-  mailchimp_list_id: 662cd16a99
-#  omniauth_provider_key: nQqzGa1YpyS0tJjiyafJyw2eW  previous deployment on heroku
-# omniauth_provider_secret: P3HwYhtrVQv8rXTZEWbe6VQF1WERgrq9OPAPmUEowz6cqce1xy
+  mail_password: <%= ENV["MAIL_PASSWORD"] %>
+  mailchimp_api_key: <%= ENV["MAILCHIMP_API_KEY"] %>
+  mailchimp_list_id: <%= ENV["MAILCHIMP_LIST_ID"] %>

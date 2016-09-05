@@ -59,20 +59,20 @@
     </tbody>
 </table>
 
-
-<%= form_for([@script, @script.public_keys.build]) do |f| %>
-<table class="table">
-    <tbody>
-  <tr>
-	<td><div class="field"><%= f.text_field :name, :style => "width:80px;" %></div></td>
-	<td><div class="field"><%= f.text_field :compressed, :style => "width:540px;" %></div></td>
-	<%= f.hidden_field :script_id, :value => @script.id %>
-  <td><div class="actions">
-    <%= f.submit "Add Compressed Public Key", :class => "btn btn-primary" %>
-	<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
+<% if @script.id %>
+	<%= form_for([@script, @script.public_keys.build]) do |f| %>
+	<table class="table">
+    	<tbody>
+  		<tr>
+			<td><div class="field"><%= f.text_field :name, :style => "width:80px;" %></div></td>
+			<td><div class="field"><%= f.text_field :compressed, :style => "width:540px;" %></div></td>
+			<%= f.hidden_field :script_id, :value => @script.id %>
+  			<td><div class="actions">
+    		<%= f.submit "Add Compressed Public Key", :class => "btn btn-primary" %>
+			<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
                 script_path, :class => 'btn' %></div></td>
-  </tr>
+  		</tr>
+	<% end %>
+    	</tbody>
+	</table>
 <% end %>
-
-    </tbody>
-</table>
