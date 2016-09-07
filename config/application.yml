@@ -27,7 +27,7 @@ development:
 
 production:
   <<: *default
-  secret_key_base: ca67d0cbaf24f4cebd1cbd67fc06da43053ac2896ac0304f6cf673a900b80d855d2ca0381c9487fae44b49e25ccf09362d56ce9430571507a8ff0c376a10e554
+  secret_key_base: <%= ENV["SECRET_KEY_BASE"] %>
   access_key_id: <%= ENV["AWS_ACCESS_KEY_ID"] %>
   secret_access_key: <%= ENV["AWS_SECRET_ACCESS_KEY"] %>
   aws_access_key_id: <%= ENV["AWS_ACCESS_KEY_ID"] %>

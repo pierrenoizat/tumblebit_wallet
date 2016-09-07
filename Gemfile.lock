@@ -102,6 +102,8 @@ GEM
     database_cleaner (1.4.1)
     debug_inspector (0.0.2)
     diff-lcs (1.2.5)
+    domain_name (0.5.20160826)
+      unf (>= 0.0.5, < 1.0.0)
     email_validator (1.6.0)
       activemodel
     erubis (2.7.0)
@@ -129,6 +131,8 @@ GEM
       activesupport (>= 4.1.0)
     hashie (3.4.2)
     high_voltage (2.3.0)
+    http-cookie (1.0.2)
+      domain_name (~> 0.5)
     httparty (0.13.5)
       json (~> 1.8)
       multi_xml (>= 0.5.2)
@@ -161,6 +165,15 @@ GEM
     mail_form (1.5.1)
       actionmailer (>= 3.2, < 5)
       activemodel (>= 3.2, < 5)
+    mechanize (2.7.5)
+      domain_name (~> 0.5, >= 0.5.1)
+      http-cookie (~> 1.0)
+      mime-types (>= 1.17.2)
+      net-http-digest_auth (~> 1.1, >= 1.1.1)
+      net-http-persistent (~> 2.5, >= 2.5.2)
+      nokogiri (~> 1.6)
+      ntlm-http (~> 0.1, >= 0.1.1)
+      webrobots (>= 0.0.9, < 0.2)
     mime-types (2.6.1)
     mimemagic (0.3.0)
     mini_portile (0.6.2)
@@ -168,11 +181,14 @@ GEM
     mono_logger (1.1.0)
     multi_json (1.11.2)
     multi_xml (0.5.5)
+    net-http-digest_auth (1.4)
+    net-http-persistent (2.9.4)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
     net-ssh (2.9.2)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
+    ntlm-http (0.1.1)
     oauth (0.4.7)
     omniauth (1.2.2)
       hashie (>= 1.2, < 4)
@@ -307,6 +323,9 @@ GEM
     uglifier (2.7.1)
       execjs (>= 0.3.0)
       json (>= 1.8.0)
+    unf (0.1.4)
+      unf_ext
+    unf_ext (0.0.7.2)
     unicorn (4.9.0)
       kgio (~> 2.6)
       rack
@@ -318,6 +337,7 @@ GEM
       binding_of_caller (>= 0.7.2)
       railties (>= 4.0)
       sprockets-rails (>= 2.0, < 4.0)
+    webrobots (0.1.2)
     websocket (1.2.2)
     will_paginate (3.0.7)
     xpath (2.0.0)
@@ -354,6 +374,7 @@ DEPENDENCIES
   launchy
   less-rails
   mail_form
+  mechanize
   omniauth
   omniauth-twitter
   paperclip

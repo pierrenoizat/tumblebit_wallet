@@ -38,6 +38,9 @@ module Hashtrees
     
     $NODES_PER_PAGE = 65
     
+    $BLOCKR_ADDRESS_UNSPENT_URL = "http://btc.blockr.io/api/v1/address/unspent/"
+    $BLOCKR_ADDRESS_BALANCE_URL = "http://btc.blockr.io/api/v1/address/balance/"
+    
     AWS.config(access_key_id: Figaro.env.access_key_id, secret_access_key: Figaro.env.secret_access_key, region: 'eu-west-1')
     
     # config.paperclip_defaults = {

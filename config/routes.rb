@@ -23,6 +23,8 @@ Rails.application.routes.draw do
     resources :public_keys
       member do
         get 'display'
+        get 'create_spending_tx'
+        patch 'create_signed_transaction'
       end
     end
   

@@ -1,0 +1,43 @@
+<div class="container">
+  <div class="row">
+	<h3>Script # <%= @script.id if @script %></h3>
+	<p>Title: <%= @script.title if @script.title %></p>
+	<p>Text: <%= @script.text if @script %></p>
+	<p>Tx_id: <%= @script.tx_hash if @script %></p>
+	<p>Index: <%= @script.index if @script %></p>
+	<p>Amount: <%= @script.amount if @script %></p>
+	<p>Confirmations: <%= @script.confirmations if @script %></p>
+	
+	<%= form_for(@script, url: url_for(controller: 'scripts', action: 'create_signed_transaction'), multipart: true) do |f| %>
+	  <% if @script.errors.any? %>
+	    <div id="error_explanation">
+	      <h2><%= pluralize(@script.errors.count, "error") %> prohibited this script from being saved:</h2>
+
+	      <ul>
+	      <% @script.errors.full_messages.each do |msg| %>
+	        <li><%= msg %></li>
+	      <% end %>
+	      </ul>
+	    </div>
+	  <% end %>
+	
+		<%= f.hidden_field :tx_hash, :value => @script.tx_hash %>
+		<%= f.hidden_field :index, :value => @script.index %>
+		<%= f.hidden_field :amount, :value => @script.amount %>
+		<%= f.hidden_field :confirmations, :value => @script.confirmations %>
+		<% if Time.now < @script.expiry_date %>
+	  		<div class="field">
+	    		<p><%= f.label 'Service Private Key (WIF compressed format)' %></p>
+	    		<p><%= f.text_field :service_priv_key, :style => "width:400px;" %></p>
+	  		</div>
+		<% end %>
+		<div class="field">
+    		<p><%= f.label 'User Private Key (WIF compressed format)' %></p>
+    		<p><%= f.text_field :priv_key, :style => "width:400px;" %></p>
+  		</div>
+
+		<%= f.submit 'Submit', :class => "btn btn-primary" %>
+	<% end %>
+   </div>
+</div>
+</br>

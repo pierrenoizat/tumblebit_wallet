@@ -1,28 +1,32 @@
 <div class="container">
   <div class="row">
 	<h3>Script # <%= @script.id if @script %></h3>
-	<p>Title: <%= @script.title if @script.title %></p>
+	<h3><%= @script.title if @script.title %></h3>
 	<p>Category: <strong><%= @script.category if @script.category %></strong></p>
 	<p>Text: <%= @script.text if @script %></p>
 	<!--<p>Expiry: <%= @script.expiry_date if @script %></p>-->
-	<p>Expiry: <strong><%= Time.at((@script.expiry_date.to_time.to_i + 20)).utc if @script %></strong></p>
+	<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc if @script %></strong></p>
 	
-	<p>Expiry in seconds since epoch time (1/1/1970): <%= (@script.expiry_date.to_time.to_i + 20) %></p>
+	<p>Expiry in seconds since epoch time (1/1/1970): <%= @script.expiry_date.to_time.to_i %></p>
 	<% if @script.category == "time_locked_2fa" %>
 		<% key = @public_keys.first %>
-		<p>Escrow: <%= key.name if key.name %></p>
-		<p>Escrow (Compressed) Public Key: <strong><%= key.compressed if key.compressed %></strong></p>
+		<p>Escrow: <%= key.name if key %></p>
+		<p>Escrow (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
 		<% key = @public_keys.last %>
-		<p>User: <%= key.name if key.name %></p>
-		<p>User (Compressed) Public Key: <strong><%= key.compressed if key.compressed %></strong></p>
+		<p>User: <%= key.name if key %></p>
+		<p>User (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
 	<% else %>
 		<% @public_keys.each do |key| %>  	
-			<p>Name: <%= key.name if key.name %></p>
-			<p>Compressed Public Key: <%= key.compressed if key.compressed %></p>
+			<p>Name: <%= key.name if key %></p>
+			<p>Compressed Public Key: <%= key.compressed if key %></p>
 	 		<% end %>
 	<% end %>
 	<p>P2SH Address: <strong><%= @script.hash_address if @script %></strong></p>
-	<p>Spending Tx after expiry: <%= @script.expired_spending_tx if @script %></p>
+	<% if @script.funded? %>
+		<p><%= link_to("Create Spending Tx", { controller: "scripts", action: "create_spending_tx" }, :class => "btn btn-primary") %></p>
+	<% else %>
+		<p>Script is not funded yet or no UTXO is available/confirmed to create a spending transaction.</p>
+	<% end %>
+
    </div>
 </div>
-

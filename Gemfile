@@ -38,6 +38,7 @@ gem 'font-awesome-rails'
 # gem 'mysql2'
 gem 'pg'
 gem 'btcruby', '~> 1.5'
+gem 'mechanize'
 
 group :development do
   gem 'better_errors'
