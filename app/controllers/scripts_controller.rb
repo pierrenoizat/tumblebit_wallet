@@ -65,7 +65,7 @@ class ScriptsController < ApplicationController
     @script = Script.find(params[:id])
     @public_keys = @script.public_keys
     @script.priv_key = params[:script][:priv_key]
-    @script.service_priv_key = params[:script][:service_priv_key]
+    @script.oracle_1_priv_key = params[:script][:oracle_1_priv_key]
     @script.index = params[:script][:index]
     @script.tx_hash = params[:script][:tx_hash]
     @script.amount = params[:script][:amount]
@@ -74,81 +74,99 @@ class ScriptsController < ApplicationController
     @previous_id = @script.tx_hash
     @refund_address = BTC::Address.parse("16zQaNAg77jco2EDVSsU4bEAq5DgfZPZP4") # my electrum wallet
     @value = (@script.amount.to_f - fee) * BTC::COIN # @value is expressed in satoshis
+    @funding_script = @script.funding_script
     
-    if Time.now.to_i > @script.expiry_date.to_i
-      # we are after expiry: 2FA expired, require user key only
-      puts "We are after expiry: 2FA expired, require user key only"
+    case @script.category
       
-      @funding_script = BTC::Script.new
-      @escrow_key=BTC::Key.new(public_key:BTC.from_hex(@script.public_keys.first.compressed))
-      @user_key = BTC::Key.new(wif:@script.priv_key)
-      @expire_at = Time.at(@script.expiry_date.to_time.to_i)
-      @funding_script<<BTC::Script::OP_IF
-      @funding_script<<@escrow_key.compressed_public_key
-      @funding_script<<BTC::Script::OP_CHECKSIGVERIFY
-      @funding_script<<BTC::Script::OP_ELSE
-      @funding_script<<BTC::WireFormat.encode_int32le(@expire_at.to_i)
-      @funding_script<<BTC::Script::OP_CHECKLOCKTIMEVERIFY
-      @funding_script<<BTC::Script::OP_DROP
-      @funding_script<<BTC::Script::OP_ENDIF
-      @funding_script<<@user_key.compressed_public_key
-      @funding_script<<BTC::Script::OP_CHECKSIG
-      puts BTC::ScriptHashAddress.new(redeem_script:@funding_script, network:BTC::Network.default)
-      puts @funding_script
-      puts @user_key.to_wif
-      puts @previous_id
-      tx = BTC::Transaction.new
-      tx.lock_time = 1473269401
-      # tx.lock_time = 1473241000
-      # tx.lock_time = @script.expiry_date.to_i + 1 # time after expiry and before present (in the past)
-      tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
-                                              previous_index: @previous_index,
-                                              sequence: 0))
-      tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
-      hashtype = BTC::SIGHASH_ALL
-      sighash = tx.signature_hash(input_index: 0,
-                                  output_script: @funding_script,
-                                  hash_type: hashtype)
-      tx.inputs[0].signature_script = BTC::Script.new
-      tx.inputs[0].signature_script << (@user_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
-      tx.inputs[0].signature_script << BTC::Script::OP_FALSE # force script execution into checking that expiry was before locktime, then locktime is checked to be in the past as well
-      tx.inputs[0].signature_script << @funding_script.data
-    else
-      # 2FA, before expiry, require both user key and service key
-      puts "2FA, before expiry, require both user key and service key"
-      @user_key = BTC::Key.new(wif:@script.priv_key)
-      @escrow_key = BTC::Key.new(wif:@script.service_priv_key)
-      @funding_script = BTC::Script.new
-      @expire_at = Time.at(@script.expiry_date.to_time.to_i)
-      @funding_script<<BTC::Script::OP_IF
-      @funding_script<<@escrow_key.compressed_public_key
-      @funding_script<<BTC::Script::OP_CHECKSIGVERIFY
-      @funding_script<<BTC::Script::OP_ELSE
-      @funding_script<<BTC::WireFormat.encode_int32le(@expire_at.to_i)
-      @funding_script<<BTC::Script::OP_CHECKLOCKTIMEVERIFY
-      @funding_script<<BTC::Script::OP_DROP
-      @funding_script<<BTC::Script::OP_ENDIF
-      @funding_script<<@user_key.compressed_public_key
-      @funding_script<<BTC::Script::OP_CHECKSIG
-      tx = BTC::Transaction.new
-      tx.lock_time = 1471199999 # some time in the past (2016-08-14)
-      tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
-                                              previous_index: @previous_index,
-                                              sequence: 0))
-      tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
-      hashtype = BTC::SIGHASH_ALL
-      sighash = tx.signature_hash(input_index: 0,
-                                  output_script: @funding_script,
-                                  hash_type: hashtype)
-      tx.inputs[0].signature_script = BTC::Script.new
-      tx.inputs[0].signature_script << (@user_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
-      tx.inputs[0].signature_script << (@escrow_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
-      tx.inputs[0].signature_script << BTC::Script::OP_TRUE # force script execution into checking 2 signatures, ignoring expiry
-      tx.inputs[0].signature_script << @funding_script.data
+      when "time_locked_address"
+        
+        if @script.expired?
+          puts "We are after expiry: require user key only"
+          @user_key = BTC::Key.new(wif:@script.priv_key)
+          tx = BTC::Transaction.new
+          # tx.lock_time = 1473269401
+          tx.lock_time = @script.expiry_date.to_i + 1 # time after expiry and before present (in the past)
+          tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
+                                                  previous_index: @previous_index,
+                                                  sequence: 0))
+          tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
+          hashtype = BTC::SIGHASH_ALL
+          sighash = tx.signature_hash(input_index: 0,
+                                      output_script: @funding_script,
+                                      hash_type: hashtype)
+          tx.inputs[0].signature_script = BTC::Script.new
+          tx.inputs[0].signature_script << (@user_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+          tx.inputs[0].signature_script << @funding_script.data
+        else
+          puts "before expiry, no way to spend script"
+          # trying to spend before expiry with user key only and a locktime in the past should return "Locktime requirement not satisfied".
+          # this error message means that the network rejects the tx based on the expiry date set int the script even if the tx locktime is in the past.
+          @user_key = BTC::Key.new(wif:@script.priv_key)
+          tx = BTC::Transaction.new
+          tx.lock_time = 1471199999 # some time in the past (2016-08-14)
+          tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
+                                                  previous_index: @previous_index,
+                                                  sequence: 0))
+          tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
+          hashtype = BTC::SIGHASH_ALL
+          sighash = tx.signature_hash(input_index: 0,
+                                      output_script: @funding_script,
+                                      hash_type: hashtype)
+          tx.inputs[0].signature_script = BTC::Script.new
+          tx.inputs[0].signature_script << (@user_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+          tx.inputs[0].signature_script << @funding_script.data
+        end
+      
+      when "time_locked_2fa"
+        
+        if @script.expired?
+          puts "We are after expiry: 2FA expired, require user key only"
+          # spending with both user key and service key is still possible.
+          # trying to spend 31 minutes after expiry returns "non-final"
+          # trying to spend 56 minutes after expiry works!"
+          @user_key = BTC::Key.new(wif:@script.priv_key)
+          tx = BTC::Transaction.new
+          # tx.lock_time = 1473269401
+          tx.lock_time = @script.expiry_date.to_i + 1 # time after expiry and before present (in the past)
+          tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
+                                                  previous_index: @previous_index,
+                                                  sequence: 0))
+          tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
+          hashtype = BTC::SIGHASH_ALL
+          sighash = tx.signature_hash(input_index: 0,
+                                      output_script: @funding_script,
+                                      hash_type: hashtype)
+          tx.inputs[0].signature_script = BTC::Script.new
+          tx.inputs[0].signature_script << (@user_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+          tx.inputs[0].signature_script << BTC::Script::OP_FALSE # force script execution into checking that expiry was before locktime, then locktime is checked to be in the past as well
+          tx.inputs[0].signature_script << @funding_script.data
+        else
+          puts "2FA, before expiry, require both user key and service key"
+          # trying to spend before expiry with user key only and a locktime in the past should return "Locktime requirement not satisfied".
+          # this error message means that the network rejects the tx based on the expiry date set int the script even if the tx locktime is in the past.
+          @user_key = BTC::Key.new(wif:@script.priv_key)
+          @escrow_key=BTC::Key.new(wif:@script.oracle_1_priv_key)
+          tx = BTC::Transaction.new
+          tx.lock_time = 1471199999 # some time in the past (2016-08-14)
+          tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
+                                                  previous_index: @previous_index,
+                                                  sequence: 0))
+          tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
+          hashtype = BTC::SIGHASH_ALL
+          sighash = tx.signature_hash(input_index: 0,
+                                      output_script: @funding_script,
+                                      hash_type: hashtype)
+          tx.inputs[0].signature_script = BTC::Script.new
+          tx.inputs[0].signature_script << (@user_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+          tx.inputs[0].signature_script << (@escrow_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+          tx.inputs[0].signature_script << BTC::Script::OP_TRUE # force script execution into checking 2 signatures, ignoring expiry
+          tx.inputs[0].signature_script << @funding_script.data
+        end
+      else
     end
     
     puts tx.to_s
-    render :show
+    redirect_to @script, notice: 'Script spending tx was successfully signed.'
   end
 
 
