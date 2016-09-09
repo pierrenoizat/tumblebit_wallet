@@ -25,7 +25,7 @@
 		<%= f.hidden_field :index, :value => @script.index %>
 		<%= f.hidden_field :amount, :value => @script.amount %>
 		<%= f.hidden_field :confirmations, :value => @script.confirmations %>
-		<% if Time.now < @script.expiry_date %>
+		<% unless @script.expired? or @script.category == "time_locked_address" %>
 	  		<div class="field">
 	    		<p><%= f.label 'Service Private Key (WIF compressed format)' %></p>
 	    		<p><%= f.text_field :oracle_1_priv_key, :style => "width:400px;" %></p>

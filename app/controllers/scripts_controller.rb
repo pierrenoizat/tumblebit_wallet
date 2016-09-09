@@ -56,12 +56,16 @@ class ScriptsController < ApplicationController
   def create_spending_tx
     @script = Script.find(params[:id])
     @public_keys = @script.public_keys
-    unless @script.first_unspent_tx
+    if @script.funded?
+      @script.first_unspent_tx
+    else
       redirect_to @script, notice: 'Script not funded: no UTXO available.'
     end
   end
 
   def create_signed_transaction
+    
+    @notice = "Script spending tx was successfully signed."
     @script = Script.find(params[:id])
     @public_keys = @script.public_keys
     @script.priv_key = params[:script][:priv_key]
@@ -82,6 +86,7 @@ class ScriptsController < ApplicationController
         
         if @script.expired?
           puts "We are after expiry: require user key only"
+          # trying to spend 54 minutes after expiry returns "non-final"
           @user_key = BTC::Key.new(wif:@script.priv_key)
           tx = BTC::Transaction.new
           # tx.lock_time = 1473269401
@@ -98,7 +103,7 @@ class ScriptsController < ApplicationController
           tx.inputs[0].signature_script << (@user_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
           tx.inputs[0].signature_script << @funding_script.data
         else
-          puts "before expiry, no way to spend script"
+          @notice = "before expiry, no way to spend script, the network will return: Locktime requirement not satisfied"
           # trying to spend before expiry with user key only and a locktime in the past should return "Locktime requirement not satisfied".
           # this error message means that the network rejects the tx based on the expiry date set int the script even if the tx locktime is in the past.
           @user_key = BTC::Key.new(wif:@script.priv_key)
@@ -162,11 +167,14 @@ class ScriptsController < ApplicationController
           tx.inputs[0].signature_script << BTC::Script::OP_TRUE # force script execution into checking 2 signatures, ignoring expiry
           tx.inputs[0].signature_script << @funding_script.data
         end
+      when "contract_oracle" # <hash> OP_DROP 2 <beneficiary pubkey> <oracle pubkey> CHECKMULTISIG
+                            # <hash>: SHA256 of a json file like { "param_1":"value_1", "param_2":"value_2" }
+                            # param_1 and 2 are described in the contract, value_1 and 2 come from external data sources
       else
     end
     
     puts tx.to_s
-    redirect_to @script, notice: 'Script spending tx was successfully signed.'
+    redirect_to @script, notice: @notice
   end
 
 
