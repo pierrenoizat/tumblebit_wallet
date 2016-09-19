@@ -26,6 +26,13 @@
     <p><%= f.text_field :text %></p>
   </div>
 
+  <% if @script.category == "contract_oracle" %>
+   <div class="field">
+    <p><%= f.label 'Contract String' %></p>
+  	<p><%= f.text_field :contract, :style => "width:400px;", :placeholder => "{time_limit:1474299166,rate_limit:545.00}" %></p>
+	</div>
+  <% end %>
+
  <div class="field">
     <p><%= f.label 'Expiry (UTC)' %></p>
 	<p>Present Time: <%= Time.now.utc %></p>
@@ -75,6 +82,7 @@
   		</tr>
 	<% end %>
     	</tbody>
-		<aside>Public Keys must be entered in their order of appearance in the script.</aside>
+		
 	</table>
 <% end %>
+<aside>Public Keys must be entered in their order of appearance in the script.</aside>

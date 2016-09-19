@@ -11,6 +11,8 @@ class ScriptsController < ApplicationController
   
   def create
       @script = Script.new(script_params)
+      
+
 
       if @script.save
         redirect_to @script, notice: 'Bitcoin script was successfully created.'
@@ -65,11 +67,15 @@ class ScriptsController < ApplicationController
 
   def create_signed_transaction
     
+    require 'btcruby/extensions'
+    
     @notice = "Script spending tx was successfully signed."
     @script = Script.find(params[:id])
     @public_keys = @script.public_keys
+    
     @script.priv_key = params[:script][:priv_key]
     @script.oracle_1_priv_key = params[:script][:oracle_1_priv_key]
+    
     @script.index = params[:script][:index]
     @script.tx_hash = params[:script][:tx_hash]
     @script.amount = params[:script][:amount]
@@ -87,7 +93,18 @@ class ScriptsController < ApplicationController
         if @script.expired?
           puts "We are after expiry: require user key only"
           # trying to spend 54 minutes after expiry returns "non-final"
-          @user_key = BTC::Key.new(wif:@script.priv_key)
+          begin  
+            @user_key = BTC::Key.new(wif:@script.priv_key)
+          rescue Exception => e  
+            puts e.message
+            @notice = "Bad private key."
+          end
+          # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
+          if ((@script.priv_key.size != 52) or (@notice == "Bad private key."))
+            @notice = "Private key length is not 52 chars."
+            redirect_to root_url, notice: @notice
+            return
+          end
           tx = BTC::Transaction.new
           # tx.lock_time = 1473269401
           tx.lock_time = @script.expiry_date.to_i + 1 # time after expiry and before present (in the past)
@@ -106,7 +123,18 @@ class ScriptsController < ApplicationController
           @notice = "before expiry, no way to spend script, the network will return: Locktime requirement not satisfied"
           # trying to spend before expiry with user key only and a locktime in the past should return "Locktime requirement not satisfied".
           # this error message means that the network rejects the tx based on the expiry date set int the script even if the tx locktime is in the past.
-          @user_key = BTC::Key.new(wif:@script.priv_key)
+          begin  
+            @user_key = BTC::Key.new(wif:@script.priv_key)
+          rescue Exception => e  
+            puts e.message 
+            @notice = "Bad private key."
+          end
+          # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
+          if ((@script.priv_key.size != 52) or (@notice == "Bad private key."))
+            @notice = "Private key length is not 52 chars."
+            redirect_to root_url, notice: @notice
+            return
+          end
           tx = BTC::Transaction.new
           tx.lock_time = 1471199999 # some time in the past (2016-08-14)
           tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
@@ -129,7 +157,17 @@ class ScriptsController < ApplicationController
           # spending with both user key and service key is still possible.
           # trying to spend 31 minutes after expiry returns "non-final"
           # trying to spend 56 minutes after expiry works!"
-          @user_key = BTC::Key.new(wif:@script.priv_key)
+          begin  
+            @user_key = BTC::Key.new(wif:@script.priv_key)
+          rescue Exception => e 
+            @notice = "Bad private key."
+          end
+          # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
+          if ((@script.priv_key.size != 52) or (@notice == "Bad private key."))
+            @notice = "Private key length is not 52 chars."
+            redirect_to root_url, notice: @notice
+            return
+          end
           tx = BTC::Transaction.new
           # tx.lock_time = 1473269401
           tx.lock_time = @script.expiry_date.to_i + 1 # time after expiry and before present (in the past)
@@ -149,8 +187,28 @@ class ScriptsController < ApplicationController
           puts "2FA, before expiry, require both user key and service key"
           # trying to spend before expiry with user key only and a locktime in the past should return "Locktime requirement not satisfied".
           # this error message means that the network rejects the tx based on the expiry date set int the script even if the tx locktime is in the past.
-          @user_key = BTC::Key.new(wif:@script.priv_key)
-          @escrow_key=BTC::Key.new(wif:@script.oracle_1_priv_key)
+          begin  
+            @user_key = BTC::Key.new(wif:@script.priv_key)
+          rescue Exception => e  
+            @notice = "Bad private key."
+          end
+          begin  
+            @escrow_key=BTC::Key.new(wif:@script.oracle_1_priv_key)
+          rescue Exception => e  
+            @notice = "Bad private key."
+          end
+          # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
+          if ((@script.priv_key.size != 52) or (@notice == "Bad private key."))
+            @notice = "User private key length is not 52 chars."
+            redirect_to root_url, notice: @notice
+            return
+          end
+          # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
+          if ((@script.oracle_1_priv_key.size != 52) or (@notice == "Bad private key."))
+            @notice = "Escrow private key length is not 52 chars."
+            redirect_to root_url, notice: @notice
+            return
+          end
           tx = BTC::Transaction.new
           tx.lock_time = 1471199999 # some time in the past (2016-08-14)
           tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
@@ -170,6 +228,42 @@ class ScriptsController < ApplicationController
       when "contract_oracle" # <hash> OP_DROP 2 <beneficiary pubkey> <oracle pubkey> CHECKMULTISIG
                             # <hash>: SHA256 of a json file like { "param_1":"value_1", "param_2":"value_2" }
                             # param_1 and 2 are described in the contract, value_1 and 2 come from external data sources
+        puts "require both user key and oracle key"
+        begin  
+          @user_key = BTC::Key.new(wif:@script.priv_key)
+        rescue Exception => e 
+          @notice = "Bad private key."
+        end
+        begin  
+          @escrow_key=BTC::Key.new(wif:@script.oracle_1_priv_key)
+        rescue Exception => e
+          @notice = "Bad private key."
+        end
+         # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
+          if ((@script.priv_key.size != 52) or (@notice == "Bad private key."))
+            @notice = "User private key length is not 52 chars."
+            redirect_to root_url, notice: @notice
+            return
+          end
+          # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
+          if ((@script.oracle_1_priv_key.size != 52) or (@notice == "Bad private key."))
+            @notice = "Escrow private key length is not 52 chars."
+            redirect_to root_url, notice: @notice
+            return
+          end
+        tx = BTC::Transaction.new
+        tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
+                                                previous_index: @previous_index,
+                                                sequence: 0))
+        tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
+        hashtype = BTC::SIGHASH_ALL
+        sighash = tx.signature_hash(input_index: 0,
+                                    output_script: @funding_script,
+                                    hash_type: hashtype)
+        tx.inputs[0].signature_script = BTC::Script.new
+        tx.inputs[0].signature_script << (@user_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+        tx.inputs[0].signature_script << (@escrow_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+        tx.inputs[0].signature_script << @funding_script.data
       else
     end
     
@@ -181,7 +275,7 @@ class ScriptsController < ApplicationController
   private
  
      def script_params
-       params.require(:script).permit(:title, :text, :expiry_date, :category, public_keys_attributes: [:name, :compressed, :script_id])
+       params.require(:script).permit(:contract, :title, :text, :expiry_date, :category, public_keys_attributes: [:name, :compressed, :script_id])
      end
 
 end
