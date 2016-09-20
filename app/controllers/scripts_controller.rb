@@ -61,7 +61,7 @@ class ScriptsController < ApplicationController
     if @script.funded?
       @script.first_unspent_tx
     else
-      redirect_to @script, notice: 'Script not funded: no UTXO available.'
+      redirect_to @script, alert: 'Script not funded: no UTXO available.'
     end
   end
 
@@ -102,7 +102,7 @@ class ScriptsController < ApplicationController
           # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
           if ((@script.priv_key.size != 52) or (@notice == "Bad private key."))
             @notice = "Private key length is not 52 chars."
-            redirect_to root_url, notice: @notice
+            redirect_to root_url, alert: @notice
             return
           end
           tx = BTC::Transaction.new
@@ -132,7 +132,7 @@ class ScriptsController < ApplicationController
           # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
           if ((@script.priv_key.size != 52) or (@notice == "Bad private key."))
             @notice = "Private key length is not 52 chars."
-            redirect_to root_url, notice: @notice
+            redirect_to root_url, alert: @notice
             return
           end
           tx = BTC::Transaction.new
@@ -165,7 +165,7 @@ class ScriptsController < ApplicationController
           # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
           if ((@script.priv_key.size != 52) or (@notice == "Bad private key."))
             @notice = "Private key length is not 52 chars."
-            redirect_to root_url, notice: @notice
+            redirect_to root_url, alert: @notice
             return
           end
           tx = BTC::Transaction.new
@@ -200,13 +200,13 @@ class ScriptsController < ApplicationController
           # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
           if ((@script.priv_key.size != 52) or (@notice == "Bad private key."))
             @notice = "User private key length is not 52 chars."
-            redirect_to root_url, notice: @notice
+            redirect_to root_url, alert: @notice
             return
           end
           # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
           if ((@script.oracle_1_priv_key.size != 52) or (@notice == "Bad private key."))
             @notice = "Escrow private key length is not 52 chars."
-            redirect_to root_url, notice: @notice
+            redirect_to root_url, alert: @notice
             return
           end
           tx = BTC::Transaction.new
@@ -225,6 +225,7 @@ class ScriptsController < ApplicationController
           tx.inputs[0].signature_script << BTC::Script::OP_TRUE # force script execution into checking 2 signatures, ignoring expiry
           tx.inputs[0].signature_script << @funding_script.data
         end
+        
       when "contract_oracle" # <hash> OP_DROP 2 <beneficiary pubkey> <oracle pubkey> CHECKMULTISIG
                             # <hash>: SHA256 of a json file like { "param_1":"value_1", "param_2":"value_2" }
                             # param_1 and 2 are described in the contract, value_1 and 2 come from external data sources
@@ -242,13 +243,13 @@ class ScriptsController < ApplicationController
          # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
           if ((@script.priv_key.size != 52) or (@notice == "Bad private key."))
             @notice = "User private key length is not 52 chars."
-            redirect_to root_url, notice: @notice
+            redirect_to root_url, alert: @notice
             return
           end
           # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
           if ((@script.oracle_1_priv_key.size != 52) or (@notice == "Bad private key."))
             @notice = "Escrow private key length is not 52 chars."
-            redirect_to root_url, notice: @notice
+            redirect_to root_url, alert: @notice
             return
           end
         tx = BTC::Transaction.new
@@ -261,10 +262,11 @@ class ScriptsController < ApplicationController
                                     output_script: @funding_script,
                                     hash_type: hashtype)
         tx.inputs[0].signature_script = BTC::Script.new
+        tx.inputs[0].signature_script << BTC::Script::OP_FALSE
         tx.inputs[0].signature_script << (@user_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
         tx.inputs[0].signature_script << (@escrow_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+
         tx.inputs[0].signature_script << @funding_script.data
-      else
     end
     
     puts tx.to_s

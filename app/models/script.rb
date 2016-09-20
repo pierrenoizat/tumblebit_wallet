@@ -61,14 +61,12 @@ class Script < ActiveRecord::Base
         @contract_hash = Digest::SHA256.digest self.contract
         @escrow_key=BTC::Key.new(public_key:BTC.from_hex(self.public_keys.first.compressed))
         @user_key=BTC::Key.new(public_key:BTC.from_hex(self.public_keys.last.compressed))
-        # @funding_script<<BTC::Script::OP_PUSHDATA1 # will be followed by length of data to be pushed to the stack (length defined over 1 byte )
-        # @funding_script<<"\x21" # length over 1 byte: push 32 bytes (256 bits) on stack
-        # @funding_script<<@contract_hash
         @funding_script.append_pushdata(@contract_hash)
         @funding_script<<BTC::Script::OP_DROP
         @funding_script<<BTC::Script::OP_2
         @funding_script<<@user_key.compressed_public_key
         @funding_script<<@escrow_key.compressed_public_key
+        @funding_script<<BTC::Script::OP_2
         @funding_script<<BTC::Script::OP_CHECKMULTISIG
     end
     return @funding_script
