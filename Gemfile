@@ -1,9 +1,11 @@
 source 'https://rubygems.org'
-ruby '2.2.0'
+ruby '2.3.0'
 gem 'rails', '4.2.0'
 gem 'rake'
 
-gem 'sass-rails', '~> 5.0'
+# gem 'sass-rails', '~> 5.0'
+gem 'sass-rails'
+gem 'sprockets', '3.6.3'
 gem 'less-rails'
 gem 'therubyracer'
 gem 'uglifier', '>= 1.3.0'
@@ -17,16 +19,8 @@ gem 'simple_form'
 gem 'omniauth'
 gem 'omniauth-twitter'
 gem 'figaro'
-gem "resque", :require => 'resque/server'
-gem 'redis'
-gem 'redis-store'
-gem 'resque_mailer'
 gem 'fastercsv'
-gem 'aws-sdk', '~> 1'
-gem 'aws-sdk-resources', '~> 2'
-gem 'paperclip'
 gem 'cocaine', '= 0.5.7' # required for imagemagick
-gem "d3-rails"
 gem 'will_paginate', '~> 3.0.6'
 gem 'redcarpet', '~> 3.0.0'
 gem 'mail_form'
@@ -64,7 +58,6 @@ group :test do
 end
 
 group :production do
-  gem 'unicorn'
   gem 'rails_12factor'
   gem 'exception_notification'
 end

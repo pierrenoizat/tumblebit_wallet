@@ -1,6 +1,0 @@
-<td><%= link_to tree.name, tree %></td>
-<td><%= tree.leaf_nodes.count %> leaves</td>
-<% if user_admin? %>
-<td><%= link_to "Edit", edit_tree_path(tree), :class => 'btn btn-xs btn-success' %></td>
-<td><%= link_to "Delete", tree_path(tree), :data => { :confirm => "Are you sure?" }, :method => :delete, :class => 'btn btn-xs btn-danger' %></td>
-<% end %>

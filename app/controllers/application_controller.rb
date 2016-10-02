@@ -24,7 +24,7 @@ class ApplicationController < ActionController::Base
     
     def user_admin?
       if current_user
-        current_user.uid == Figaro.env.admin_uid
+        current_user.uid == Figaro.env.btcscript_admin_uid
       end
     end
 
@@ -40,9 +40,5 @@ class ApplicationController < ActionController::Base
         redirect_to root_url, :alert => 'You need to sign in for access to this page.'
       end
     end
-    
-    def configure_permitted_parameters
-        devise_parameter_sanitizer.for(:tree) << :avatar
-      end
 
 end

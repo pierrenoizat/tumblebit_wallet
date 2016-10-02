@@ -28,12 +28,7 @@
                 <p class="heading__sub hero-heading__sub animated fadeInUp delay_1"><%= link_to 'Users:', users_path %> <%= User.count %> registered.</p>
 
               <!-- Hero buttons -->
-<% if @tree %>
-              <a href="<%= tree_path(@tree) %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Example tree</a></br></br>
-              <p class="heading__sub hero-heading__sub" style="color:white;">Checkout the example tree with the access key: <% if @tree.leaf_nodes.last %><%= @tree.leaf_nodes.last.nonce.to_s %><% end %></p>
-<% else %>
-			<a href="<%= new_tree_path %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Create your first tree</a> 
-<% end %>
+			<a href="<%= new_script_path %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Create your Bitcoin script</a> 
 
             </div>
           </div> <!-- / .row -->
@@ -123,9 +118,6 @@
                 <p class="heading__sub">
                   Trees are drawn as interactive SVG graphs using D3, a JavaScript library for manipulating documents based on data. D3 helps us bring data to life using HTML, SVG, and CSS. D3’s emphasis on web standards gives us the full capabilities of modern browsers without tying us to a proprietary framework, combining powerful visualization components and a data-driven approach to DOM manipulation.
                 </p>
-<% if @tree %>
-                <a href="<%= display_tree_path(@tree) %>" class="btn btn-default heading__btn">Sample tree graph</a>
-<% end %>
               </div>
               <div class="col-sm-7 col-sm-height col-middle">
 				<%= image_tag "sample_merkle_tree_svg.png", class: "img-responsive" %>

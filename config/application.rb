@@ -6,7 +6,7 @@ require 'rails/all'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-module Hashtrees
+module RailsOmniauth
   class Application < Rails::Application
 
     config.generators do |g|
@@ -39,19 +39,7 @@ module Hashtrees
     $NODES_PER_PAGE = 65
     
     $BLOCKR_ADDRESS_UNSPENT_URL = "http://btc.blockr.io/api/v1/address/unspent/"
-    $BLOCKR_ADDRESS_BALANCE_URL = "http://btc.blockr.io/api/v1/address/balance/"
-    
-    AWS.config(access_key_id: Figaro.env.access_key_id, secret_access_key: Figaro.env.secret_access_key, region: 'eu-west-1')
-    
-    # config.paperclip_defaults = {
-    #  :storage => :s3,
-    #  :s3_protocol => 'http',
-    #  :s3_credentials => {
-    #    :bucket => 'hashtree-assets'
-    #  }
-    # }
-    
-
+    $BLOCKR_ADDRESS_BALANCE_URL = "http://btc.blockr.io/api/v1/address/info/"
     
   end
 end

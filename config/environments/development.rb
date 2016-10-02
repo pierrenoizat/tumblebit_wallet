@@ -53,31 +53,6 @@ Rails.application.configure do
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
   
-  ENV["REDISTOGO_URL"] = 'redis://username:password@my.host:6389'
-  
   $MAIN_URL = "http://localhost:3000"
-  $TREES_URL = $MAIN_URL + "/trees/"
-  $LEAF_NODES_URL = $MAIN_URL + "/leaf_nodes/"
-  
-  if File.exists?("app/assets/tree_257.csv")
-    File.delete("app/assets/tree_257.csv") # delete any previous version of "app/assets/tree_8193.csv" file
-    end
-  
-  require "csv"
-  CSV.open("app/assets/tree_257.csv", "ab") do |csv| # output users and their balance to tree_17.csv file
-    for i in 1..257 do
-      string = Faker::Number.number(4).to_s + rand.to_s
-      sum = string.to_f/1000
-      csv << ["#{Faker::Internet.email}","#{sum}"]
-    end
-  end # of CSV write to tree_257.csv
-  
-  config.paperclip_defaults = {
-    :storage => :s3,
-    :s3_protocol => 'http',
-    :s3_credentials => {
-      :bucket => 'hashtree-test'
-    }
-  }
   
 end

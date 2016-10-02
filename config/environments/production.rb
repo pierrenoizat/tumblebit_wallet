@@ -3,7 +3,7 @@ Rails.application.configure do
   Rails.application.config.middleware.use(ExceptionNotification::Rack, :email => {
     :email_prefix => "[Hashtrees] ",
     :sender_address => %{Hashtrees <no-reply@hashtre.es>},
-    :exception_recipients => %w{pierre.noizat@paymium.com david.francois@paymium.com}
+    :exception_recipients => %w{pierre.noizat@paymium.com}
   })
 
   # Settings specified here will take precedence over those in config/application.rb.
@@ -99,16 +99,6 @@ Rails.application.configure do
     :enable_starttls_auto  => true # changed from true 27 april 2013
   }
 
-  config.paperclip_defaults = {
-    :storage => :s3,
-    :s3_protocol => 'http',
-    :s3_credentials => {
-      :bucket => 'hashtree-assets'
-    }
-  }
-
   $MAIN_URL = "http://hashtre.es"
-  $TREES_URL = $MAIN_URL + "/trees/"
-  $LEAF_NODES_URL = $MAIN_URL + "/leaf_nodes/"
 
 end

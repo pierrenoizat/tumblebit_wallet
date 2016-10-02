@@ -270,7 +270,7 @@ class ScriptsController < ApplicationController
     end
     
     puts tx.to_s
-    redirect_to @script, notice: @notice
+    redirect_to @script, alert: @notice
   end
 
 

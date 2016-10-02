@@ -1,7 +1,6 @@
 class VisitorsController < ApplicationController
   
   def index
-    @tree = Tree.first
     @contact = Contact.new # for contact form
     @visitor = Visitor.new  # for newsletter subscription
   end

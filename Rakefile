@@ -5,9 +5,6 @@ include Rake::DSL if defined?(Rake::DSL)
 
 require File.expand_path('../config/application', __FILE__)
 require 'rake'
-task "resque:setup" => :environment do
-  Resque.before_fork = Proc.new { ActiveRecord::Base.establish_connection }
-end
 
 
 Rails.application.load_tasks

@@ -9,6 +9,8 @@ module TreeWorker
 
   def self.perform(id)
     
+    ActiveRecord::Base.clear_active_connections!
+    
     @tree = Tree.find_by_id(id)
     
     tree_id = @tree.id
