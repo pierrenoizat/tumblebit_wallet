@@ -1,5 +1,5 @@
 <td><%= link_to script.title, script %></td>
-<td><%= script.text %></td>
+<td><%= category_of(script.category) %></td>
 <% if user_admin? %>
 <td><%= link_to "Edit", edit_script_path(script), :class => 'btn btn-xs btn-success' %></td>
 <td><%= link_to "Delete", script_path(script), :data => { :confirm => "Are you sure?" }, :method => :delete, :class => 'btn btn-xs btn-danger' %></td>

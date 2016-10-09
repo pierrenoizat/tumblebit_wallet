@@ -14,6 +14,23 @@ class Script < ActiveRecord::Base
   require 'mechanize'
   require 'digest'
   
+  def description
+    case self.category
+      when "time_locked_address"
+        "<expiry time> CHECKLOCKTIMEVERIFY DROP <public key> CHECKSIG"
+        
+      when "time_locked_2fa"
+        "IF <service public key> CHECKSIGVERIFY
+        ELSE <expiry time> CHECKLOCKTIMEVERIFY DROP 
+        ENDIF
+ <user public key> CHECKSIG"
+        
+      when "contract_oracle"
+        "<contract_hash> DROP 2 <beneficiary pubkey> <oracle pubkey> 2 CHECKMULTISIG"
+    end
+  end
+  
+  
   def init
     self.expiry_date  ||= Time.now.utc  #will set the default value only if it's nil
   end

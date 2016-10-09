@@ -100,8 +100,8 @@ class ScriptsController < ApplicationController
             @notice = "Bad private key."
           end
           # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
-          if ((@script.priv_key.size != 52) or (@notice == "Bad private key."))
-            @notice = "Private key length is not 52 chars."
+          if ((@script.priv_key.size > 52) or (@notice == "Bad private key."))
+            @notice = "Private key is too long."
             redirect_to root_url, alert: @notice
             return
           end
@@ -130,8 +130,8 @@ class ScriptsController < ApplicationController
             @notice = "Bad private key."
           end
           # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
-          if ((@script.priv_key.size != 52) or (@notice == "Bad private key."))
-            @notice = "Private key length is not 52 chars."
+          if ((@script.priv_key.size > 52) or (@notice == "Bad private key."))
+            @notice = "Private key is too long."
             redirect_to root_url, alert: @notice
             return
           end
@@ -163,8 +163,8 @@ class ScriptsController < ApplicationController
             @notice = "Bad private key."
           end
           # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
-          if ((@script.priv_key.size != 52) or (@notice == "Bad private key."))
-            @notice = "Private key length is not 52 chars."
+          if ((@script.priv_key.size > 52) or (@notice == "Bad private key."))
+            @notice = "Private key is too long."
             redirect_to root_url, alert: @notice
             return
           end
@@ -198,14 +198,14 @@ class ScriptsController < ApplicationController
             @notice = "Bad private key."
           end
           # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
-          if ((@script.priv_key.size != 52) or (@notice == "Bad private key."))
-            @notice = "User private key length is not 52 chars."
+          if ((@script.priv_key.size > 52) or (@notice == "Bad private key."))
+            @notice = "User private key is too long."
             redirect_to root_url, alert: @notice
             return
           end
           # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
-          if ((@script.oracle_1_priv_key.size != 52) or (@notice == "Bad private key."))
-            @notice = "Escrow private key length is not 52 chars."
+          if ((@script.oracle_1_priv_key.size > 52) or (@notice == "Bad private key."))
+            @notice = "Escrow private key is too long."
             redirect_to root_url, alert: @notice
             return
           end
@@ -270,7 +270,11 @@ class ScriptsController < ApplicationController
     end
     
     puts tx.to_s
-    redirect_to @script, alert: @notice
+    if @notice == "Script spending tx was successfully signed."
+      redirect_to @script, info: @notice
+    else
+      redirect_to @script, alert: @notice
+    end
   end
 
 

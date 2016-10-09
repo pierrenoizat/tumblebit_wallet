@@ -21,6 +21,7 @@ development:
   mail_password: <%= ENV["MAIL_PASSWORD"] %>
   mailchimp_api_key: <%= ENV["MAILCHIMP_API_KEY"] %>
   mailchimp_list_id: <%= ENV["MAILCHIMP_LIST_ID"] %>
+  btcscript_admin_uid: <%= ENV["BTCSCRIPT_ADMIN_UID"] %>
 
 production:
   <<: *default

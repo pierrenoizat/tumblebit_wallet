@@ -3,34 +3,11 @@
 <% @post = Post.find_by_title("About") %>
 <div style="padding-left: 20px" >
 <%= markdown(@post.body) %></div>
-<% @tree= Tree.first %>
-<% if @tree %>
-	<% if @tree.leaf_nodes %>
-<p style="padding-left: 20px" >Checkout this example: visit <%= link_to 'this tree', tree_path(@tree) %> with the access key <%= @tree.leaf_nodes.last.nonce.to_s %></p></br>
-	<% end %>
-<% end %>
-<% @post = Post.find_by_title("Getting started 1") %>
+
+<% @post = Post.find_by_title("Getting started") %>
 <div style="padding-left: 20px" >
 <%= markdown(@post.body) %>
-<pre style="width:650px"><code>name = "BC-U123456"
-credit = "1.23"
-nonce = "8a6199e74e081f236d86f9f19492dc60"
 
-hash = OpenSSL::Digest::SHA256.new.digest("#{name}|#{credit}|#{nonce}")
-
-# convert hash from binary to hexadecimal string:
-leaf_hash = hash.unpack('H*').first</pre></code></div>
-<% @post = Post.find_by_title("Getting started 2") %>
-<div style="padding-left: 20px" >
-<%= markdown(@post.body) %>
-<pre style="width:650px"><code>sum = "12.34"
-left = "83570cda3f2e5e6e95a165c33af80eb4517589631e3c56cc45da2cc7b44af6f9"
-right = "9bf204f5a85b58a98824e8be4225111dd5070dab9dd040af25874c1aa92999b5"
-
-hash = OpenSSL::Digest::SHA256.new.digest("#{sum}|#{left}|#{right}")
-
-# convert hash from binary to hexadecimal string:
-node_hash = hash.unpack('H*').first</pre></code></div>
 <% @post = Post.find_by_title("License") %>
 <div style="padding-left: 20px" >
 <%= markdown(@post.body) %></div>

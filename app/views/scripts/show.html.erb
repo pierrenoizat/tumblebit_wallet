@@ -1,15 +1,13 @@
 <div class="container">
   <div class="row">
-	<h3>Script # <%= @script.id if @script %></h3>
-	<h3><%= @script.title if @script.title %></h3>
-	<p>Category: <strong><%= @script.category if @script.category %></strong></p>
-	<p>Text: <%= @script.text if @script %></p>
+	<h3>Script # <%= @script.id if @script %>: <%= @script.title if @script.title %></h3>
+	<p>Category: <strong><%= category_of(@script.category) if @script.category %></strong></br>
+	Script:</p><pre style="width:500px"><code> <%= @script.description if @script %></code></pre>
 	
 	<% if ["time_locked_address", "time_locked_2fa"].include? @script.category %>
 	<!--<p>Expiry: <%= @script.expiry_date if @script %></p>-->
-	<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></p>
-	
-	<p>Expiry in seconds since epoch time (1/1/1970): <%= @script.expiry_date.to_time.to_i %></p>
+	<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></br>
+	Expiry in seconds since epoch time (1/1/1970): <%= @script.expiry_date.to_time.to_i %></p>
 	<% end %>
 	
 	<% if @script.category == "contract_oracle" %>
@@ -20,27 +18,68 @@
 	
 	<% if @script.category == "time_locked_2fa" or @script.category == "contract_oracle" %>
 		<% key = @public_keys.first %>
-		<p>Escrow: <%= key.name if key %></p>
-		<p>Escrow (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
+		<p>Escrow: <%= key.name if key %></br>
+		Escrow (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
 		<% key = @public_keys.last %>
-		<p>User: <%= key.name if key %></p>
-		<p>User (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
+		<p>User: <%= key.name if key %></br>
+		User (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
 	<% else %>
 		<% @public_keys.each do |key| %>  	
 			<p>Name: <%= key.name if key %></p>
 			<p>Compressed Public Key: <%= key.compressed if key %></p>
 	 		<% end %>
 	<% end %>
-	<p>P2SH Address: <strong><%= @script.hash_address if @script %></strong></p>
+	<p>P2SH Address: 
+		<% if @script.funded? %>
+			<strong><%= @script.hash_address if @script %></strong>
+		<% else %>
+			<!-- Button trigger modal -->
+			<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#myModal" data-p2shaddress="<%= @script.hash_address %>"><strong><%= @script.hash_address if @script %></strong></button>
+		<% end %></p>
+	
 	<% if @script.funded? %>
 		<p><%= link_to("Create Spending Tx", { controller: "scripts", action: "create_spending_tx" }, :class => "btn btn-primary") %></p>
 	<% else %>
 		<% if @script.hash_address %>
 			<p>Script is not funded yet or no UTXO is available/confirmed to create a spending transaction.</p>
 		<% else %>
-			<p>Script requires more public keys.</p>
+			<p>Script requires public key(s):</p>
+			<% if @script.id %>
+				<%= form_for([@script, @script.public_keys.build]) do |f| %>
+				<table class="table">
+			    	<tbody>
+			  		<tr>
+						<td><div class="field"><%= f.text_field :name, :style => "width:80px;", :placeholder => "John Doe" %></div></td>
+						<td><div class="field"><%= f.text_field :compressed, :style => "width:540px;", :placeholder => "02259B57015E60DE464E1D83C375BDD01D272290C51CEDE0B794301DE1B7770C7B" %></div></td>
+						<%= f.hidden_field :script_id, :value => @script.id %>
+			  			<td><div class="actions">
+			    		<%= f.submit "Add Compressed Public Key", :class => "btn btn-primary" %>
+						<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
+			                script_path, :class => 'btn' %></div></td>
+			  		</tr>
+				<% end %>
+			    	</tbody>
+
+				</table>
+			<% end %>
+			<aside>Public Keys must be entered in their order of appearance in the script.</aside>
 		<% end %>
 	<% end %>
 
-   </div>
+   	<!-- Modal -->
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	        <h4 class="modal-title" id="myModalLabel"></h4>
+	      </div>
+	      <div class="modal-body">
+	        <div id="p2sh_qrcode"></div>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	</div>
 </div>

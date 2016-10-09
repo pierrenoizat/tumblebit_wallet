@@ -9,6 +9,5 @@ Rails.application.config.assets.precompile += %w( plugins/jquery.waypoints.min.j
 Rails.application.config.assets.precompile += %w( plugins/smoothscroll.js )
 Rails.application.config.assets.precompile += %w( plugins/wow.min.js )
 Rails.application.config.assets.precompile += %w( plugins/contact.js )
-Rails.application.config.assets.precompile += %w( bootstrap/bootstrap.min.js )
 Rails.application.config.assets.precompile += %w( custom.js )
 

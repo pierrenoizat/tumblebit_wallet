@@ -24,7 +24,9 @@ class ApplicationController < ActionController::Base
     
     def user_admin?
       if current_user
-        current_user.uid == Figaro.env.btcscript_admin_uid
+        # current_user.uid == "418681302"
+        current_user.uid == Figaro.env.btcscript_admin_uid.to_s
+        # return User.find(session[:user_id]).uid == ENV["BTCSCRIPT_ADMIN_UID"]
       end
     end
 

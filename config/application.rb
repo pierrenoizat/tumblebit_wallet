@@ -36,8 +36,6 @@ module RailsOmniauth
     config.active_record.raise_in_transactional_callbacks = true
     $SALT_STRING = "ygiu1211095gadqfzzieczc4320098777pmlkjuyrcw67xfxuxgwosjdhdhd76392187643hdhsdndiidnd"
     
-    $NODES_PER_PAGE = 65
-    
     $BLOCKR_ADDRESS_UNSPENT_URL = "http://btc.blockr.io/api/v1/address/unspent/"
     $BLOCKR_ADDRESS_BALANCE_URL = "http://btc.blockr.io/api/v1/address/info/"
     

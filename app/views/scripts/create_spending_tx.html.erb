@@ -1,10 +1,34 @@
 <div class="container">
   <div class="row">
-	<h3>Script # <%= @script.id if @script %></h3>
-	<p>Title: <%= @script.title if @script.title %></p>
-	<p>Text: <%= @script.text if @script %></p>
-	<p>Tx_id: <%= @script.tx_hash if @script %></p>
-	<p>Index: <%= @script.index if @script %></p>
+	<h3>Create Spending Transaction for <%= @script.title if @script.title %></h3>
+	<p>Category: <strong><%= @script.category if @script.category %></strong></p>
+	<p>Script:</br><pre style="width:650px"><code> <%= @script.description if @script %></code></pre></p>
+	<% if ["time_locked_address", "time_locked_2fa"].include? @script.category %>
+	<!--<p>Expiry: <%= @script.expiry_date if @script %></p>-->
+	<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></p>
+	<% end %>
+	
+	<% if @script.category == "contract_oracle" %>
+	<!--<p>Expiry: <%= @script.expiry_date if @script %></p>-->
+	<p>Contract: <strong><%= @script.contract %></strong></p>
+	<p>Contract hash: <%= Digest::SHA256.hexdigest @script.contract if @script.contract %></p>
+	<% end %>
+	
+	<% if @script.category == "time_locked_2fa" or @script.category == "contract_oracle" %>
+		<% key = @public_keys.first %>
+		<p>Escrow: <%= key.name if key %></p>
+		<p>Escrow (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
+		<% key = @public_keys.last %>
+		<p>User: <%= key.name if key %></p>
+		<p>User (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
+	<% else %>
+		<% @public_keys.each do |key| %>  	
+			<p>Owner: <%= key.name if key %></p>
+			<p>Compressed Public Key: <%= key.compressed if key %></p>
+	 		<% end %>
+	<% end %>
+	<p>P2SH Address: <strong><%= @script.hash_address if @script %></strong></p>
+	<p>Unspent Output (Tx_id:index):  <%= @script.tx_hash if @script %> : <%= @script.index if @script %></p>
 	<p>Amount: <%= @script.amount if @script %></p>
 	<p>Confirmations: <%= @script.confirmations if @script %></p>
 	
@@ -36,7 +60,7 @@
     		<p><%= f.text_field :priv_key, :style => "width:400px;" %></p>
   		</div>
 
-		<%= f.submit 'Submit', :class => "btn btn-primary" %>
+		<%= f.submit 'Display Transaction', :class => "btn btn-primary" %>
 	<% end %>
    </div>
 </div>
