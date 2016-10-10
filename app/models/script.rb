@@ -92,7 +92,7 @@ class Script < ActiveRecord::Base
   
   def hash_address
     
-    unless self.public_keys.blank?
+    unless self.public_keys.count == 0
       case self.category
         when "time_locked_address"
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
@@ -113,7 +113,8 @@ class Script < ActiveRecord::Base
   
   
   def funded?
-    if self.hash_address
+    
+    if !self.hash_address.blank?
       string = $BLOCKR_ADDRESS_BALANCE_URL + self.hash_address.to_s + "?confirmations=0"
       @agent = Mechanize.new
 
