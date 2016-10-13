@@ -27,20 +27,11 @@
     <p><%= f.text_field :text %></p>
   </div>
 
-  <% if @script.category == "contract_oracle" %>
-   <div class="field">
-    <p><%= f.label 'Contract String' %></p>
-  	<p><%= f.text_field :contract, :style => "width:400px;", :placeholder => "{time_limit:1474299166,rate_limit:545.00}" %></p>
-	</div>
-  <% else %>
-
  <div class="field">
     <p><%= f.label 'Expiry (UTC)' %></p>
 	<p>Present Time: <%= Time.now.utc %></p>
     <p><%= f.datetime_select(:expiry_date, {:start_year => Date.today.year, :end_year => 2024, :default => @script.expiry_date, :use_two_digit_numbers => true, :prompt => {:year => "year", :month => "month", :day => "day", :hour => "hour", :minute => "minute"}}, {:style => "width: 80px;"}) %></p>
   </div>
-  <% end %>
-
 	
 	<% if @script.id %>
 		<%= f.submit 'Update', :class => "btn btn-primary" %>

@@ -1,13 +1,20 @@
-<% content_for :title do %>About<% end %>
-<!-- Posts are created in db/seeds.rb -->
-<% @post = Post.find_by_title("About") %>
-<div style="padding-left: 20px" >
-<%= markdown(@post.body) %></div>
+<div class="container">
+	<div class="row">
 
-<% @post = Post.find_by_title("Getting started") %>
-<div style="padding-left: 20px" >
-<%= markdown(@post.body) %>
+	<% content_for :title do %>About<% end %>
+	<!-- Posts are created in db/seeds.rb -->
+	<% @post = Post.find_by_title("About") %>
 
-<% @post = Post.find_by_title("License") %>
-<div style="padding-left: 20px" >
-<%= markdown(@post.body) %></div>
+	<%= markdown(@post.body) %>
+	</br>
+	<% @post = Post.find_by_title("Getting started") %>
+
+	<%= markdown(@post.body) %>
+	</br>
+	</br>
+	<% @post = Post.find_by_title("License") %>
+
+	<%= markdown(@post.body) %>
+	
+	</div>
+</div>

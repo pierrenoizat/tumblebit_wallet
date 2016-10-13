@@ -3,43 +3,14 @@
 	<h3>Script # <%= @script.id if @script %>: <%= @script.title if @script.title %></h3>
 	<p>Category: <strong><%= category_of(@script.category) if @script.category %></strong></br>
 	Script:</p><pre style="width:600px"><code> <%= @script.description if @script %></code></pre>
-	
-	<% if ["time_locked_address", "time_locked_2fa"].include? @script.category %>
-	<!--<p>Expiry: <%= @script.expiry_date if @script %></p>-->
+
 	<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></br>
 	Expiry in seconds since epoch time (1/1/1970): <%= @script.expiry_date.to_time.to_i %></p>
-	<% end %>
 	
-	<% if @script.category == "contract_oracle" %>
-	<!--<p>Expiry: <%= @script.expiry_date if @script %></p>-->
-	<p>contract_hash is the SHA256 of a string like "{param_1:value_1,param_2:value_2}"
-		</br>param_1 and 2 are described in the contract, value_1 and 2 come from external data sources
-		</br>value_1 and 2 must match the values set in the contract for the hash to match contract_hash.</p>
-	<p>Contract: <strong><%= @script.contract %></strong></p>
-	<p>Contract hash: <%= Digest::SHA256.hexdigest @script.contract.to_s if @script.contract %></p>
-	<% end %>
-	
-	<% case @script.category %>
-		<% when "time_locked_2fa" %>
-		<% key = @public_keys.first %>
-		<p>Escrow: <%= key.name if key %></br>
-		Escrow (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
-		<% key = @public_keys.last %>
-		<p>User: <%= key.name if key %></br>
-		User (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
-		<% when "contract_oracle" %>
-		<% key = @public_keys.first %>
-		<p>User: <%= key.name if key %></br>
-		User (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
-		<% key = @public_keys.last %>
-		<p>Oracle: <%= key.name if key %></br>
-		Oracle (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
-		<% else %>
-		<% @public_keys.each do |key| %>  	
-			<p>Name: <%= key.name if key %></p>
-			<p>Compressed Public Key: <%= key.compressed if key %></p>
-	 		<% end %>
-	<% end %>
+	<% key = @public_keys.last %>
+	<p>User: <%= key.name if key %></br>
+	User (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
+		
 	<p>P2SH Address: 
 		<% if @script.funded? %>
 			<strong><%= @script.hash_address if @script %></strong>
@@ -56,7 +27,7 @@
 		<% if @script.hash_address %>
 			<p>Script is not funded yet or no UTXO is available/confirmed to create a spending transaction.</p>
 		<% else %>
-			<p>Script requires public key(s):</p>
+			<p>Script requires a public key:</p>
 			<% if @script.id %>
 				<%= form_for([@script, @script.public_keys.build]) do |f| %>
 				<table class="table">
@@ -75,7 +46,6 @@
 
 				</table>
 			<% end %>
-			<aside>Public Keys must be entered in their order of appearance in the script.</aside>
 		<% end %>
 	<% end %>
 	

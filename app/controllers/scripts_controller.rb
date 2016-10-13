@@ -51,10 +51,6 @@ class ScriptsController < ApplicationController
     redirect_to scripts_path, notice: 'Script was successfully deleted.'
   end
   
-  def display 
-    @script = Script.find_by_id(params[:id])
-  end
-  
   def create_spending_tx
     @script = Script.find(params[:id])
     @public_keys = @script.public_keys
@@ -65,7 +61,7 @@ class ScriptsController < ApplicationController
     end
   end
 
-  def create_signed_transaction
+  def sign_tx
     
     require 'btcruby/extensions'
     
@@ -267,13 +263,40 @@ class ScriptsController < ApplicationController
         tx.inputs[0].signature_script << (@escrow_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
 
         tx.inputs[0].signature_script << @funding_script.data
+
     end
-    
+    @script.signed_tx = tx.to_s
+    # @script.update_attributes(script_params)
+    puts @notice
     puts tx.to_s
-    if @notice == "Script spending tx was successfully signed."
-      redirect_to @script, info: @notice
-    else
+    unless @notice == "Script spending tx was successfully signed."
       redirect_to @script, alert: @notice
+    end
+  end
+  
+  
+  def broadcast
+    @script = Script.find(params[:id])
+    @script.signed_tx = params[:script][:signed_tx]
+
+    # $PUSH_TX_URL = "https://api.blockcypher.com/v1/btc/main/txs/push"
+    uri = URI.parse($PUSH_TX_URL)  # param is "tx"
+
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    request = Net::HTTP::Post.new(uri.path, {'Content-Type' =>'application/json'})
+    data = {"tx": @script.signed_tx}
+    request.body = data.to_json
+
+    response = http.request(request)  # broadcast transaction using $PUSH_TX_URL
+    
+    post_response = JSON.parse(response.body)
+    if post_response["error"]
+      puts "Tx broadcast failed: #{post_response["error"]}"
+      redirect_to @script, alert: "Tx broadcast failed. "+"#{post_response["error"]}"
+    else
+      puts "Tx was broadcast successfully with Tx ID: #{post_response[:tx][:hash]}"
+      redirect_to @script, notice: "Tx was broadcast successfully with Tx ID: #{post_response[:tx][:hash]}"
     end
   end
 

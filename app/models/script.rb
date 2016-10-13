@@ -1,8 +1,9 @@
 class Script < ActiveRecord::Base
+  validates_presence_of :title
   
   enum category: [:time_locked_address, :time_locked_2fa, :contract_oracle]
   
-  attr_accessor :tx_hash, :index, :amount, :confirmations, :priv_key, :oracle_1_priv_key, :oracle_2_priv_key
+  attr_accessor :tx_hash, :index, :amount, :confirmations, :priv_key, :oracle_1_priv_key, :oracle_2_priv_key, :signed_tx
   
   # self.contract is a string of the form "{param_1:value_1,param_2:value_2}", e.g "{time_limit:1474299166,rate_limit:545.00}" for a futures contract on the EUR/BTC exchange rate
   
@@ -75,9 +76,9 @@ class Script < ActiveRecord::Base
         # <hash>: SHA256 of a string like "{param_1:value_1,param_2:value_2}"
         # param_1 and 2 are described in the contract, value_1 and 2 come from external data sources
         # value_1 and 2 must match the values set in the contract for the hash to match contract_hash
-        @contract_hash = Digest::SHA256.digest self.contract
-        @escrow_key=BTC::Key.new(public_key:BTC.from_hex(self.public_keys.first.compressed))
-        @user_key=BTC::Key.new(public_key:BTC.from_hex(self.public_keys.last.compressed))
+        @contract_hash = Digest::SHA256.hexdigest self.contract
+        @escrow_key=BTC::Key.new(public_key:BTC.from_hex(self.public_keys.last.compressed))
+        @user_key=BTC::Key.new(public_key:BTC.from_hex(self.public_keys.first.compressed))
         @funding_script.append_pushdata(@contract_hash)
         @funding_script<<BTC::Script::OP_DROP
         @funding_script<<BTC::Script::OP_2
