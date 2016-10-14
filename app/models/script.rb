@@ -34,6 +34,7 @@ class Script < ActiveRecord::Base
   
   def init
     self.expiry_date  ||= Time.now.utc  #will set the default value only if it's nil
+    self.category ||= "time_locked_address"
   end
   
   def funding_script

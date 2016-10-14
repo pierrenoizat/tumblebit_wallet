@@ -22,11 +22,6 @@
     <p><%= f.select(:category, Script.categories.keys.map { |category| [category.titleize, category]}) %></p>
   </div>
 
-  <div class="field">
-    <p><%= f.label 'Text' %></p>
-    <p><%= f.text_field :text %></p>
-  </div>
-
  <div class="field">
     <p><%= f.label 'Expiry (UTC)' %></p>
 	<p>Present Time: <%= Time.now.utc %></p>
