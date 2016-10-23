@@ -1,8 +1,8 @@
 Rails.application.configure do
 
   Rails.application.config.middleware.use(ExceptionNotification::Rack, :email => {
-    :email_prefix => "[Hashtrees] ",
-    :sender_address => %{Hashtrees <no-reply@hashtre.es>},
+    :email_prefix => "[Bitcoinscript] ",
+    :sender_address => %{Bitcoinscript <no-reply@bitcoinscri.pt>},
     :exception_recipients => %w{pierre.noizat@paymium.com}
   })
 
@@ -99,6 +99,6 @@ Rails.application.configure do
     :enable_starttls_auto  => true # changed from true 27 april 2013
   }
 
-  $MAIN_URL = "http://hashtre.es"
+  $MAIN_URL = "http://btcscript.herokuapp.com"
 
 end
