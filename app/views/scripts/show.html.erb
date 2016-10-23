@@ -2,7 +2,7 @@
   <div class="row">
 	<h3>Contract # <%= @script.id if @script %>: <%= @script.title if @script.title %></h3>
 	<p>Category: <strong><%= category_of(@script.category) if @script.category %></strong></br>
-	Script:</p><pre style="width:600px"><code> <%= @script.description if @script %></code></pre>
+	Script:</p><pre style="width:600px"><code><%= @script.description if @script %></code></pre>
 	
 	<% if ["time_locked_address", "time_locked_2fa"].include? @script.category %>
 	<!--<p>Expiry: <%= @script.expiry_date if @script %></p>-->

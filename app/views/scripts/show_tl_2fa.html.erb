@@ -1,7 +1,7 @@
 <div class="container">
   <div class="row">
 	<h3>Time Locked 2FA Contract # <%= @script.id if @script %>: <%= @script.title if @script.title %></h3>
-	<p>Script:</p><pre style="width:600px"><code> <%= @script.description if @script %></code></pre>
+	<p>Script:</p><pre style="width:600px"><code><%= @script.description if @script %></code></pre>
 
 	<!--<p>Expiry: <%= @script.expiry_date if @script %></p>-->
 	<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></br>
