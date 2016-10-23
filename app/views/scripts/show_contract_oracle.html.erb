@@ -1,8 +1,7 @@
 <div class="container">
   <div class="row">
-	<h3>Script # <%= @script.id if @script %>: <%= @script.title if @script.title %></h3>
-	<p>Category: <strong><%= category_of(@script.category) if @script.category %></strong></br>
-	Script:</p><pre style="width:600px"><code> <%= @script.description if @script %></code></pre>
+	<h3>Oracle Contract # <%= @script.id if @script %>: <%= @script.title if @script.title %></h3>
+	<p>Script:</p><pre style="width:600px"><code> <%= @script.description if @script %></code></pre>
 
 	<p>contract_hash is the SHA256 of a string like "{param_1:value_1,param_2:value_2}"
 		</br>param_1 and 2 are described in the contract, value_1 and 2 come from external data sources

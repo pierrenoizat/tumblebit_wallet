@@ -1,116 +1,26 @@
 <%= form_for(@script, multipart: true) do |f| %>
-  <% if @script.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(@script.errors.count, "error") %> prohibited this script from being saved:</h2>
-
-      <ul>
-      <% @script.errors.full_messages.each do |msg| %>
-        <li><%= msg %></li>
-      <% end %>
-      </ul>
-    </div>
-  <% end %>
   <% unless @script.title %>
   <div class="field">
     <p><%= f.label 'Title' %></p>
     <p><%= f.text_field :title %></p>
   </div>
   <% end %>
-
+  <% unless @script.id %>
   <div class="field" >
     <p><%= f.label 'Script' %></p>
     <p><span id="snippet" data-code ="salut"><%= f.select(:category, Script.categories.keys.map { |category| [category.titleize, category]}, {}, {:onChange=>"ready();"}) %></span></p>
   </div>
-
-	<div><pre style="width:600px"><code id="contrat"><%= @script.description %></code></pre></div>
-
-  <% if @script.category == "contract_oracle" %>
-   <div class="field">
-    <p><%= f.label 'Contract String' %></p>
-  	<p><%= f.text_field :contract, :style => "width:400px;", :placeholder => "{time_limit:1474299166,rate_limit:545.00}" %></p>
-	</div>
-  <% else %>
-
- <div class="field">
-    <p><%= f.label 'Expiry (UTC)' %></p>
-	<p>Present Time: <%= Time.now.utc.strftime("%Y-%b-%d - %H:%M") %></p>
-    <p><%= f.datetime_select(:expiry_date, {:start_year => Date.today.year, :end_year => 2024, :default => @script.expiry_date, :use_two_digit_numbers => true, :prompt => {:day => "day", :month => "month", :year => "year", :hour => "hour", :minute => "minute"}}, {:style => "width: 80px;"}) %></p>
-  </div>
   <% end %>
 
+	<div><pre style="width:600px"><code id="contrat"><%= @script.description %></code></pre></div>
+</br>
+	<div id="sub-form"></div>
+</br>
 	
 	<% if @script.id %>
-		<%= f.submit 'Update', :class => "btn btn-primary" %>
+		<%= f.submit 'Update contract with parameters', :class => "btn btn-primary" %>
 	<% else %>
-		<%= f.submit 'Create', :class => "btn btn-primary" %>
+		<%= f.submit 'Start contract creation', :class => "btn btn-primary" %>
 	<% end %>
 
 <% end %>
-</br>
-<% if @script.id %>
-	<table class="table">
-	 <tbody>
-		<tr>
-		<td>Name</td>
-		<td>Compressed Public Key</td>
-		</tr>
-
-   
-      <% @script.public_keys.each do |key| %>
-		<tr>
-        	<td><%= key.name %></td>
-			<td><%= key.compressed %></td>
-			<td><%= link_to "Delete", key, :data => { :confirm => "Are you sure?" }, :method => :delete, :class => 'btn btn-xs btn-danger' %></td>
-		</tr>
-      <% end %>
-    </tbody>
-	</table>
-<% end %>
-
-<% if @script.id %>
-	<%= form_for([@script, @script.public_keys.build]) do |f| %>
-	<table class="table">
-    	<tbody>
-  		<tr>
-			<td><div class="field"><%= f.text_field :name, :style => "width:80px;" %></div></td>
-			<td><div class="field"><%= f.text_field :compressed, :style => "width:540px;" %></div></td>
-			<%= f.hidden_field :script_id, :value => @script.id %>
-  			<td><div class="actions">
-    		<%= f.submit "Add Compressed Public Key", :class => "btn btn-primary" %>
-			<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
-                script_path, :class => 'btn' %></div></td>
-  		</tr>
-	<% end %>
-    	</tbody>
-		
-	</table>
-	<aside>Public Keys must be entered in their order of appearance in the script.</aside>
-<% end %>
-<script>
-var ready;
-ready = function() {
-
-	var codeSnippet = $('#snippet').data('code');
-	var element = document.getElementById("contrat");
-	//element.parentNode.removeChild(element);
-	//document.body.appendChild(form);
-	
-	var form_field_value = $("#script_category").val()
-	
-	switch (form_field_value) {
-	    case "time_locked_address":
-	        codeSnippet = "&#60;expiry time&#62; CHECKLOCKTIMEVERIFY DROP &#60;public key&#62; CHECKSIG";
-	        break;
-	    case "time_locked_2fa":
-	        codeSnippet = "IF &#60;service public key&#62; CHECKSIGVERIFY&#10; ELSE &#60;expiry time&#62; CHECKLOCKTIMEVERIFY DROP&#10; ENDIF&#10; &#60;user public key&#62; CHECKSIG";
-	        break;
-	    case "contract_oracle":
-	        codeSnippet = "&#60;contract_hash&#62; DROP 2 &#60;beneficiary pubkey&#62; &#60;oracle pubkey&#62; 2 CHECKMULTISIG";
-	}
-	element.innerHTML = codeSnippet;
-	console.log(codeSnippet);
-	console.log(form_field_value);
-};
-
-$(document).ready(ready);
-</script>

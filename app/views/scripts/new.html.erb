@@ -1,11 +1,11 @@
 <%- model_class = Script -%>
 <div style="padding-left: 20px" >
 <% if user_signed_in? %>
-<h3>Customize a script</h3>
+<h3>Customize a contract</h3>
 
 
 <%= render 'form' %>
 <% else %>
-<h3>To create a new script, you must <%= link_to 'sign in', signin_path %> first with your Twitter account.</h3></br>
+<h3>To create a new contract, you must <%= link_to 'sign in', signin_path %> first with your Twitter account.</h3></br>
 <% end %>
 </div>

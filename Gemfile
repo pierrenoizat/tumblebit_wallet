@@ -33,6 +33,8 @@ gem 'font-awesome-rails'
 gem 'pg'
 gem 'btcruby', '~> 1.5'
 gem 'mechanize'
+gem 'validates_timeliness', '~> 4.0'
+gem 'rails-i18n'
 
 group :development do
   gem 'better_errors'

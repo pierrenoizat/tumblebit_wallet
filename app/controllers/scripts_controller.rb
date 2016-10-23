@@ -11,28 +11,98 @@ class ScriptsController < ApplicationController
   
   def create
       @script = Script.new(script_params)
-      
-
 
       if @script.save
-        redirect_to @script, notice: 'Bitcoin script was successfully created.'
+        redirect_to edit_script_path(@script), notice: 'Contract was successfully created.'
        else
-         render action: 'new'
+        alert_string = ""
+        @script.errors.full_messages.each do |msg|
+          msg += ". "
+          alert_string += msg 
+        end
+        redirect_to new_script_path, alert: alert_string
       end
   end
   
 
   def edit
     @script = Script.find(params[:id])
+    
+    case @script.category
+      when "time_locked_address"
+        if @script.public_keys.last
+          @script.oracle_1_pub_key = @script.public_keys.last.compressed
+        else
+          @script.oracle_1_pub_key = ""
+        end
+        render :template => 'scripts/edit_tla'
+      when "time_locked_2fa"
+        if @script.public_keys.count < 2
+          @script.public_keys.each do |public_key|
+            public_key.destroy
+          end
+          @script.oracle_1_pub_key = ""
+          @script.oracle_2_pub_key = ""
+        else
+          @script.oracle_1_pub_key = @script.public_keys.first.compressed
+          @script.oracle_2_pub_key = @script.public_keys.last.compressed
+        end
+        render :template => 'scripts/edit_tl_2fa'
+      when "contract_oracle"
+        if @script.public_keys.count < 2
+          @script.public_keys.each do |public_key|
+            public_key.destroy
+          end
+          @script.oracle_1_pub_key = ""
+          @script.oracle_2_pub_key = ""
+        else
+          @script.oracle_1_pub_key = @script.public_keys.first.compressed
+          @script.oracle_2_pub_key = @script.public_keys.last.compressed
+        end
+        render :template => 'scripts/edit_contract_oracle'
+      else
+        render :template => 'scripts/edit'
+    end
   end
 
   def update
     @script = Script.find(params[:id])
-    if @script.update_attributes(script_params)
-      redirect_to @script, notice: 'Script was successfully updated.'
-    else
-      render :edit
+    @script.update_attributes(script_params)
+    case @script.category
+        when "time_locked_address"
+          if @script.oracle_1_pub_key
+            @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.oracle_1_pub_key, :name => "User")
+            @public_key.save
+          end
+          @public_keys = @script.public_keys
+          render 'show_tla'
+        when "time_locked_2fa"
+          if @script.oracle_1_pub_key
+            @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.oracle_1_pub_key, :name => "Service")
+            @public_key.save
+          end
+          if @script.oracle_2_pub_key
+            @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.oracle_2_pub_key, :name => "User")
+            @public_key.save
+          end
+          @public_keys = @script.public_keys
+          render 'show_tl_2fa'
+        when "contract_oracle"
+          if @script.oracle_1_pub_key
+            @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.oracle_1_pub_key, :name => "User")
+            @public_key.save
+          end
+          if @script.oracle_2_pub_key
+            @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.oracle_2_pub_key, :name => "Service")
+            @public_key.save
+          end
+          @public_keys = @script.public_keys
+          render 'show_contract_oracle'
+        else
+          @public_keys = @script.public_keys
+          render 'show'
     end
+
   end
   
   
@@ -40,12 +110,25 @@ class ScriptsController < ApplicationController
   def show
     @script = Script.find(params[:id])
     @public_keys = @script.public_keys
+    case @script.category
+      when "time_locked_address"
+        render 'show_tla'
+      when "time_locked_2fa"
+        render 'show_tl_2fa'
+      when "contract_oracle"
+        render 'show_contract_oracle'
+      else
+        render 'show'
+    end
+    
   end
-  
   
   
   def destroy
     @script = Script.find_by_id(params[:id])
+    @script.public_keys.each do |public_key|
+      public_key.destroy
+    end
     @script.destroy
       
     redirect_to scripts_path, notice: 'Script was successfully deleted.'
@@ -304,7 +387,7 @@ class ScriptsController < ApplicationController
   private
  
      def script_params
-       params.require(:script).permit(:contract, :title, :text, :expiry_date, :category, public_keys_attributes: [:name, :compressed, :script_id])
+       params.require(:script).permit(:oracle_1_pub_key,:oracle_2_pub_key, :contract, :title, :text, :expiry_date, :category, public_keys_attributes: [:name, :compressed, :script_id])
      end
 
 end

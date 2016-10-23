@@ -1,0 +1,27 @@
+<div class="container">
+  <div class="row">
+	<h1>Edit Oracle Contract # <%= @script.id if @script %>: <%= @script.title if @script %></h1>
+	<div><pre style="width:600px"><code><%= @script.description %></code></pre></div>
+	<%= form_for(@script, multipart: true) do |f| %>
+	
+	<div class="field" id="contract_string">
+	    <p><%= f.label 'Contract String' %></p>
+	  	<p><%= f.text_field :contract, :style => "width:400px;", :placeholder => "{time_limit:1474299166,rate_limit:545.00}" %></p>
+		</div>
+	
+	<div class="field">
+		<p><%= f.label 'User (compressed) Public Key' %></p>
+		<p><%= f.text_field :oracle_1_pub_key, :style => "width:540px;" %></p>
+	</div>
+	
+	<div class="field">
+		<p><%= f.label 'Oracle (compressed) Public Key' %></p>
+		<p><%= f.text_field :oracle_2_pub_key, :style => "width:540px;" %></p>
+	</div>
+	
+	<%= f.submit 'Update contract with parameters', :class => "btn btn-primary" %>
+
+	<% end %>
+</br>
+   </div>
+</div>

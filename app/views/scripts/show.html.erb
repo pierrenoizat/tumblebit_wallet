@@ -1,6 +1,6 @@
 <div class="container">
   <div class="row">
-	<h3>Script # <%= @script.id if @script %>: <%= @script.title if @script.title %></h3>
+	<h3>Contract # <%= @script.id if @script %>: <%= @script.title if @script.title %></h3>
 	<p>Category: <strong><%= category_of(@script.category) if @script.category %></strong></br>
 	Script:</p><pre style="width:600px"><code> <%= @script.description if @script %></code></pre>
 	

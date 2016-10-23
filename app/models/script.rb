@@ -1,9 +1,9 @@
 class Script < ActiveRecord::Base
   validates_presence_of :title
-  
+  validates :expiry_date, :timeliness => {:after => lambda { Date.current }, :type => :datetime }
   enum category: [:time_locked_address, :time_locked_2fa, :contract_oracle]
   
-  attr_accessor :tx_hash, :index, :amount, :confirmations, :priv_key, :oracle_1_priv_key, :oracle_2_priv_key, :signed_tx
+  attr_accessor :tx_hash, :index, :amount, :confirmations, :priv_key, :oracle_1_priv_key, :oracle_2_priv_key, :signed_tx, :oracle_1_pub_key, :oracle_2_pub_key
   
   # self.contract is a string of the form "{param_1:value_1,param_2:value_2}", e.g "{time_limit:1474299166,rate_limit:545.00}" for a futures contract on the EUR/BTC exchange rate
   
@@ -101,7 +101,7 @@ class Script < ActiveRecord::Base
             # <BTC::ScriptHashAddress:3F8fc3FboEKb5rnmYUNQTuihZBkyPy4aNM>
             # script uses the last public key saved with the script
         when "time_locked_2fa", "contract_oracle"
-          if self.public_keys.count != 2
+          if self.public_keys.count < 2
             return nil # Script to Hash Address requires 2 keys.
           else
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
