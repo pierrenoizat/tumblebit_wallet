@@ -61,7 +61,8 @@ Post.create(
     This application requires:
 
     - Ruby 2.3.0
-    - Rails 4.2.0}
+    - Rails 4.2.0
+    - btcruby, the awesome Bitcoin ruby library developped by Oleg Andreev and Ryan Smith.}
 )
 
 Post.create(
