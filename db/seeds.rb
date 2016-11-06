@@ -102,5 +102,5 @@ Post.create(
   body:
   %Q{### License
 
-    © Paymium 2011-2016 Soon to be released under the [MIT license](http://opensource.org/licenses/mit-license.php)}
+    © Pierre Noizat - Paymium 2014-2016 Soon to be released under the [MIT license](http://opensource.org/licenses/mit-license.php)}
 )

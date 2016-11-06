@@ -59,14 +59,14 @@
             <div class="col-sm-4">
               <div class="features__item wow fadeIn">
                 <div class="features-item__icon">
-                  <span class="fa fa-list-ul"></span>
+                  <span class="fa fa-envelope-o"></span>
                 </div>
                 <div class="features-item__body">
                   <div class="features-item-body__title">
-                    Prepare your list
+                    Prepare your P2SH Address
                   </div>
                   <div class="features-item-body__summary">
-                    A hastree is a cryptographic proof of a list's integrity. The list must include an account identifier (account number or login) and some critically important attribute of the account like the account balance.
+                    A Smart Contract is initiated by computing a Bitcoin P2SH address. P2SH stands for Pay-to-Script-Hash, meaning the Contract Script is hashed into a unique address that will serve as a vault for the funds sent to it.
                   </div>
                 </div> <!-- / .features-item__body -->
               </div> <!-- / .features__item -->
@@ -74,14 +74,14 @@
             <div class="col-sm-4">
               <div class="features__item wow fadeIn">
                 <div class="features-item__icon">
-                  <span class="fa fa-code"></span>
+                  <span class="fa fa-key"></span>
                 </div>
                 <div class="features-item__body">
                   <div class="features-item-body__title">
-                    Format your list file
+                    Spend from the P2SH Address
                   </div>
                   <div class="features-item-body__summary">
-                    On hastre.es, the list must be formatted as a csv file with the account identifier first followed by the account balance. The two attributes must be separated by a comma and each account must be listed on a new line. There must be NO empty line at the end of the file.
+                    To spend the funds previously sent to the Smart Contract P2SH address, you will need to provide the original redeem Script as well as one or more private keys required by the Script.
                   </div>
                 </div> <!-- / .features-item__body -->
               </div> <!-- / .features__item -->
@@ -90,14 +90,14 @@
             <div class="col-sm-4">
               <div class="features__item wow fadeIn">
                 <div class="features-item__icon">
-                  <span class="fa fa-shopping-cart"></span>
+                  <span class="fa fa-hourglass-half"></span>
                 </div>
                 <div class="features-item__body">
                   <div class="features-item-body__title">
-                    Bring your own tree!
+                    Timelock 
                   </div>
                   <div class="features-item-body__summary">
-                    First, sign in with your twitter account. Then you will be authorized to upload your own account list as a csv file and to name a new tree. If it is correctly formatted, your csv file will serve as a basis for the computation of your brand new tree.
+                    A Script may enforce time conditions that must be met to unlock the funds held at the P2SH address. If you want to spend from the P2SH address of such Script, you may have to wait until the time lock expires.
                   </div>
                 </div> <!-- / .features-item__body -->
               </div> <!-- / .features__item -->
@@ -114,13 +114,13 @@
           <div class="row"> 
             <div class="row-same-height">
               <div class="col-sm-5 col-sm-height col-middle">
-                <h4 class="heading heading_left">Interactive Data Visualization</h4>
+                <h4 class="heading heading_left">A Stack-based Scripting System</h4>
                 <p class="heading__sub">
-                  Trees are drawn as interactive SVG graphs using D3, a JavaScript library for manipulating documents based on data. D3 helps us bring data to life using HTML, SVG, and CSS. D3’s emphasis on web standards gives us the full capabilities of modern browsers without tying us to a proprietary framework, combining powerful visualization components and a data-driven approach to DOM manipulation.
+                  Bitcoin uses a scripting system for complex transactions. Forth-like, Script is stack-based: instructions are 1-byte opcodes processed from left to right to be pushed on top of the stack sequentially. All values are variable length byte arrays. Script is not Turing-complete, with no loops, for optimal security.
                 </p>
               </div>
               <div class="col-sm-7 col-sm-height col-middle">
-				<%= image_tag "sample_merkle_tree_svg.png", class: "img-responsive" %>
+				<%= image_tag "stack_image.gif", class: "img-responsive" %>
               </div>
             </div> <!-- / .row-same-height -->
           </div> <!-- / .row -->
@@ -134,7 +134,7 @@
         <div class="container">
           <div class="row">
             <div class="col-xs-12">
-              <h4 class="heading">Our portfolio of scripts</h4>
+              <h4 class="heading">A portfolio of scripts</h4>
               <p class="heading__sub">
                 There are many use cases for Bitcoin scripts.<br /> Stay tuned: you'll find here links to some more demos.
               </p>
@@ -148,14 +148,14 @@
             <div class="portfolio__item">
               <div class="portfolio-item__img">
                 <!--<a href="#" data-lightbox="portfolio">-->
-					<%= image_tag "beach_tree.jpg", class: "img-responsive" %>
+					<%= image_tag "hourglass_289548902.jpg", class: "img-responsive" %>
                   <div class="portfolio-item__mask">
                     <div class="portfolio-item-mask__content">
                       <div class="portfolio-item-mask__title">
-                        In cursus diam at ante consectetur
+                        Time Locked Address
                       </div>
                       <div class="portfolio-item-mask__summary">
-                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
+                        This very simple script sets an expiry date and public key that must be matched to unlock the funds. The funds cannot move from the time locked address until the set expiry date and time. After the expiry, a single private key is required.
                       </div>
                     </div> <!-- / .portfolio-item-mask__content -->
                   </div> <!-- / .portfolio-item__mask -->
@@ -168,14 +168,14 @@
             <div class="portfolio__item">
               <div class="portfolio-item__img">
                 <!--<a href="#" data-lightbox="portfolio">-->
-                  <%= image_tag "duo_of_trees.jpg", class: "img-responsive" %>
+                  <%= image_tag "two_keys.jpg", class: "img-responsive" %>
                   <div class="portfolio-item__mask">
                     <div class="portfolio-item-mask__content">
                       <div class="portfolio-item-mask__title">
-                        In cursus diam at ante consectetur
+                        Time Locked 2FA
                       </div>
                       <div class="portfolio-item-mask__summary">
-                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
+                        The Script requires two keys before the set expiry date and only one key after the expiry date. If one of the keys is yours and the other belongs to a 2FA (2FA stands for two-factor authentication) service provider, the funds can be accessed after the expiry date even if the 2FA service provider has disappeared.
                       </div>
                     </div> <!-- / .portfolio-item-mask__content -->
                   </div> <!-- / .portfolio-item__mask -->
@@ -188,14 +188,14 @@
             <div class="portfolio__item">
               <div class="portfolio-item__img">
                 <!--<a href="#" data-lightbox="portfolio">-->
-                  <%= image_tag "hands-holding-a-small-tree.jpg", class: "img-responsive" %>
+                  <%= image_tag "contract_120067810.jpg", class: "img-responsive" %>
                   <div class="portfolio-item__mask">
                     <div class="portfolio-item-mask__content">
                       <div class="portfolio-item-mask__title">
-                        In cursus diam at ante consectetur
+                        Contract Oracle
                       </div>
                       <div class="portfolio-item-mask__summary">
-                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
+                        An external data source can be linked to a P2SH address with a certain value set in the script. The script requires two keys to unlock the funds, one key held by the beneficiary, the other key held by a trusted Oracle whose job is to validate that the value conditions are met.
                       </div>
                     </div> <!-- / .portfolio-item-mask__content -->
                   </div> <!-- / .portfolio-item__mask -->
@@ -204,98 +204,18 @@
             </div> <!-- / .portfolio__item -->
           </div>
 
-          <div class="col-xs-6 col-sm-4 col-md-3">
+		<div class="col-xs-6 col-sm-4 col-md-3">
             <div class="portfolio__item">
               <div class="portfolio-item__img">
                 <!--<a href="#" data-lightbox="portfolio">-->
-                  <%= image_tag "oak.jpg", class: "img-responsive" %>
+                  <%= image_tag "lightning-network-image.jpg", class: "img-responsive" %>
                   <div class="portfolio-item__mask">
                     <div class="portfolio-item-mask__content">
                       <div class="portfolio-item-mask__title">
-                        In cursus diam at ante consectetur
+                        Hashed Timelocked Contract
                       </div>
                       <div class="portfolio-item-mask__summary">
-                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
-                      </div>
-                    </div> <!-- / .portfolio-item-mask__content -->
-                  </div> <!-- / .portfolio-item__mask -->
-                <!--</a>-->
-              </div> <!-- / .portfolio-item__img -->
-            </div> <!-- / .portfolio__item -->
-          </div>
-
-          <div class="col-xs-6 col-sm-4 col-md-3">
-            <div class="portfolio__item">
-              <div class="portfolio-item__img">
-                <!--<a href="#" data-lightbox="portfolio">-->
-                  <%= image_tag "tree-wallpaper.jpg", class: "img-responsive" %>
-                  <div class="portfolio-item__mask">
-                    <div class="portfolio-item-mask__content">
-                      <div class="portfolio-item-mask__title">
-                        In cursus diam at ante consectetur
-                      </div>
-                      <div class="portfolio-item-mask__summary">
-                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
-                      </div>
-                    </div> <!-- / .portfolio-item-mask__content -->
-                  </div> <!-- / .portfolio-item__mask -->
-                <!--</a>-->
-              </div> <!-- / .portfolio-item__img -->
-            </div> <!-- / .portfolio__item -->
-          </div>
-
-          <div class="col-xs-6 col-sm-4 col-md-3">
-            <div class="portfolio__item">
-              <div class="portfolio-item__img">
-                <!--<a href="#" data-lightbox="portfolio">-->
-                  <%= image_tag "tree_sunset.jpg", class: "img-responsive" %>
-                  <div class="portfolio-item__mask">
-                    <div class="portfolio-item-mask__content">
-                      <div class="portfolio-item-mask__title">
-                        In cursus diam at ante consectetur
-                      </div>
-                      <div class="portfolio-item-mask__summary">
-                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
-                      </div>
-                    </div> <!-- / .portfolio-item-mask__content -->
-                  </div> <!-- / .portfolio-item__mask -->
-                <!--</a>-->
-              </div> <!-- / .portfolio-item__img -->
-            </div> <!-- / .portfolio__item -->
-          </div>
-
-          <div class="col-xs-6 col-sm-4 col-md-3">
-            <div class="portfolio__item">
-              <div class="portfolio-item__img">
-                <!--<a href="#" data-lightbox="portfolio">-->
-                  <%= image_tag "row_of_trees.jpg", class: "img-responsive" %>
-                  <div class="portfolio-item__mask">
-                    <div class="portfolio-item-mask__content">
-                      <div class="portfolio-item-mask__title">
-                        In cursus diam at ante consectetur
-                      </div>
-                      <div class="portfolio-item-mask__summary">
-                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
-                      </div>
-                    </div> <!-- / .portfolio-item-mask__content -->
-                  </div> <!-- / .portfolio-item__mask -->
-                <!--</a>-->
-              </div> <!-- / .portfolio-item__img -->
-            </div> <!-- / .portfolio__item -->
-          </div>
-
-          <div class="col-xs-6 col-sm-4 col-md-3">
-            <div class="portfolio__item">
-              <div class="portfolio-item__img">
-                <!--<a href="#" data-lightbox="portfolio">-->
-                  <%= image_tag "frosty-trees.jpg", class: "img-responsive" %>
-                  <div class="portfolio-item__mask">
-                    <div class="portfolio-item-mask__content">
-                      <div class="portfolio-item-mask__title">
-                        In cursus diam at ante consectetur
-                      </div>
-                      <div class="portfolio-item-mask__summary">
-                        Pellentesque metus arcu, placerat nec porta in, ultricies id enim. Nullam sit amet viverra sapien, quis aliquet quam.
+                        Hashed Timelock Contract (HTLC) as proposed in the lightning.network paper. The receiver can include a 0 or 1 in the scriptSig to choose to enter through if or else branch.
                       </div>
                     </div> <!-- / .portfolio-item-mask__content -->
                   </div> <!-- / .portfolio-item__mask -->
@@ -436,101 +356,10 @@
 
       <!-- SUBSCRIBE
       ============================== -->
-      <div class="section" id="subscribe">
-        <div class="container">
-          <div class="row">
-            <div class="col-xs-12">
-
-              <h4 class="heading">Newsletter signup</h4>
-
-
-			    <div class="form-inline form_alt subscribe__form">
-			      <%= simple_form_for @visitor do |f| %>
-			        <%= f.error_notification %>
-			
-					<div class="form-group">
-	                  <label class="sr-only" for="subscribe__name">Name</label>
-					  <%= f.input :name, label: false, :class => "form-control input-lg", :id => "subscribe__name", :placeholder => 'Enter your name' %>
-	                </div>
-	
-					<div class="form-group">
-	                  <label class="sr-only" for="subscribe__email">Email address</label>
-					  <%= f.input :email, label: false, :class => "form-control input-lg", :id => "subscribe__email", :placeholder => 'Enter your email' %>
-	                </div>
-
-			        <%= f.button :submit, "Subscribe", :class => "btn btn-primary" %>
-			      <% end %>
-			    </div>
-
-            </div>
-          </div> <!-- / .row -->
-        </div> <!-- / .container -->
-      </div> <!-- / .section -->
 
 
       <!-- CONTACT US
       ============================== -->
-      <div class="container" id="contact">
-
-        <div class="row">
-          <div class="col-xs-12">
-            <h4 class="heading">Feel free to contact us</h4>
-            <p class="heading__sub">
-              I'll do my best to answer in a timely fashion. 
-            </p>
-          </div>
-        </div> <!-- / .row -->
-
-        <div class="row">
-          <div class="col-sm-12 col-md-10 col-lg-8 col-md-offset-1 col-lg-offset-2">
-
-            <!-- Alert message -->
-            <div class="alert contact-form__alert" id="form_message" role="alert"></div>
-
-            <!-- Contact form -->
-
-
-	<%= simple_form_for @contact, :html => {:class => 'contact__form', :id =>"form_sendemail" } do |f| %>
-	<div class="row">
-        <div class="col-sm-6">
-	<div class="form-group">
-        <label for="name" class="sr-only">Your name</label>
-        <%= f.input :name, :required => true, :name =>"name", :class => "form-control", :id => "name" , :placeholder => "Full Name" %>
-        <span class="help-block"></span>
-      </div>
-	    
-		<div class="form-group">
-          <label for="email" class="sr-only">Your email address</label>
-          <%= f.input :email, :required => true, :name => "email", :class => "form-control", :id => "email", :placeholder => "E-mail" %>
-          <span class="help-block"></span>
-        </div>
-	
-	    </div>
-	
-	<div class="col-sm-6">
-		<div class="form-group">
-            <label for="message" class="sr-only">Your message</label>
-	    <%= f.input :message, :as => :text, :required => true, :name => "message", :class => "form-control", :rows => "9", :id => "message", :placeholder => "Message" %>
-		<span class="help-block"></span>
-      </div>
-    </div>
-
-  </div> <!-- / .row -->
-	
-	
-	    <div class= "hidden">
-	      <%= f.input :nickname, :hint => 'Leave this field blank!' %>
-	    </div>
-	    <div>
-		
-	      <div class="text-center">
-	      <%= f.button :submit, 'Send message', :class=> "btn btn-primary", :controller => "contacts", :action => "create" %>
-			<div class="clearfix"></div>
-        </div>
-	</div>
-   </div>
-  </div>
-	  <% end %>
 
 
       <!-- FOOTER
@@ -539,7 +368,7 @@
         <div class="container">
           <div class="row">
             <div class="col-sm-6">
-              &copy; 2015-2016 Paymium.com. All Rights Reserved.
+              &copy; 2015-2016 Pierre Noizat - Paymium.com. All Rights Reserved.
             </div>
             <div class="col-sm-6">
               <div class="footer__social">

@@ -53,6 +53,17 @@ ready = function() {
 				select.innerHTML="";
 			}
 	        codeSnippet = "&#60;contract_hash&#62; DROP 2 &#60;user pubkey&#62; &#60;oracle pubkey&#62; 2 CHECKMULTISIG";
+			break;
+		case "hashed_timelock_contract":
+			select = document.getElementById("error_header");
+			if (select) {
+				select.innerHTML="";
+			}
+			select = document.getElementsByClassName("message_line")[0];
+			if (select) {
+				select.innerHTML="";
+			}
+		    codeSnippet = "IF&#10; HASH160  &#60;hash160(S)&#62; EQUALVERIFY&#10; FALSE 2 &#60;AlicePubkey1&#62; &#60;BobPubkey1&#62;&#10; ELSE&#10; FALSE 2 &#60;AlicePubkey2&#62; &#60;BobPubkey2&#62;&#10; ENDIF&#10; 2  CHECKMULTISIG";
 	}
 	element.innerHTML = codeSnippet;
 	console.log(codeSnippet);

@@ -10,6 +10,9 @@ module ScriptsHelper
         
       when "contract_oracle"
         "Contract Oracle"
+        
+      when "hashed_timelock_contract"
+        "Hashed Timelock Contract"
     end
   end
   

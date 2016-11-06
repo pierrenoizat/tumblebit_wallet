@@ -22,10 +22,7 @@
 		<p>User: <%= key.name if key %></br>
 		User (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
 	<% else %>
-		<% @public_keys.each do |key| %>  	
-			<p>Owner: <%= key.name if key %></p>
-			<p>Compressed Public Key: <%= key.compressed if key %></p>
-	 		<% end %>
+		<%= render partial: "htlc" %>
 	<% end %>
 	<p>P2SH Address: <strong><%= @script.hash_address if @script %></strong></p>
 	<p>Unspent Output (Tx_id:index):  <%= @script.tx_hash if @script %> : <%= @script.index if @script %></br>

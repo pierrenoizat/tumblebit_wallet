@@ -1,0 +1,53 @@
+<p>Secret S: <strong><%= @script.contract %></strong></br>
+Hash160(S): <%= BTC.hash160(@script.contract).to_hex if @script.contract %></p>
+
+<p>Alice (Compressed) Public Key 1: <strong><%= @script.alice_pub_key_1.compressed %></strong></p>
+<p>Alice (Compressed) Public Key 2: <strong><%= @script.alice_pub_key_2.compressed %></strong></p>
+<p>Bob (Compressed) Public Key 1: <strong><%= @script.bob_pub_key_1.compressed %></strong></p>
+<p>Bob (Compressed) Public Key 2: <strong><%= @script.bob_pub_key_2.compressed %></strong></p>
+
+<p>P2SH Address: <strong><%= @script.hash_address if @script %></strong></p>
+<p>Unspent Output (Tx_id:index):  <%= @script.tx_hash if @script %> : <%= @script.index if @script %></br>
+<p>Amount: <%= @script.amount if @script %></br>
+<p>Confirmations: <%= @script.confirmations if @script %></p>
+	
+<%= form_for(@script, url: url_for(controller: 'scripts', action: 'sign_tx'), multipart: true) do |f| %>
+	  <% if @script.errors.any? %>
+	    <div id="error_explanation">
+	      <h2><%= pluralize(@script.errors.count, "error") %> prohibited this script from being saved:</h2>
+
+	      <ul>
+	      <% @script.errors.full_messages.each do |msg| %>
+	        <li><%= msg %></li>
+	      <% end %>
+	      </ul>
+	    </div>
+	  <% end %>
+	
+	<%= f.hidden_field :tx_hash, :value => @script.tx_hash %>
+	<%= f.hidden_field :index, :value => @script.index %>
+	<%= f.hidden_field :amount, :value => @script.amount %>
+	<%= f.hidden_field :confirmations, :value => @script.confirmations %>
+	
+	<div class="field">
+		<p><%= f.label 'Alice (WIF compressed) Private Key 1' %></p>
+		<p><%= f.text_field :alice_priv_key_1, :style => "width:540px;" %></p>
+	</div>
+	
+	<div class="field">
+		<p><%= f.label 'Alice (WIF compressed) Private Key 2' %></p>
+		<p><%= f.text_field :alice_priv_key_2, :style => "width:540px;" %></p>
+	</div>
+	
+	<div class="field">
+		<p><%= f.label 'Bob (WIF compressed) Private Key 1' %></p>
+		<p><%= f.text_field :bob_priv_key_1, :style => "width:540px;" %></p>
+	</div>
+	
+	<div class="field">
+		<p><%= f.label 'Bob (WIF compressed) Private Key 2' %></p>
+		<p><%= f.text_field :bob_priv_key_2, :style => "width:540px;" %></p>
+	</div>
+
+	<%= f.submit 'Create Signed Transaction', :class => "btn btn-primary" %>
+<% end %>

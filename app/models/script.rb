@@ -1,9 +1,12 @@
 class Script < ActiveRecord::Base
   validates_presence_of :title
   validates :expiry_date, :timeliness => {:after => lambda { Date.current }, :type => :datetime }
-  enum category: [:time_locked_address, :time_locked_2fa, :contract_oracle]
+  enum category: [:time_locked_address, :time_locked_2fa, :contract_oracle, :hashed_timelock_contract]
   
-  attr_accessor :tx_hash, :index, :amount, :confirmations, :priv_key, :oracle_1_priv_key, :oracle_2_priv_key, :signed_tx, :oracle_1_pub_key, :oracle_2_pub_key
+  attr_accessor :priv_key, :oracle_1_priv_key, :oracle_2_priv_key, :oracle_1_pub_key, :oracle_2_pub_key
+  attr_accessor :alice_priv_key_1, :alice_priv_key_2, :bob_priv_key_1, :bob_priv_key_2
+  attr_accessor :alice_pub_key_1, :alice_pub_key_2, :bob_pub_key_1, :bob_pub_key_2
+  attr_accessor :tx_hash, :index, :amount, :confirmations, :signed_tx
   
   # self.contract is a string of the form "{param_1:value_1,param_2:value_2}", e.g "{time_limit:1474299166,rate_limit:545.00}" for a futures contract on the EUR/BTC exchange rate
   
@@ -28,6 +31,15 @@ class Script < ActiveRecord::Base
         
       when "contract_oracle"
         "<contract_hash> DROP 2 <beneficiary pubkey> <oracle pubkey> 2 CHECKMULTISIG"
+        
+      when "hashed_timelock_contract"
+        "IF
+          HASH160 <hash160(S)> EQUALVERIFY
+          FALSE 2 <AlicePubkey1> <BobPubkey1>
+        ELSE
+          FALSE 2 <AlicePubkey2> <BobPubkey2>
+        ENDIF
+        2 CHECKMULTISIG"
     end
   end
   
@@ -87,6 +99,32 @@ class Script < ActiveRecord::Base
         @funding_script<<@escrow_key.compressed_public_key
         @funding_script<<BTC::Script::OP_2
         @funding_script<<BTC::Script::OP_CHECKMULTISIG
+        
+      when "hashed_timelock_contract"
+        @alice_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Alice 1").last
+        @alice_pub_key_2 = PublicKey.where(:script_id => self.id, :name => "Alice 2").last
+        @bob_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Bob 1").last
+        @bob_pub_key_2 = PublicKey.where(:script_id => self.id, :name => "Bob 2").last
+        
+        @contract_hash = BTC.hash160(self.contract).to_hex  # self.contract is S
+        
+        @funding_script<<BTC::Script::OP_IF
+        @funding_script<<BTC::Script::OP_HASH160
+        @funding_script.append_pushdata(@contract_hash)
+        @funding_script<<BTC::Script::OP_EQUALVERIFY
+        @funding_script<<BTC::Script::OP_0
+        @funding_script<<BTC::Script::OP_2
+        @funding_script<<@alice_pub_key_1.compressed
+        @funding_script<<@bob_pub_key_1.compressed
+        @funding_script<<BTC::Script::OP_ELSE
+        @funding_script<<BTC::Script::OP_0
+        @funding_script<<BTC::Script::OP_2
+        @funding_script<<@alice_pub_key_2.compressed
+        @funding_script<<@bob_pub_key_2.compressed
+        @funding_script<<BTC::Script::OP_ENDIF
+        @funding_script<<BTC::Script::OP_2
+        @funding_script<<BTC::Script::OP_CHECKMULTISIG
+        
     end
     return @funding_script
   end
@@ -103,6 +141,13 @@ class Script < ActiveRecord::Base
         when "time_locked_2fa", "contract_oracle"
           if self.public_keys.count < 2
             return nil # Script to Hash Address requires 2 keys.
+          else
+            funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
+            # <BTC::ScriptHashAddress:3F8fc3FboEKb5rnmYUNQTuihZBkyPy4aNM>
+          end
+        when "hashed_timelock_contract"
+          if self.public_keys.count < 4
+            return nil # Script to Hash Address requires 4 keys.
           else
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
             # <BTC::ScriptHashAddress:3F8fc3FboEKb5rnmYUNQTuihZBkyPy4aNM>
@@ -145,7 +190,7 @@ class Script < ActiveRecord::Base
   end
   
   def first_unspent_tx
-    string = $BLOCKR_ADDRESS_UNSPENT_URL + self.hash_address.to_s
+    string = $BLOCKR_ADDRESS_UNSPENT_URL + self.hash_address.to_s + "?unconfirmed=1" # with_unconfirmed
     @agent = Mechanize.new
 
     begin

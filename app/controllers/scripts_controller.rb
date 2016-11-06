@@ -60,6 +60,23 @@ class ScriptsController < ApplicationController
           @script.oracle_2_pub_key = @script.public_keys.last.compressed
         end
         render :template => 'scripts/edit_contract_oracle'
+      when "hashed_timelock_contract"
+        if @script.public_keys.count < 4
+          @script.public_keys.each do |public_key|
+            public_key.destroy
+          end
+          @script.alice_pub_key_1 = ""
+          @script.alice_pub_key_2 = ""
+          @script.bob_pub_key_1 = ""
+          @script.bob_pub_key_2 = ""
+        else
+          @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice 1").last.compressed
+          @script.alice_pub_key_2 = PublicKey.where(:script_id => @script.id, :name => "Alice 2").last.compressed
+          @script.bob_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Bob 1").last.compressed
+          @script.bob_pub_key_2 = PublicKey.where(:script_id => @script.id, :name => "Bob 2").last.compressed
+          
+        end
+        render :template => 'scripts/edit_htlc'
       else
         render :template => 'scripts/edit'
     end
@@ -98,6 +115,32 @@ class ScriptsController < ApplicationController
           end
           @public_keys = @script.public_keys
           render 'show_contract_oracle'
+        when "hashed_timelock_contract"
+          
+          
+          
+          if @script.alice_pub_key_1
+            @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.alice_pub_key_1, :name => "Alice 1")
+            @public_key.save
+          end
+          if @script.alice_pub_key_2
+            @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.alice_pub_key_2, :name => "Alice 2")
+            @public_key.save
+          end
+          if @script.bob_pub_key_1
+            @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.bob_pub_key_1, :name => "Bob 1")
+            @public_key.save
+          end
+          if @script.bob_pub_key_2
+            @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.bob_pub_key_2, :name => "Bob 2")
+            @public_key.save
+          end
+          @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice 1").last
+          @script.alice_pub_key_2 = PublicKey.where(:script_id => @script.id, :name => "Alice 2").last
+          @script.bob_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Bob 1").last
+          @script.bob_pub_key_2 = PublicKey.where(:script_id => @script.id, :name => "Bob 2").last
+          @public_keys = @script.public_keys
+          render 'show_htlc'
         else
           @public_keys = @script.public_keys
           render 'show'
@@ -117,6 +160,12 @@ class ScriptsController < ApplicationController
         render 'show_tl_2fa'
       when "contract_oracle"
         render 'show_contract_oracle'
+      when "hashed_timelock_contract"
+        @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice 1").last
+        @script.alice_pub_key_2 = PublicKey.where(:script_id => @script.id, :name => "Alice 2").last
+        @script.bob_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Bob 1").last
+        @script.bob_pub_key_2 = PublicKey.where(:script_id => @script.id, :name => "Bob 2").last
+        render 'show_htlc'
       else
         render 'show'
     end
@@ -136,7 +185,17 @@ class ScriptsController < ApplicationController
   
   def create_spending_tx
     @script = Script.find(params[:id])
-    @public_keys = @script.public_keys
+    
+    case @script.category
+      when "hashed_timelock_contract"
+        @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice 1").last.compressed
+        @script.alice_pub_key_2 = PublicKey.where(:script_id => @script.id, :name => "Alice 2").last.compressed
+        @script.bob_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Bob 1").last.compressed
+        @script.bob_pub_key_2 = PublicKey.where(:script_id => @script.id, :name => "Bob 2").last.compressed
+      else
+        @public_keys = @script.public_keys
+    end
+    
     if @script.funded?
       @script.first_unspent_tx
     else
@@ -154,6 +213,11 @@ class ScriptsController < ApplicationController
     
     @script.priv_key = params[:script][:priv_key]
     @script.oracle_1_priv_key = params[:script][:oracle_1_priv_key]
+    
+    @script.alice_priv_key_1 = params[:script][:alice_priv_key_1]
+    @script.alice_priv_key_2 = params[:script][:alice_priv_key_2]
+    @script.bob_priv_key_1 = params[:script][:bob_priv_key_1]
+    @script.bob_priv_key_2 = params[:script][:bob_priv_key_2]
     
     @script.index = params[:script][:index]
     @script.tx_hash = params[:script][:tx_hash]
@@ -346,6 +410,53 @@ class ScriptsController < ApplicationController
         tx.inputs[0].signature_script << (@escrow_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
 
         tx.inputs[0].signature_script << @funding_script.data
+      
+      when "hashed_timelock_contract" #   IF
+                                      #   HASH160 <hash160(S)> EQUALVERIFY
+                                      #   FALSE 2 <AlicePubkey1> <BobPubkey1>
+                                      #   ELSE
+                                      #   FALSE 2 <AlicePubkey2> <BobPubkey2>
+                                      #   ENDIF
+                                      #   2 CHECKMULTISIG
+        # puts "require S and both Alice key 1 and Bob key 1"
+        puts "require only Alice key 2 and Bob key 2"
+        begin  
+          @alice_key_1 = BTC::Key.new(wif:@script.alice_priv_key_1)
+        rescue Exception => e 
+          @notice = "Bad private key."
+        end
+        begin  
+          @bob_key_1=BTC::Key.new(wif:@script.bob_priv_key_1)
+        rescue Exception => e
+          @notice = "Bad private key."
+        end
+         # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
+          if ((@script.alice_priv_key_1.size != 52) or (@notice == "Bad private key."))
+            @notice = "Alice's private key length is not 52 chars."
+            redirect_to root_url, alert: @notice
+            return
+          end
+          # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
+          if ((@script.bob_priv_key_1.size != 52) or (@notice == "Bad private key."))
+            @notice = "Bob's private key length is not 52 chars."
+            redirect_to root_url, alert: @notice
+            return
+          end
+        tx = BTC::Transaction.new
+        tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
+                                                previous_index: @previous_index,
+                                                sequence: 0))
+        tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
+        hashtype = BTC::SIGHASH_ALL
+        sighash = tx.signature_hash(input_index: 0,
+                                    output_script: @funding_script,
+                                    hash_type: hashtype)
+        tx.inputs[0].signature_script = BTC::Script.new
+        # tx.inputs[0].signature_script.append_pushdata(@script.contract)
+        tx.inputs[0].signature_script << (@alice_key_1.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+        tx.inputs[0].signature_script << (@bob_key_1.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+        tx.inputs[0].signature_script << BTC::Script::OP_FALSE # force script execution into checking 2 signatures, ignoring S
+        tx.inputs[0].signature_script << @funding_script.data
 
     end
     @script.signed_tx = tx.to_s
@@ -378,8 +489,8 @@ class ScriptsController < ApplicationController
       puts "Tx broadcast failed: #{post_response["error"]}"
       redirect_to @script, alert: "Tx broadcast failed. "+"#{post_response["error"]}"
     else
-      puts "Tx was broadcast successfully with Tx ID: #{post_response[:tx][:hash]}"
-      redirect_to @script, notice: "Tx was broadcast successfully with Tx ID: #{post_response[:tx][:hash]}"
+      puts "Tx was broadcast successfully with Tx ID: #{post_response['tx']['hash']}"
+      redirect_to @script, notice: "Tx was broadcast successfully with Tx ID: #{post_response['tx']['hash']}"
     end
   end
 
@@ -387,7 +498,7 @@ class ScriptsController < ApplicationController
   private
  
      def script_params
-       params.require(:script).permit(:oracle_1_pub_key,:oracle_2_pub_key, :contract, :title, :text, :expiry_date, :category, public_keys_attributes: [:name, :compressed, :script_id])
+       params.require(:script).permit(:alice_pub_key_1, :alice_pub_key_2, :bob_pub_key_1, :bob_pub_key_2,:oracle_1_pub_key,:oracle_2_pub_key, :contract, :title, :text, :expiry_date, :category, public_keys_attributes: [:name, :compressed, :script_id])
      end
 
 end
