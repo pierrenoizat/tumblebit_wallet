@@ -1,6 +1,6 @@
 <div class="container">
   <div class="row">
-	<h1>Edit Hashed Timelock Contract # <%= @script.id if @script %>: <%= @script.title if @script %></h1>
+	<h1>Edit Hashed Timelocked Contract # <%= @script.id if @script %>: <%= @script.title if @script %></h1>
 	<div><pre style="width:600px"><code><%= @script.description %></code></pre></div>
 	<%= form_for(@script, multipart: true) do |f| %>
 	

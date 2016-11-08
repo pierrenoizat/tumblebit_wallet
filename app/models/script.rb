@@ -1,7 +1,7 @@
 class Script < ActiveRecord::Base
   validates_presence_of :title
   validates :expiry_date, :timeliness => {:after => lambda { Date.current }, :type => :datetime }
-  enum category: [:time_locked_address, :time_locked_2fa, :contract_oracle, :hashed_timelock_contract]
+  enum category: [:timelocked_address, :timelocked_2fa, :contract_oracle, :hashed_timelocked_contract]
   
   attr_accessor :priv_key, :oracle_1_priv_key, :oracle_2_priv_key, :oracle_1_pub_key, :oracle_2_pub_key
   attr_accessor :alice_priv_key_1, :alice_priv_key_2, :bob_priv_key_1, :bob_priv_key_2
@@ -20,10 +20,10 @@ class Script < ActiveRecord::Base
   
   def description
     case self.category
-      when "time_locked_address"
+      when "timelocked_address"
         "<expiry time> CHECKLOCKTIMEVERIFY DROP <public key> CHECKSIG"
         
-      when "time_locked_2fa"
+      when "timelocked_2fa"
         "IF <service public key> CHECKSIGVERIFY
         ELSE <expiry time> CHECKLOCKTIMEVERIFY DROP 
         ENDIF
@@ -32,12 +32,13 @@ class Script < ActiveRecord::Base
       when "contract_oracle"
         "<contract_hash> DROP 2 <beneficiary pubkey> <oracle pubkey> 2 CHECKMULTISIG"
         
-      when "hashed_timelock_contract"
-        "IF
-          HASH160 <hash160(S)> EQUALVERIFY
-          FALSE 2 <AlicePubkey1> <BobPubkey1>
+      when "hashed_timelocked_contract"
+        "
+        IF
+        HASH160 <hash160(S)> EQUALVERIFY
+        2 <AlicePubkey1> <BobPubkey1>
         ELSE
-          FALSE 2 <AlicePubkey2> <BobPubkey2>
+        2 <AlicePubkey2> <BobPubkey2>
         ENDIF
         2 CHECKMULTISIG"
     end
@@ -46,7 +47,7 @@ class Script < ActiveRecord::Base
   
   def init
     self.expiry_date  ||= Time.now.utc  #will set the default value only if it's nil
-    self.category ||= "time_locked_address"
+    self.category ||= "timelocked_address"
   end
   
   def funding_script
@@ -54,7 +55,7 @@ class Script < ActiveRecord::Base
     @funding_script = BTC::Script.new
     
     case self.category
-      when "time_locked_address" #  <expiry time> CHECKLOCKTIMEVERIFY DROP <pubkey> CHECKSIG
+      when "timelocked_address" #  <expiry time> CHECKLOCKTIMEVERIFY DROP <pubkey> CHECKSIG
         
         # @escrow_key=BTC::Key.new(wif:"KwtnGxYSfyCM888BDa94SPDxLE934F3cDBfgJy3h4gGUSrGFzAVw")
         # @user_key=BTC::Key.new(wif:"L1SPHyPeb63ZXVEQ1YHrbaTjiTEZe9oTTxtHLEcox3SsbsBue1Z4")
@@ -66,7 +67,7 @@ class Script < ActiveRecord::Base
         @funding_script<<@user_key.compressed_public_key
         @funding_script<<BTC::Script::OP_CHECKSIG
         
-      when "time_locked_2fa"
+      when "timelocked_2fa"
         
         @escrow_key=BTC::Key.new(public_key:BTC.from_hex(self.public_keys.first.compressed))
         @user_key=BTC::Key.new(public_key:BTC.from_hex(self.public_keys.last.compressed))
@@ -100,27 +101,30 @@ class Script < ActiveRecord::Base
         @funding_script<<BTC::Script::OP_2
         @funding_script<<BTC::Script::OP_CHECKMULTISIG
         
-      when "hashed_timelock_contract"
+      when "hashed_timelocked_contract"
         @alice_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Alice 1").last
         @alice_pub_key_2 = PublicKey.where(:script_id => self.id, :name => "Alice 2").last
         @bob_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Bob 1").last
         @bob_pub_key_2 = PublicKey.where(:script_id => self.id, :name => "Bob 2").last
         
-        @contract_hash = BTC.hash160(self.contract).to_hex  # self.contract is S
+        @alice_key_1=BTC::Key.new(public_key:BTC.from_hex(@alice_pub_key_1.compressed))
+        @bob_key_1=BTC::Key.new(public_key:BTC.from_hex(@bob_pub_key_1.compressed))
+        @alice_key_2=BTC::Key.new(public_key:BTC.from_hex(@alice_pub_key_2.compressed))
+        @bob_key_2=BTC::Key.new(public_key:BTC.from_hex(@bob_pub_key_2.compressed))
+        
+        @contract_hash = BTC.hash160(self.contract) # self.contract is string S, BTC.hash160(self.contract) is in binary format
         
         @funding_script<<BTC::Script::OP_IF
         @funding_script<<BTC::Script::OP_HASH160
         @funding_script.append_pushdata(@contract_hash)
         @funding_script<<BTC::Script::OP_EQUALVERIFY
-        @funding_script<<BTC::Script::OP_0
         @funding_script<<BTC::Script::OP_2
-        @funding_script<<@alice_pub_key_1.compressed
-        @funding_script<<@bob_pub_key_1.compressed
+        @funding_script<<@alice_key_1.compressed_public_key
+        @funding_script<<@bob_key_1.compressed_public_key
         @funding_script<<BTC::Script::OP_ELSE
-        @funding_script<<BTC::Script::OP_0
         @funding_script<<BTC::Script::OP_2
-        @funding_script<<@alice_pub_key_2.compressed
-        @funding_script<<@bob_pub_key_2.compressed
+        @funding_script<<@alice_key_2.compressed_public_key
+        @funding_script<<@bob_key_2.compressed_public_key
         @funding_script<<BTC::Script::OP_ENDIF
         @funding_script<<BTC::Script::OP_2
         @funding_script<<BTC::Script::OP_CHECKMULTISIG
@@ -134,18 +138,18 @@ class Script < ActiveRecord::Base
     
     unless self.public_keys.count == 0
       case self.category
-        when "time_locked_address"
+        when "timelocked_address"
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
             # <BTC::ScriptHashAddress:3F8fc3FboEKb5rnmYUNQTuihZBkyPy4aNM>
             # script uses the last public key saved with the script
-        when "time_locked_2fa", "contract_oracle"
+        when "timelocked_2fa", "contract_oracle"
           if self.public_keys.count < 2
             return nil # Script to Hash Address requires 2 keys.
           else
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
             # <BTC::ScriptHashAddress:3F8fc3FboEKb5rnmYUNQTuihZBkyPy4aNM>
           end
-        when "hashed_timelock_contract"
+        when "hashed_timelocked_contract"
           if self.public_keys.count < 4
             return nil # Script to Hash Address requires 4 keys.
           else
@@ -181,8 +185,45 @@ class Script < ActiveRecord::Base
     end
   end
   
+  
+  def virgin?
+    virgin = false
+    if !self.hash_address.blank?
+      string = $BLOCKR_ADDRESS_TXS_URL + self.hash_address.to_s
+      @agent = Mechanize.new
+
+      begin
+        page = @agent.get string
+      rescue Exception => e
+        page = e.page
+      end
+
+      data = page.body
+      result = JSON.parse(data)
+
+      virgin = (result['data']['nb_txs'] == 0)
+      
+      string = $BLOCKR_ADDRESS_UNSPENT_URL + self.hash_address.to_s + + "?unconfirmed=1"
+      @agent = Mechanize.new
+
+      begin
+        page = @agent.get string
+      rescue Exception => e
+        page = e.page
+      end
+
+      data = page.body
+      result = JSON.parse(data)
+
+      virgin = virgin and (result['data']['unspent'].count == 0)
+    else
+      virgin = true
+    end
+    return virgin
+  end
+  
   def expired?
-    if (self.expiry_date and (["time_locked_address", "time_locked_2fa"].include? self.category))
+    if (self.expiry_date and (["timelocked_address", "timelocked_2fa"].include? self.category))
       return (Time.now.to_i > self.expiry_date.to_i)
     else
       return false

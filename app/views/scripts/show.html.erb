@@ -4,7 +4,7 @@
 	<p>Category: <strong><%= category_of(@script.category) if @script.category %></strong></br>
 	Script:</p><pre style="width:600px"><code><%= @script.description if @script %></code></pre>
 	
-	<% if ["time_locked_address", "time_locked_2fa"].include? @script.category %>
+	<% if ["timelocked_address", "timelocked_2fa"].include? @script.category %>
 	<!--<p>Expiry: <%= @script.expiry_date if @script %></p>-->
 	<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></br>
 	Expiry in seconds since epoch time (1/1/1970): <%= @script.expiry_date.to_time.to_i %></p>
@@ -20,7 +20,7 @@
 	<% end %>
 	
 	<% case @script.category %>
-		<% when "time_locked_2fa" %>
+		<% when "timelocked_2fa" %>
 		<% key = @public_keys.first %>
 		<p>Escrow: <%= key.name if key %></br>
 		Escrow (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>

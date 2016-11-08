@@ -5,13 +5,13 @@
 	Script:</br><pre style="width:650px"><code> <%= @script.description if @script %></code></pre></p>
 	
 	<% case @script.category %>
-  	<% when "time_locked_address" %>
+  	<% when "timelocked_address" %>
 		<%= render partial: "spending_tla" %>
-  	<% when "time_locked_2fa" %>
+  	<% when "timelocked_2fa" %>
     	<%= render partial: "spending_tl_2fa" %>
   	<% when "contract_oracle" %>
     	<%= render partial: "spending_contract_oracle" %>
-  	<% when "hashed_timelock_contract" %>
+  	<% when "hashed_timelocked_contract" %>
     	<%= render partial: "spending_htlc" %>
   	<% else %>
     	<%= render 'show' %>

@@ -1,6 +1,6 @@
 <div class="container">
   <div class="row">
-	<h3>Hashed Timelock Contract # <%= @script.id if @script %>: <%= @script.title if @script.title %></h3>
+	<h3>Hashed Timelocked Contract # <%= @script.id if @script %>: <%= @script.title if @script.title %></h3>
 	<p>Script:</p><pre style="width:600px"><code><%= @script.description if @script %></code></pre>
 
 	<%= render partial: "htlc" %>
@@ -22,25 +22,7 @@
 			<p>Script is not funded yet or no UTXO is available/confirmed to create a spending transaction.</p>
 		<% else %>
 			<p>Script requires public key(s):</p>
-			<% if @script.id %>
-				<%= form_for([@script, @script.public_keys.build]) do |f| %>
-				<table class="table">
-			    	<tbody>
-			  		<tr>
-						<td><div class="field"><%= f.text_field :name, :style => "width:80px;", :placeholder => "John Doe" %></div></td>
-						<td><div class="field"><%= f.text_field :compressed, :style => "width:540px;", :placeholder => "02259B57015E60DE464E1D83C375BDD01D272290C51CEDE0B794301DE1B7770C7B" %></div></td>
-						<%= f.hidden_field :script_id, :value => @script.id %>
-			  			<td><div class="actions">
-			    		<%= f.submit "Add Compressed Public Key", :class => "btn btn-primary" %>
-						<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
-			                script_path, :class => 'btn' %></div></td>
-			  		</tr>
-				<% end %>
-			    	</tbody>
-
-				</table>
-			<% end %>
-			<aside>Public Keys must be entered in their order of appearance in the script.</aside>
+			<p><%= link_to "Edit", edit_script_path(@script), :class => 'btn btn-xs btn-success' %></p>
 		<% end %>
 	<% end %>
 	

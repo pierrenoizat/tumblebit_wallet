@@ -3,7 +3,7 @@
 	<h3>Broadcast Transaction for <%= @script.title if @script.title %></h3>
 	<p>Category: <strong><%= @script.category if @script.category %></strong></br>
 	Script:</br><pre style="width:650px"><code> <%= @script.description if @script %></code></pre></p>
-	<% if ["time_locked_address", "time_locked_2fa"].include? @script.category %>
+	<% if ["timelocked_address", "timelocked_2fa"].include? @script.category %>
 	<!--<p>Expiry: <%= @script.expiry_date if @script %></p>-->
 	<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></p>
 	<% end %>
@@ -14,7 +14,7 @@
 	Contract hash: <%= Digest::SHA256.hexdigest @script.contract if @script.contract %></p>
 	<% end %>
 	
-	<% if @script.category == "time_locked_2fa" or @script.category == "contract_oracle" %>
+	<% if @script.category == "timelocked_2fa" or @script.category == "contract_oracle" %>
 		<% key = @public_keys.first %>
 		<p>Escrow: <%= key.name if key %></br>
 		Escrow (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>

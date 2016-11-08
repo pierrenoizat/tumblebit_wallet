@@ -2,17 +2,17 @@ module ScriptsHelper
   
   def category_of(script)
     case script
-      when "time_locked_address"
-        "Time Locked Address"
+      when "timelocked_address"
+        "Timelocked Address"
         
-      when "time_locked_2fa"
-        "Time Locked 2FA"
+      when "timelocked_2fa"
+        "Timelocked 2FA"
         
       when "contract_oracle"
         "Contract Oracle"
         
-      when "hashed_timelock_contract"
-        "Hashed Timelock Contract"
+      when "hashed_timelocked_contract"
+        "Hashed Timelocked Contract"
     end
   end
   

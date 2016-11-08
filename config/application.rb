@@ -41,5 +41,9 @@ module RailsOmniauth
     
     $PUSH_TX_URL = "https://api.blockcypher.com/v1/btc/main/txs/push"
     
+    $BLOCKR_ADDRESS_TXS_URL ="http://btc.blockr.io/api/v1/address/txs/"
+    
+    "http://btc.blockr.io/api/v1/address/unspent/" #  ?unconfirmed=1
+    
   end
 end
