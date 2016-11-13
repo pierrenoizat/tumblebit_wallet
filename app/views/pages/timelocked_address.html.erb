@@ -1,0 +1,11 @@
+<div class="container">
+	<div class="row">
+
+	<% content_for :title do %>Timelocked Address<% end %>
+	<!-- Posts are created in db/seeds.rb -->
+	<% @post = Post.find_by_title("Timelocked Address") %>
+
+	<%= markdown(@post.body) %>
+	</br>
+	</div>
+</div>

@@ -14,7 +14,8 @@
 
 	<div><pre style="width:600px"><code id="contrat"><%= @script.description %></code></pre></div>
 </br>
-	<div id="sub-form"></div>
+	<div id="subFormLine1">A transaction spending from this address cannot be included in a block until the set date and time has passed.</div>
+	<div id="subFormLine2">We can be reasonably certain that any block in the chain was created within approximately two hours of the block’s timestamp.</div>
 </br>
 	
 	<% if @script.id %>
@@ -39,29 +40,45 @@ ready = function() {
 	switch (form_field_value) {
 	    case "timelocked_address":
 	        codeSnippet = "&#60;expiry time&#62; CHECKLOCKTIMEVERIFY DROP &#60;public key&#62; CHECKSIG";
+			select = document.getElementById("subFormLine1");
+			if (select) {
+				select.innerHTML="A transaction spending from this address cannot be included in a block until the set date and time has passed.";
+			}
+			select = document.getElementById("subFormLine2");
+			if (select) {
+				select.innerHTML="We can be reasonably certain that any block in the chain was created within approximately two hours of the block’s timestamp.";
+			}
 	        break;
 	    case "timelocked_2fa":
+			select = document.getElementById("subFormLine1");
+			if (select) {
+				select.innerHTML="A transaction spending from this address cannot be included in a block until the set date and time has passed, unless the 2 required signatures are provided.";
+			}
+			select = document.getElementById("subFormLine2");
+			if (select) {
+				select.innerHTML="After the set date and time has passed, the user's signature is sufficient to move the funds.";
+			}
 	        codeSnippet = "IF &#60;service public key&#62; CHECKSIGVERIFY&#10; ELSE &#60;expiry time&#62; CHECKLOCKTIMEVERIFY DROP&#10; ENDIF&#10; &#60;user public key&#62; CHECKSIG";
 	        break;
 	    case "contract_oracle":
-			select = document.getElementById("error_header");
+			select = document.getElementById("subFormLine1");
 			if (select) {
-				select.innerHTML="";
+				select.innerHTML="By signing this transaction, the oracle indicates her agreement that the contract conditions are met.";
 			}
-			select = document.getElementsByClassName("message_line")[0];
+			select = document.getElementById("subFormLine2");
 			if (select) {
-				select.innerHTML="";
+				select.innerHTML="The conditions are met when there is a match with the value of the contract parameters hashed in the contract hash.";
 			}
 	        codeSnippet = "&#60;contract_hash&#62; DROP 2 &#60;user pubkey&#62; &#60;oracle pubkey&#62; 2 CHECKMULTISIG";
 			break;
 		case "hashed_timelocked_contract":
-			select = document.getElementById("error_header");
+			select = document.getElementById("subFormLine1");
 			if (select) {
-				select.innerHTML="";
+				select.innerHTML="Bob must know S to use his key 1, otherwise he can only use his key 2. Alice does not know S.";
 			}
-			select = document.getElementsByClassName("message_line")[0];
+			select = document.getElementById("subFormLine2");
 			if (select) {
-				select.innerHTML="";
+				select.innerHTML="Bob has signed a timelocked refund to Alice with his key 2. Alice has signed a payment to Bob with her key 1. Bob must reveal S to cash out the payment.";
 			}
 		    codeSnippet = "IF&#10;HASH160  &#60;hash160(S)&#62; EQUALVERIFY&#10;2 &#60;AlicePubkey1&#62; &#60;BobPubkey1&#62;&#10;ELSE&#10;2 &#60;AlicePubkey2&#62; &#60;BobPubkey2&#62;&#10;ENDIF&#10;2  CHECKMULTISIG";
 	}

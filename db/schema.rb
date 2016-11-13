@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161009211408) do
+ActiveRecord::Schema.define(version: 20161113150535) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -45,6 +45,7 @@ ActiveRecord::Schema.define(version: 20161009211408) do
     t.datetime "expiry_date"
     t.integer  "category"
     t.text     "contract"
+    t.integer  "user_id"
   end
 
   create_table "users", force: :cascade do |t|

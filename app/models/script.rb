@@ -39,6 +39,7 @@ class Script < ActiveRecord::Base
   # self.contract is a string of the form "{param_1:value_1,param_2:value_2}", e.g "{time_limit:1474299166,rate_limit:545.00}" for a futures contract on the EUR/BTC exchange rate
   
   has_many :public_keys
+  belongs_to :user
   
   after_initialize :init
   
@@ -170,19 +171,47 @@ class Script < ActiveRecord::Base
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
             # <BTC::ScriptHashAddress:3F8fc3FboEKb5rnmYUNQTuihZBkyPy4aNM>
             # script uses the last public key saved with the script
-        when "timelocked_2fa", "contract_oracle"
+        when "timelocked_2fa"
+          if PublicKey.where(:script_id => self.id, :name => "User").last
+            self.oracle_2_pub_key = PublicKey.where(:script_id => self.id, :name => "User").last.compressed
+          end
+          if PublicKey.where(:script_id => self.id, :name => "Service").last
+            self.oracle_1_pub_key = PublicKey.where(:script_id => self.id, :name => "Service").last.compressed
+          end
           if (self.oracle_1_pub_key.blank? or self.oracle_2_pub_key.blank?)
             return nil # Script to Hash Address requires 2 keys.
           else
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
-            # <BTC::ScriptHashAddress:3F8fc3FboEKb5rnmYUNQTuihZBkyPy4aNM>
+          end
+        when "contract_oracle"
+          if PublicKey.where(:script_id => self.id, :name => "User").last
+            self.oracle_1_pub_key = PublicKey.where(:script_id => self.id, :name => "User").last.compressed
+          end
+          if PublicKey.where(:script_id => self.id, :name => "Service").last
+            self.oracle_2_pub_key = PublicKey.where(:script_id => self.id, :name => "Service").last.compressed
+          end
+          if (self.oracle_1_pub_key.blank? or self.oracle_2_pub_key.blank?)
+            return nil # Script to Hash Address requires 2 keys.
+          else
+            funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
           end
         when "hashed_timelocked_contract"
+          if PublicKey.where(:script_id => self.id, :name => "Alice 1").last
+            self.alice_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Alice 1").last.compressed
+          end
+          if PublicKey.where(:script_id => self.id, :name => "Alice 2").last
+            self.alice_pub_key_2 = PublicKey.where(:script_id => self.id, :name => "Alice 2").last.compressed
+          end
+          if PublicKey.where(:script_id => self.id, :name => "Bob 1").last
+            self.bob_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Bob 1").last.compressed
+          end
+          if PublicKey.where(:script_id => self.id, :name => "Bob 2").last
+            self.bob_pub_key_2 = PublicKey.where(:script_id => self.id, :name => "Bob 2").last.compressed
+          end
           if (self.alice_pub_key_1.blank? or self.alice_pub_key_2.blank? or self.bob_pub_key_1.blank? or self.bob_pub_key_2.blank?)
             return nil # Script to Hash Address requires 4 keys.
           else
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
-            # <BTC::ScriptHashAddress:3F8fc3FboEKb5rnmYUNQTuihZBkyPy4aNM>
           end
         end # of case statetement
   else

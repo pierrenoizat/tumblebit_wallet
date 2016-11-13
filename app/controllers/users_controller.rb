@@ -26,7 +26,7 @@ class UsersController < ApplicationController
   private
 
   def secure_params
-    params.require(:user).permit(:email)
+    params.require(:user).permit(:email, scripts_attributes: [:user_id])
   end
 
 end

@@ -1,5 +1,6 @@
 class ScriptsController < ApplicationController
-
+  before_filter :authenticate_user!, :except => [:index]
+  before_filter :script_user?, :except => [:index, :new, :create]
 
   def index
     @scripts = Script.all
@@ -11,7 +12,7 @@ class ScriptsController < ApplicationController
   
   def create
       @script = Script.new(script_params)
-
+      @script.user_id = current_user.id
       if @script.save
         redirect_to edit_script_path(@script), notice: 'Contract was successfully created.'
        else
@@ -576,7 +577,7 @@ class ScriptsController < ApplicationController
   private
  
      def script_params
-       params.require(:script).permit(:alice_pub_key_1, :alice_pub_key_2, :bob_pub_key_1, :bob_pub_key_2,:oracle_1_pub_key,:oracle_2_pub_key, :contract, :title, :text, :expiry_date, :category, public_keys_attributes: [:name, :compressed, :script_id])
+       params.require(:script).permit(:alice_pub_key_1, :alice_pub_key_2, :bob_pub_key_1, :bob_pub_key_2,:oracle_1_pub_key,:oracle_2_pub_key, :contract, :title, :text, :expiry_date, :category, :user_id, public_keys_attributes: [:name, :compressed, :script_id])
      end
 
 end
