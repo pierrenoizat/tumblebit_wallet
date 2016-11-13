@@ -1,8 +1,8 @@
 <p>Hash160(S): <%= BTC.hash160(@script.contract).to_hex if @script.contract %></p>
-
 <p>Alice (Compressed) Public Key 1: <strong><%= @script.alice_pub_key_1.compressed %></strong></p>
-<p>Alice (Compressed) Public Key 2: <strong><%= @script.alice_pub_key_2.compressed %></strong></p>
 <p>Bob (Compressed) Public Key 1: <strong><%= @script.bob_pub_key_1.compressed %></strong></p>
+</br>
+<p>Alice (Compressed) Public Key 2: <strong><%= @script.alice_pub_key_2.compressed %></strong></p>
 <p>Bob (Compressed) Public Key 2: <strong><%= @script.bob_pub_key_2.compressed %></strong></p>
 
 <p>P2SH Address: <strong><%= @script.hash_address if @script %></strong></p>
@@ -30,27 +30,27 @@
 	
 	<div class="field">
 		<p><%= f.label 'Secret S' %></p>
-		<p><%= f.text_field :contract, :style => "width:540px;" %></p>
+		<p><%= f.text_field :secret, :style => "width:420px;" %></p>
 	</div>
 	
 	<div class="field">
 		<p><%= f.label 'Alice (WIF compressed) Private Key 1' %></p>
-		<p><%= f.text_field :alice_priv_key_1, :style => "width:540px;" %></p>
-	</div>
-	
-	<div class="field">
-		<p><%= f.label 'Alice (WIF compressed) Private Key 2' %></p>
-		<p><%= f.text_field :alice_priv_key_2, :style => "width:540px;" %></p>
+		<p><%= f.text_field :alice_priv_key_1, :style => "width:420px;" %></p>
 	</div>
 	
 	<div class="field">
 		<p><%= f.label 'Bob (WIF compressed) Private Key 1' %></p>
-		<p><%= f.text_field :bob_priv_key_1, :style => "width:540px;" %></p>
+		<p><%= f.text_field :bob_priv_key_1, :style => "width:420px;" %></p>
+	</div>
+	</br>
+	<div class="field">
+		<p><%= f.label 'Alice (WIF compressed) Private Key 2' %></p>
+		<p><%= f.text_field :alice_priv_key_2, :style => "width:420px;" %></p>
 	</div>
 	
 	<div class="field">
 		<p><%= f.label 'Bob (WIF compressed) Private Key 2' %></p>
-		<p><%= f.text_field :bob_priv_key_2, :style => "width:540px;" %></p>
+		<p><%= f.text_field :bob_priv_key_2, :style => "width:420px;" %></p>
 	</div>
 
 	<%= f.submit 'Create Signed Transaction', :class => "btn btn-primary" %>

@@ -10,10 +10,12 @@ class PublicKeysController < ApplicationController
 
   def update
     @public_key = PublicKey.find(params[:id])
+    @script = Script.find(@public_key.script_id)
+    
     if @public_key.update_attributes(secure_params)
-      redirect_to @public_key
+      redirect_to @script, notice: 'Public key was successfully recorded.'
     else
-      render :edit
+      redirect_to @script, alert: "Compressed Public Key #{@public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')}"
     end
   end
 
@@ -29,12 +31,12 @@ class PublicKeysController < ApplicationController
   
   def create
       @public_key = PublicKey.new(secure_params)
-
+      @script = Script.find(@public_key.script_id)
+      
       if @public_key.save
-        @script = Script.find(@public_key.script_id)
         redirect_to @script, notice: 'Public key was successfully recorded.'
        else
-         render action: 'new'
+        redirect_to @script, alert: "Compressed Public Key #{@public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')}"
       end
   end
   

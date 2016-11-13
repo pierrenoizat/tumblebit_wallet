@@ -1,12 +1,40 @@
+class PrivateKeyValidator < ActiveModel::Validator
+  def validate(record)
+    require 'btcruby/extensions'
+    @notice = ""
+    @attr_array = [record.priv_key, record.oracle_1_priv_key, record.oracle_2_priv_key, record.alice_priv_key_1, 
+                  record.alice_priv_key_2, record.bob_priv_key_1, record.bob_priv_key_2]
+    @attr_array.each do |wif_private_key|
+      if wif_private_key
+        begin
+          @key=BTC::Key.new(wif:wif_private_key)
+          @compressed_public_key = @key.compressed_public_key
+        rescue Exception => e  
+          @notice = "Invalid private key"
+        end
+        unless @notice.blank?
+          record.errors[:priv_key] << @notice
+        end
+      end
+    end
+    
+  end
+end
+
 class Script < ActiveRecord::Base
+  
+  include ActiveModel::Validations
+  validates_with PrivateKeyValidator
+  
   validates_presence_of :title
   validates :expiry_date, :timeliness => {:after => lambda { Date.current }, :type => :datetime }
+  
   enum category: [:timelocked_address, :timelocked_2fa, :contract_oracle, :hashed_timelocked_contract]
   
   attr_accessor :priv_key, :oracle_1_priv_key, :oracle_2_priv_key, :oracle_1_pub_key, :oracle_2_pub_key
   attr_accessor :alice_priv_key_1, :alice_priv_key_2, :bob_priv_key_1, :bob_priv_key_2
   attr_accessor :alice_pub_key_1, :alice_pub_key_2, :bob_pub_key_1, :bob_pub_key_2
-  attr_accessor :tx_hash, :index, :amount, :confirmations, :signed_tx
+  attr_accessor :tx_hash, :index, :amount, :confirmations, :signed_tx, :secret
   
   # self.contract is a string of the form "{param_1:value_1,param_2:value_2}", e.g "{time_limit:1474299166,rate_limit:545.00}" for a futures contract on the EUR/BTC exchange rate
   
@@ -57,9 +85,8 @@ class Script < ActiveRecord::Base
     case self.category
       when "timelocked_address" #  <expiry time> CHECKLOCKTIMEVERIFY DROP <pubkey> CHECKSIG
         
-        # @escrow_key=BTC::Key.new(wif:"KwtnGxYSfyCM888BDa94SPDxLE934F3cDBfgJy3h4gGUSrGFzAVw")
-        # @user_key=BTC::Key.new(wif:"L1SPHyPeb63ZXVEQ1YHrbaTjiTEZe9oTTxtHLEcox3SsbsBue1Z4")
-        @user_key=BTC::Key.new(public_key:BTC.from_hex(self.public_keys.last.compressed))
+        self.oracle_1_pub_key = PublicKey.where(:script_id => self.id, :name => "User").last.compressed
+        @user_key=BTC::Key.new(public_key:BTC.from_hex(self.oracle_1_pub_key))
         @expire_at = Time.at(self.expiry_date.to_time.to_i)
         @funding_script<<BTC::WireFormat.encode_int32le(@expire_at.to_i)
         @funding_script<<BTC::Script::OP_CHECKLOCKTIMEVERIFY
@@ -69,8 +96,11 @@ class Script < ActiveRecord::Base
         
       when "timelocked_2fa"
         
-        @escrow_key=BTC::Key.new(public_key:BTC.from_hex(self.public_keys.first.compressed))
-        @user_key=BTC::Key.new(public_key:BTC.from_hex(self.public_keys.last.compressed))
+        self.oracle_2_pub_key = PublicKey.where(:script_id => self.id, :name => "User").last.compressed
+        self.oracle_1_pub_key = PublicKey.where(:script_id => self.id, :name => "Service").last.compressed
+        @escrow_key=BTC::Key.new(public_key:BTC.from_hex(self.oracle_1_pub_key))
+        @user_key=BTC::Key.new(public_key:BTC.from_hex(self.oracle_2_pub_key))
+        
         @expire_at = Time.at(self.expiry_date.to_time.to_i)
         @funding_script<<BTC::Script::OP_IF
         @funding_script<<@escrow_key.compressed_public_key
@@ -82,18 +112,17 @@ class Script < ActiveRecord::Base
         @funding_script<<BTC::Script::OP_ENDIF
         @funding_script<<@user_key.compressed_public_key
         @funding_script<<BTC::Script::OP_CHECKSIG
-        # <BTC::Script "OP_IF 026edc650b929056b58e4247274a02e3f1665dd10fb1da2575ebae27447f24363e
-        # OP_CHECKSIGVERIFY OP_ELSE [8099c057] OP_CHECKLOCKTIMEVERIFY OP_DROP OP_ENDIF
-        # 0258f00dff2457bba1b536709a9f5e27488eeb24e59a1c9dccb4d2fd52568e4d40 OP_CHECKSIG" (80 bytes)>
         
       when "contract_oracle"   # <contract_hash> OP_DROP 2 <beneficiary pubkey> <oracle pubkey> CHECKMULTISIG
         # <hash>: SHA256 of a string like "{param_1:value_1,param_2:value_2}"
         # param_1 and 2 are described in the contract, value_1 and 2 come from external data sources
         # value_1 and 2 must match the values set in the contract for the hash to match contract_hash
-        @contract_hash = Digest::SHA256.hexdigest self.contract
-        @escrow_key=BTC::Key.new(public_key:BTC.from_hex(self.public_keys.last.compressed))
-        @user_key=BTC::Key.new(public_key:BTC.from_hex(self.public_keys.first.compressed))
-        @funding_script.append_pushdata(@contract_hash)
+        contract_hash = Digest::SHA256.hexdigest self.contract
+        self.oracle_1_pub_key = PublicKey.where(:script_id => self.id, :name => "User").last.compressed
+        self.oracle_2_pub_key = PublicKey.where(:script_id => self.id, :name => "Service").last.compressed
+        @escrow_key=BTC::Key.new(public_key:BTC.from_hex(self.oracle_2_pub_key))
+        @user_key=BTC::Key.new(public_key:BTC.from_hex(self.oracle_1_pub_key))
+        @funding_script.append_pushdata(contract_hash)
         @funding_script<<BTC::Script::OP_DROP
         @funding_script<<BTC::Script::OP_2
         @funding_script<<@user_key.compressed_public_key
@@ -106,17 +135,16 @@ class Script < ActiveRecord::Base
         @alice_pub_key_2 = PublicKey.where(:script_id => self.id, :name => "Alice 2").last
         @bob_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Bob 1").last
         @bob_pub_key_2 = PublicKey.where(:script_id => self.id, :name => "Bob 2").last
-        
         @alice_key_1=BTC::Key.new(public_key:BTC.from_hex(@alice_pub_key_1.compressed))
         @bob_key_1=BTC::Key.new(public_key:BTC.from_hex(@bob_pub_key_1.compressed))
         @alice_key_2=BTC::Key.new(public_key:BTC.from_hex(@alice_pub_key_2.compressed))
         @bob_key_2=BTC::Key.new(public_key:BTC.from_hex(@bob_pub_key_2.compressed))
         
-        @contract_hash = BTC.hash160(self.contract) # self.contract is string S, BTC.hash160(self.contract) is in binary format
+        contract_hash = BTC.hash160(self.contract) # self.contract is string S, BTC.hash160(self.contract) is in binary format
         
         @funding_script<<BTC::Script::OP_IF
         @funding_script<<BTC::Script::OP_HASH160
-        @funding_script.append_pushdata(@contract_hash)
+        @funding_script.append_pushdata(contract_hash)
         @funding_script<<BTC::Script::OP_EQUALVERIFY
         @funding_script<<BTC::Script::OP_2
         @funding_script<<@alice_key_1.compressed_public_key
@@ -143,14 +171,14 @@ class Script < ActiveRecord::Base
             # <BTC::ScriptHashAddress:3F8fc3FboEKb5rnmYUNQTuihZBkyPy4aNM>
             # script uses the last public key saved with the script
         when "timelocked_2fa", "contract_oracle"
-          if self.public_keys.count < 2
+          if (self.oracle_1_pub_key.blank? or self.oracle_2_pub_key.blank?)
             return nil # Script to Hash Address requires 2 keys.
           else
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
             # <BTC::ScriptHashAddress:3F8fc3FboEKb5rnmYUNQTuihZBkyPy4aNM>
           end
         when "hashed_timelocked_contract"
-          if self.public_keys.count < 4
+          if (self.alice_pub_key_1.blank? or self.alice_pub_key_2.blank? or self.bob_pub_key_1.blank? or self.bob_pub_key_2.blank?)
             return nil # Script to Hash Address requires 4 keys.
           else
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
@@ -191,7 +219,7 @@ class Script < ActiveRecord::Base
     if !self.hash_address.blank?
       string = $BLOCKR_ADDRESS_TXS_URL + self.hash_address.to_s
       @agent = Mechanize.new
-
+      puts "#{self.hash_address}"
       begin
         page = @agent.get string
       rescue Exception => e
@@ -202,7 +230,7 @@ class Script < ActiveRecord::Base
       result = JSON.parse(data)
 
       virgin = (result['data']['nb_txs'] == 0)
-      
+      puts "Number of transactions= #{result['data']['nb_txs']}"
       string = $BLOCKR_ADDRESS_UNSPENT_URL + self.hash_address.to_s + + "?unconfirmed=1"
       @agent = Mechanize.new
 
@@ -216,6 +244,7 @@ class Script < ActiveRecord::Base
       result = JSON.parse(data)
 
       virgin = virgin and (result['data']['unspent'].count == 0)
+      puts "Number of unconfirmed transactions= #{result['data']['unspent'].count}"
     else
       virgin = true
     end

@@ -7,12 +7,9 @@
 	<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></br>
 	Expiry in seconds since epoch time (1/1/1970): <%= @script.expiry_date.to_time.to_i %></p>
 
-	<% key = @public_keys.first %>
-	<p>Escrow: <%= key.name if key %></br>
-	Escrow (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
-	<% key = @public_keys.last %>
-	<p>User: <%= key.name if key %></br>
-	User (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
+	<p>Escrow Service (Compressed) Public Key: <strong><%= @script.oracle_1_pub_key %></strong></p>
+
+	<p>User (Compressed) Public Key: <strong><%= @script.oracle_2_pub_key %></strong></p>
 
 	<p>P2SH Address: 
 		<% if @script.funded? %>
@@ -32,15 +29,16 @@
 		<% else %>
 			<p>Script requires public key(s):</p>
 			<% if @script.id %>
+				<% if @script.oracle_1_pub_key.blank? %>
 				<%= form_for([@script, @script.public_keys.build]) do |f| %>
 				<table class="table">
 			    	<tbody>
 			  		<tr>
-						<td><div class="field"><%= f.text_field :name, :style => "width:80px;", :placeholder => "John Doe" %></div></td>
 						<td><div class="field"><%= f.text_field :compressed, :style => "width:540px;", :placeholder => "02259B57015E60DE464E1D83C375BDD01D272290C51CEDE0B794301DE1B7770C7B" %></div></td>
 						<%= f.hidden_field :script_id, :value => @script.id %>
+						<%= f.hidden_field :name, :value => "Service" %>
 			  			<td><div class="actions">
-			    		<%= f.submit "Add Compressed Public Key", :class => "btn btn-primary" %>
+			    		<%= f.submit "Add Service Public Key", :class => "btn btn-primary" %>
 						<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
 			                script_path, :class => 'btn' %></div></td>
 			  		</tr>
@@ -48,8 +46,26 @@
 			    	</tbody>
 
 				</table>
+				<% end %>
+				<% if @script.oracle_2_pub_key.blank? %>
+				<%= form_for([@script, @script.public_keys.build]) do |f| %>
+				<table class="table">
+			    	<tbody>
+			  		<tr>
+						<td><div class="field"><%= f.text_field :compressed, :style => "width:540px;", :placeholder => "02259B57015E60DE464E1D83C375BDD01D272290C51CEDE0B794301DE1B7770C7B" %></div></td>
+						<%= f.hidden_field :script_id, :value => @script.id %>
+						<%= f.hidden_field :name, :value => "User" %>
+			  			<td><div class="actions">
+			    		<%= f.submit "Add User Public Key", :class => "btn btn-primary" %>
+						<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
+			                script_path, :class => 'btn' %></div></td>
+			  		</tr>
+				<% end %>
+			    	</tbody>
+
+				</table>
+				<% end %>
 			<% end %>
-			<aside>Public Keys must be entered in their order of appearance in the script.</aside>
 		<% end %>
 	<% end %>
 	

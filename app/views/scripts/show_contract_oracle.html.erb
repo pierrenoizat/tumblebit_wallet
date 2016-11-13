@@ -1,28 +1,23 @@
 <div class="container">
   <div class="row">
-	<h3>Oracle Contract # <%= @script.id if @script %>: <%= @script.title if @script.title %></h3>
-	<p>Script:</p><pre style="width:600px"><code> <%= @script.description if @script %></code></pre>
+	<h3>Oracle Contract # <%= @script.id %>: <%= @script.title %></h3>
+	<p>Script:</p><pre style="width:600px"><code> <%= @script.description %></code></pre>
 
 	<p>contract_hash is the SHA256 of a string like "{param_1:value_1,param_2:value_2}"
 		</br>param_1 and 2 are described in the contract, value_1 and 2 come from external data sources
 		</br>value_1 and 2 must match the values set in the contract for the hash to match contract_hash.</p>
-	<p>Contract: <strong><%= @script.contract %></strong></p>
-	<p>Contract hash: <%= Digest::SHA256.hexdigest @script.contract.to_s if @script.contract %></p>
+	<p>Contract hash: <%= Digest::SHA256.hexdigest @script.contract.to_s %></p>
 	
-	<% key = @public_keys.first %>
-	<p>User: <%= key.name if key %></br>
-	User (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
-	<% key = @public_keys.last %>
-	<p>Oracle: <%= key.name if key %></br>
-	Oracle (Compressed) Public Key: <strong><%= key.compressed if key %></strong></p>
+	<p>Beneficiary (Compressed) Public Key: <strong><%= @script.oracle_1_pub_key %></strong></p>
+	<p>Oracle (Compressed) Public Key: <strong><%= @script.oracle_2_pub_key %></strong></p>
 
 	<p>P2SH Address: 
 		<% if @script.funded? %>
-			<strong><%= @script.hash_address if @script %></strong>
+			<strong><%= @script.hash_address %></strong>
 		<% else %>
 			<% if @script.hash_address %>
 			<!-- Button trigger modal -->
-			<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#exampleModal" ><strong><%= @script.hash_address if @script %></strong></button>
+			<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#exampleModal" ><strong><%= @script.hash_address %></strong></button>
 			<% end %>
 		<% end %></p>
 	
@@ -34,24 +29,40 @@
 		<% else %>
 			<p>Script requires public key(s):</p>
 			<% if @script.id %>
+				<% unless PublicKey.where(:script_id => @script.id, :name => "User").last %>
 				<%= form_for([@script, @script.public_keys.build]) do |f| %>
 				<table class="table">
 			    	<tbody>
 			  		<tr>
-						<td><div class="field"><%= f.text_field :name, :style => "width:80px;", :placeholder => "John Doe" %></div></td>
+						<%= f.hidden_field :name, :value => "User" %>
 						<td><div class="field"><%= f.text_field :compressed, :style => "width:540px;", :placeholder => "02259B57015E60DE464E1D83C375BDD01D272290C51CEDE0B794301DE1B7770C7B" %></div></td>
 						<%= f.hidden_field :script_id, :value => @script.id %>
 			  			<td><div class="actions">
-			    		<%= f.submit "Add Compressed Public Key", :class => "btn btn-primary" %>
+			    		<%= f.submit "Add Beneficiary Public Key", :class => "btn btn-primary" %>
 						<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
-			                script_path, :class => 'btn' %></div></td>
+			                scripts_url, :class => 'btn' %></div></td>
 			  		</tr>
+				<% end %>
+				<% end %>
+				<% unless PublicKey.where(:script_id => @script.id, :name => "Service").last %>
+				<%= form_for([@script, @script.public_keys.build]) do |f| %>
+				<table class="table">
+			    	<tbody>
+			  		<tr>
+						<%= f.hidden_field :name, :value => "Service" %>
+						<td><div class="field"><%= f.text_field :compressed, :style => "width:540px;", :placeholder => "02259B57015E60DE464E1D83C375BDD01D272290C51CEDE0B794301DE1B7770C7B" %></div></td>
+						<%= f.hidden_field :script_id, :value => @script.id %>
+			  			<td><div class="actions">
+			    		<%= f.submit "Add Oracle Public Key", :class => "btn btn-primary" %>
+						<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
+			                scripts_url, :class => 'btn' %></div></td>
+			  		</tr>
+				<% end %>
 				<% end %>
 			    	</tbody>
 
 				</table>
 			<% end %>
-			<aside>Public Keys must be entered in their order of appearance in the script.</aside>
 		<% end %>
 	<% end %>
 	

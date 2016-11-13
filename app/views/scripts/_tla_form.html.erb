@@ -61,9 +61,9 @@
 	<table class="table">
     	<tbody>
   		<tr>
-			<td><div class="field"><%= f.text_field :name, :style => "width:80px;" %></div></td>
 			<td><div class="field"><%= f.text_field :compressed, :style => "width:540px;" %></div></td>
 			<%= f.hidden_field :script_id, :value => @script.id %>
+			<%= f.hidden_field :name, :value => "User" %>
   			<td><div class="actions">
     		<%= f.submit "Add Compressed Public Key", :class => "btn btn-primary" %>
 			<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
