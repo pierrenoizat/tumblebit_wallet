@@ -3,6 +3,17 @@
   <li><a href="<%= page_path('about') %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >About</a></li>
   <li><a href="<%= new_script_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >New Contract</a></li>
 <li><a href="<%= scripts_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Contracts</a></li>
+
+<li class="dropdown">
+          <a href="#" class="dropdown-toggle" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Scripts <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="<%= page_path('timelocked_address') %>">Timelocked Address</a></li>
+            <li><a href="<%= page_path('timelocked_2fa') %>">Timelocked 2FA</a></li>
+            <li><a href="<%= page_path('contract_oracle') %>">Contract Oracle</a></li>
+			<li><a href="<%= page_path('hashed_timelocked_contract') %>">Hashed Timelocked Contract</a></li>
+          </ul>
+        </li>
+
 <% if user_signed_in? %>
   <li><a href="<%= signout_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Sign out</a></li>
 <% else %>

@@ -1,10 +1,8 @@
 <div class="container">
 	<div class="row">
-
 	<% content_for :title do %>Timelocked 2FA<% end %>
 	<!-- Posts are created in db/seeds.rb -->
 	<% @post = Post.find_by_title("Timelocked 2FA") %>
-
 	<%= markdown(@post.body) %>
 	</br>
 	</div>

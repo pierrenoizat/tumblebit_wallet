@@ -58,8 +58,8 @@ Post.create(
     If the application doesn't work as expected, please report an issue.
     and include the diagnostics.
 
-    This application requires:
-
+    This application was developped using the following free software:
+    - Bitcoin Core 0.13.1
     - Ruby 2.3.0
     - Rails 4.2.0
     - btcruby, the awesome Bitcoin ruby library developped by Oleg Andreev and Ryan Smith.}
@@ -75,6 +75,8 @@ Post.create(
     To create a new script, select one amongst the available scripts and give it a name. 
 
     Once your script is created, fill in the required parameters, typically one or more public keys and date/time values.
+    
+    To generate your own Bitcoin public/private key pairs, I recommend [bitaddress.org](https://bitaddress.org)
     
     Once this first step is completed, the application will display the corresponding P2SH address.
     
@@ -114,7 +116,18 @@ Post.create(
   
   The funds cannot move from the time locked address until the set expiry date and time. 
   
-  After the expiry, a single private key is required.
+  After the expiry, a single private key, corresponding to the set public key, is required.
+  
+  **Script**:
+  `<expiry time> CHECKLOCKTIMEVERIFY DROP <public key> CHECKSIG`
+  
+  **Example**:
+  
+  Expiry: 2016-11-13 15:28:44 UTC
+  
+  Public Key: 023927B837A922696836E26399F759965328437F93AAFAF3E02767D22860C0FBA7
+  
+  Timelocked Address: 3AMdSGWdRwvaTbsDqFn4s35P3HLf8NKJ6U
 
   }
 )
@@ -129,7 +142,24 @@ Post.create(
   The Script requires two keys before the set expiry date and only one key after the expiry date. 
   
   If one of the keys is yours and the other belongs to a 2FA (2FA stands for two-factor authentication) service provider, the funds can be accessed after the expiry date even if the 2FA service provider has disappeared.
-
+  
+  **Script**:```
+  IF <service public key> CHECKSIGVERIFY
+  ELSE <expiry time> CHECKLOCKTIMEVERIFY DROP 
+  ENDIF
+  <user public key> CHECKSIG
+  ```
+  
+  **Example**:
+  
+  Expiry: 2020-11-13 17:15:00 UTC
+  
+  Escrow Service (Compressed) Public Key: 02259B57015E60DE464E1D83C375BDD01D272290C51CEDE0B794301DE1B7770C7B
+  
+  User (Compressed) Public Key: 023927B837A922696836E26399F759965328437F93AAFAF3E02767D22860C0FBA7
+  
+  Timelocked 2FA Address: 3NSn5VE22WEMgyxqyojW9mjxhSV6q1sNyC
+  
   }
 )
 
@@ -143,7 +173,20 @@ Post.create(
   An external data source can be linked to a P2SH address with a certain value set in the script. 
   
   The script requires two keys to unlock the funds, one key held by the beneficiary, the other key held by a trusted Oracle whose job is to validate that the value conditions are met.
-
+  
+  **Script**:
+  `<contract_hash> DROP 2 <beneficiary pubkey> <oracle pubkey> 2 CHECKMULTISIG`
+  
+  **Example**:
+  
+  Contract hash: cd6c5f44e130f979874b87f11562d8dc1e73bd3a83d666e3a66de681a0e1cb2e
+  
+  Beneficiary (Compressed) Public Key: 023927B837A922696836E26399F759965328437F93AAFAF3E02767D22860C0FBA7
+  
+  Oracle (Compressed) Public Key: 02259B57015E60DE464E1D83C375BDD01D272290C51CEDE0B794301DE1B7770C7B
+  
+  Oracle Contract Address: 3Qr7QGxKLosD3RsRB96BpMx9vFb2rpNtm5
+  
   }
 )
 
@@ -157,6 +200,31 @@ Post.create(
   Hashed Timelock Contract (HTLC) as proposed in the Lightning Network white paper.
   
   The receiver can include a 0 or 1 in the scriptSig to choose to enter through if or else branch.
+  
+  **Script**:```
+  IF
+  HASH160 <hash160(S)> EQUALVERIFY
+  2 <AlicePubkey1> <BobPubkey1>
+  ELSE
+  2 <AlicePubkey2> <BobPubkey2>
+  ENDIF
+  2 CHECKMULTISIG
+  ```
+  
+  **Example**:
+  
+  hash160(S): ee9eb446302cbaaeded21f6a50d7ffb6c240023d
+  
+  Alice Public Key 1: 02BE332AE534CC30FB84BA64817A748DBC9A9C9021463A645F5B3CF2AB4AEB0284
+
+  Bob Public Key 1: 039DD14C371FBB1BCA9860942D14ED32897CF4ABF8312A6446EBF716774769441B
+
+
+  Alice Public Key 2: 02808F45C3B1DEF4C9917D80ABD94D1DA271069C1CE227F8FA6D57E7D5FA836838
+
+  Bob Public Key 2: 03C875B4E83368088CB5C9EA1244F16679A091277F7C3BA771E83673DA3A839BD8
+  
+  Hashed Timelocked Contract Address: 3LZgKZspe411v9vNGFddNMQZqGdzeTvd2Q
 
   }
 )
