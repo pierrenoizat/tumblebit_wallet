@@ -514,6 +514,7 @@ class ScriptsController < ApplicationController
           tx.inputs[0].signature_script << BTC::Script::OP_TRUE # force script execution into checking S and 2 signatures
           
         else
+          puts "require only Alice key 2 and Bob key 2, ignoring S"
           
           begin  
             @alice_key_2 = BTC::Key.new(wif:@script.alice_priv_key_2)
@@ -534,9 +535,10 @@ class ScriptsController < ApplicationController
           end
           tx.inputs[0].signature_script << BTC::Script::OP_FALSE # force script execution into checking other 2 signatures, ignoring S
         end
+        
         tx.inputs[0].signature_script << @funding_script.data
 
-    end
+    end # of case statement
     @script.signed_tx = tx.to_s
     s = @notice
     if e

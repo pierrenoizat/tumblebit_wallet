@@ -9,32 +9,6 @@
 Post.delete_all
 
 Post.create(
-  id: 1,
-  title: "My Very First Post",
-  published_at: Time.now - 1.day,
-  body: 
-  %Q{### There Is Something You Should Know!
-
-  This is my very first post using markdown!
-
-  How do you like it?  I learned this from [RichOnRails.com](http://richonrails.com/articles/rendering-markdown-with-redcarpet)!}
-)
-
-Post.create(
-  id: 2,
-  title: "My Second Post",
-  published_at: Time.now,
-  body: 
-  %Q{### My List of Things To Do!
-
-  Here is the list of things I wish to do!
-  
-  * write more posts
-  * write even more posts
-  * write even more posts!}
-)
-
-Post.create(
   id: 3,
   title: "About",
   published_at: Time.now,
@@ -45,7 +19,7 @@ Post.create(
     In addition to standard addresses, a certain type of Bitcoin addresses, known as Pay-to-Script-Hash or P2SH, require the knowledge of a redeem script.
     
     The redeem script is a set of conditions that must be met to unlock the coins locked in a previous transaction funding the P2SH address.
-    The redeem script must be written in a stack-based scripting language specified in the Bitcoin core protocol. 
+    The redeem script must be written in a stack-based [scripting language](https://en.bitcoin.it/wiki/Script#Words) specified in the Bitcoin core protocol. 
     In a way, the redeem script is like the digital vault owner's manual: without it, the key holders would be unable to open the vault with their keys.
     
     With the Bitcoin network acting as a distributed timestamp server on a peer-to-peer basis, a Bitcoin script can set time conditions for opening a vault.
@@ -59,10 +33,10 @@ Post.create(
     and include the diagnostics.
 
     This application was developped using the following free software:
-    - Bitcoin Core 0.13.1
-    - Ruby 2.3.0
-    - Rails 4.2.0
-    - btcruby, the awesome Bitcoin ruby library developped by Oleg Andreev and Ryan Smith.}
+    
+    * Ruby 2.3.0
+    * Rails 4.2.0
+    * [btcruby](https://github.com/oleganza/btcruby), the awesome Bitcoin ruby library developped by Oleg Andreev and Ryan Smith.}
 )
 
 Post.create(
@@ -90,7 +64,7 @@ Post.create(
     
     More scripts will be added over time after being carefully tested.
     
-    To suggest a new script, drop me a note via emaiL at pierre dot noizat at paymium dot com.
+    To suggest a new script, drop me a note via email at pierre dot noizat at paymium dot com.
 
     }
 )
@@ -227,4 +201,22 @@ Post.create(
   Hashed Timelocked Contract Address: 3LZgKZspe411v9vNGFddNMQZqGdzeTvd2Q
 
   }
+)
+
+Post.create(
+  id: 10,
+  title: "Opcodes",
+  published_at: Time.now,
+  body:
+  %Q{### Scripts and opcodes
+
+    Bitcoin scripts use a limited set of approximately 250 Script words, also known as opcodes.
+    
+    This deliberate limitation allows formal verification of the scripts to reduce the risk of bugs.
+    
+    A very clear documentation of frequently used opcodes can be found [here](https://bitcoin.org/en/developer-reference#opcodes).
+    
+    For an exhaustive list and documentation of the current opcodes, visit the [Bitcoin wiki page](https://en.bitcoin.it/wiki/Script#Words).
+
+    }
 )
