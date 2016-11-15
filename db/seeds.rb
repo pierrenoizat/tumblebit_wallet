@@ -278,11 +278,11 @@ Post.create(
   
     CHECKLOCKTIMEVERIFY (CLTV) marks transaction as invalid if the top stack item is greater than the transaction's nLockTime field, otherwise script evaluation continues as though an OP_NOP was executed. 
     Transaction is also invalid if 1. the stack is empty; or 2. the top stack item is negative; or 3. the top stack item is greater than or equal to 500000000 while the transaction's nLockTime field is less than 500000000, or vice versa; or 4. the input's nSequence field is equal to 0xffffffff. 
-    The precise semantics are described in BIP 65.
+    The precise semantics are described in Peter Todd's BIP 65.
   
     A transaction spending from a CLTV output can only be broadcast AFTER the time lock has expired.
     Network nodes will reject it if it is broadcast before the time lock expiry, with a _Locktime requirement not satisfied_ error message.
-    Unlike CHECKSEQUENCEVERIFY which sets a relative locktime, CLTV locktime relates to a hard date.
+    Unlike CHECKSEQUENCEVERIFY which sets a relative locktime, CLTV locks bitcoins up until a specific, absolute time in the future.
   
   }
 )
@@ -300,11 +300,27 @@ Post.create(
   
     CHECKSEQUENCEVERIFY (CSV) marks transaction as invalid if the relative lock time of the input (enforced by BIP 68 with nSequence) is not equal to or longer than the value of the top stack item. 
     The precise semantics are described in BIP 112.
-  
+    BIP 68 introduces relative lock-time consensus-enforced semantics of the sequence number field to enable a signed transaction input to remain invalid for a defined period of time after confirmation of its corresponding outpoint.
+    BIP112 (soft fork to enforce CSV) allows users to make bitcoins unspendable for a period of time, much like CheckLockTimeVerify (CLTV), but with a **relative** timelock. 
+    Whereas CLTV locks bitcoins up until a specific, absolute time in the future, CSV locks bitcoins up for a specific amount of time after the CSV transaction is included in a block.
+    
     If the sequence number field is filled in, require the output being spent to have a relative minimum height.
     e.g a sequence number 200 means there must be at least 200 blocks between the block including the parent transaction and the block includng the child tx. 
     This allows the creation of revocable outputs bearing increasing sequence number.
-    CHECKSEQUENCEVERIFY sets a relative locktime, unlike a CLTV locktime which relates to a hard date.
+    
+    Bitcoin transactions currently may specify a locktime indicating when they may be added to a valid block.
+    Blocks must have a block header time greater than the locktime specified in any transaction in that block.
+    Miners get to choose what time they use for their header time but no node will accept a block whose time is more than two hours in the future. 
+    This creates a incentive for miners to set their header times to future values in order to include locktimed transactions which weren’t supposed to be included for up to two more hours.
+    The consensus rules also specify that valid blocks may have a header time greater than that of the median of the 11 previous blocks. 
+    This GetMedianTimePast() time has a key feature we generally associate with time: it can’t go backwards.
+    BIP113 specifies a soft fork enforced in the Bitcoin Core 0.12.1 release that weakens this perverse incentive for individual miners to use a future time by requiring that valid blocks have a computed GetMedianTimePast() greater than the locktime specified in any transaction in that block.
+    Mempool inclusion rules currently require transactions to be valid for immediate inclusion in a block in order to be accepted into the mempool. 
+    The Bitcoin Core 0.12.1 release begins applying the BIP113 rule to received transactions, so transaction whose time is greater than the GetMedianTimePast() will no longer be accepted into the mempool.
+    Implication for miners: you will begin rejecting transactions that would not be valid under BIP113, which will prevent you from producing invalid blocks when BIP113 is enforced on the network. 
+    Any transactions which are valid under the current rules but not yet valid under the BIP113 rules will either be mined by other miners or delayed until they are valid under BIP113.
+    Implication for users: GetMedianTimePast() always trails behind the current time, so a transaction locktime set to the present time will be rejected by nodes running this release until the median time moves forward. 
+    To compensate, subtract one hour (3,600 seconds) from your locktimes to allow those transactions to be included in mempools at approximately the expected time.
 
   }
 )
