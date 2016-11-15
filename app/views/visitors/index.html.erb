@@ -116,7 +116,7 @@
               <div class="col-sm-5 col-sm-height col-middle">
                 <h4 class="heading heading_left">A Stack-based Scripting System</h4>
                 <p class="heading__sub">
-                  Bitcoin uses a scripting system for complex transactions. Forth-like, Script is stack-based: instructions are 1-byte <a href="<%= page_path('op_codes') %>" >opcodes</a> processed from left to right to be pushed on top of the stack sequentially. All values are variable length byte arrays. Script is not Turing-complete, with no loops, for optimal security.
+                  Bitcoin uses a scripting system for complex transactions. Forth-like, Script is stack-based: instructions are <a href="<%= page_path('op_codes') %>" >1-byte opcodes</a> processed from left to right to be pushed on top of the stack sequentially, left-most first. All values are variable length byte arrays. Script is not Turing-complete, with no loops, for optimal security.
                 </p>
               </div>
               <div class="col-sm-7 col-sm-height col-middle">
@@ -237,11 +237,11 @@
         <div class="container">
           <div class="row">
             <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
-              <h4 class="heading">Download white paper</h4>
+              <h4 class="heading">Lightning Network: a compelling use case for Bitcoin scripts</h4>
               <p class="heading__sub">
-                The Lightning Network white paper ( draft version 0.5.9.1 dated November 20, 2015) describes a decentralized network for scalable, efficient payment channels. Transactions are sent over this routing network of micropayment channels whose transfer of value occurs off-blockchain. Bitcoin scripts enable time locked and hash locked transactions so that the payment protocol between users, via any number of Lightning Network hubs, remains trustless. This white paper is the most important invention since the release of the original Bitcoin white paper in 2008.
+                The Lightning Network white paper ( draft version 0.5.9.1 dated November 20, 2015) describes a decentralized network for scalable, efficient payment channels. Transactions are sent over this routing network of micropayment channels whose transfer of value occurs off-blockchain. Bitcoin scripts enable time locked and hash locked transactions so that the payment protocol between users, via any number of Lightning Network hubs, remains trustless. This white paper by Joseph Poon and Thaddeus Dryja is probably the most important contribution since the invention of Bitcoin.
               </p>
-              <a href="<%= products_path('product.pdf') %>" class="btn btn-lg btn-primary heading__btn wow fadeInUp" >Download</a>
+              <a href="<%= products_path('product.pdf') %>" class="btn btn-lg btn-primary heading__btn wow fadeInUp" >Download White Paper</a>
             </div>
           </div> <!-- / .row -->
         </div> <!-- / .container -->

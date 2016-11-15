@@ -76,7 +76,7 @@ Post.create(
   body:
   %Q{### License
 
-    © Pierre Noizat - Paymium 2014-2016 Soon to be released under the [MIT license](http://opensource.org/licenses/mit-license.php)}
+    © Pierre Noizat - Paymium 2015-2016 Soon to be released under the [MIT license](http://opensource.org/licenses/mit-license.php)}
 )
 
 Post.create(
@@ -87,10 +87,13 @@ Post.create(
   %Q{### Timelocked Address 
   
   This very simple script sets an expiry date and public key that must be matched to unlock the funds. 
-  
   The funds cannot move from the time locked address until the set expiry date and time. 
-  
   After the expiry, a single private key, corresponding to the set public key, is required.
+  
+  **Use case**:
+  To establish a payment channel between Alice and Bob, Alice will fund a 2-of-2 hashed timelocked contract address requiring Bob's key and her key.
+  Alice will then ask Bob to sign a refund transaction spending the 2-of-2 address to her timelocked address. 
+  The payment channel will be open as long as Alice does not broadcast her timelocked refund transaction.
   
   **Script**:
   `<expiry time> CHECKLOCKTIMEVERIFY DROP <public key> CHECKSIG`
@@ -114,7 +117,6 @@ Post.create(
   %Q{### Timelocked 2FA 
   
   The Script requires two keys before the set expiry date and only one key after the expiry date. 
-  
   If one of the keys is yours and the other belongs to a 2FA (2FA stands for two-factor authentication) service provider, the funds can be accessed after the expiry date even if the 2FA service provider has disappeared.
   
   **Script**:```
@@ -145,8 +147,12 @@ Post.create(
   %Q{### Contract Oracle 
   
   An external data source can be linked to a P2SH address with a certain value set in the script. 
-  
   The script requires two keys to unlock the funds, one key held by the beneficiary, the other key held by a trusted Oracle whose job is to validate that the value conditions are met.
+  
+  **Use case**:
+  A self-executing insurance contract can be written by the insurance company and a user, both trusting an oracle to check an external data source.
+  For example, the insurance contract can be a promise to indemnify the user if a flight is canceled.
+  Because the script includes a hash of the contract terms, the oracle signature of a transaction spending the Oracle Contract address to the user address is the oracle testimony that the flight was indeed canceled.  
   
   **Script**:
   `<contract_hash> DROP 2 <beneficiary pubkey> <oracle pubkey> 2 CHECKMULTISIG`
@@ -172,8 +178,23 @@ Post.create(
   %Q{### Hashed Timelocked Contract 
   
   Hashed Timelock Contract (HTLC) as proposed in the Lightning Network white paper.
-  
   The receiver can include a 0 or 1 in the scriptSig to choose to enter through if or else branch.
+  
+  **Use case**:
+  Alice wants to send money to Chuck via the Lightning Network. Bob is a trustless payment hub on the network.
+  Chuck chooses an arbitrary secret S and sends hash160(S) to Alice.
+  Alice sends money to the HTLC address. 
+  
+  Bob signs with his key 2 a transaction spending the HTLC address to a timelocked refund address controlled by Alice.
+  Alice signs with her key 1 a transaction spending the HTLC address to pay Bob.
+  Bob can collect the payment before the expiry of the timelock T1 if and only if he knows S.
+  
+  A similar HTCL address is created by Bob and Chuck with a timelock T2 < T1. Bob funds the HTLC address.
+  A similar set of transactions are signed by Bob and Chuck.
+  Alice does not broadcast her refund transaction because doing so would prompt Bob to do the same with his refund transaction, closing the payment channel immediately.
+  Chuck reveals S on the blockchain when he collects his payment. Knowing S, Bob can collect his payment, completing the protocol.
+  If Chuck fails to collect his payment before T2, Bob can collect his refund. If Bob fails to collect his payment before T1, Alice can collect her refund.
+  
   
   **Script**:```
   IF
@@ -219,4 +240,108 @@ Post.create(
     For an exhaustive list and documentation of the current opcodes, visit the [Bitcoin wiki page](https://en.bitcoin.it/wiki/Script#Words).
 
     }
+)
+
+Post.create(
+  id: 11,
+  title: "Smart Contracts",
+  published_at: Time.now,
+  body:
+  %Q{### Smart Contracts
+
+    _A smart contract is an event driven program, with state, which runs on a replicated, shared ledger and which can take custody over assets on that ledger_.
+    This definition proposed by T. Swanson in 2015 assumes that the program implementing the smart contract must or should run entirely on-chain.
+    
+    In fact, most transactions in any contract happen off-chain. Goods or services are delivered by Bob to Alice in exchange for a payment sent by Alice.
+    The payment part belongs to the blockchain while the delivery can only be witnessed by the parties, i.e by Alice, Bob and any number of arbitrators they choose to trust.
+    
+    As a result, a smart contract can be defined also as a payment protocol involving on-chain and off-chain transactions as well as external sources of data.
+    
+    Because, the program inputs include one or more centralized source of data that the blockchain is unaware of, there is no point in mandating that the entire program execution happen on a decentralized network.
+    Instead, for efficiency, only the relevant part of the program, i.e in most cases the payment transactions, should be executed as chaincode. 
+    
+    Hence I propose a more generic definition: _A smart contract is a payment protocol that can be implemented as an event driven program, with state, including some chaincode_.
+
+    }
+)
+
+Post.create(
+  id: 12,
+  title: "CHECKLOCKTIMEVERIFY",
+  published_at: Time.now,
+  body: 
+  %Q{### CHECKLOCKTIMEVERIFY 
+  
+    **Word**: `OP_CHECKLOCKTIMEVERIFY` ( previously `OP_NOP2` )
+    **Opcode**: 177	
+    **Hex**: 0xb1
+  
+    CHECKLOCKTIMEVERIFY (CLTV) marks transaction as invalid if the top stack item is greater than the transaction's nLockTime field, otherwise script evaluation continues as though an OP_NOP was executed. 
+    Transaction is also invalid if 1. the stack is empty; or 2. the top stack item is negative; or 3. the top stack item is greater than or equal to 500000000 while the transaction's nLockTime field is less than 500000000, or vice versa; or 4. the input's nSequence field is equal to 0xffffffff. 
+    The precise semantics are described in BIP 65.
+  
+    A transaction spending from a CLTV output can only be broadcast AFTER the time lock has expired.
+    Network nodes will reject it if it is broadcast before the time lock expiry, with a _Locktime requirement not satisfied_ error message.
+    Unlike CHECKSEQUENCEVERIFY which sets a relative locktime, CLTV locktime relates to a hard date.
+  
+  }
+)
+
+Post.create(
+  id: 13,
+  title: "CHECKSEQUENCEVERIFY",
+  published_at: Time.now,
+  body: 
+  %Q{### CHECKSEQUENCEVERIFY
+    
+    **Word**: `OP_CHECKSEQUENCEVERIFY` ( previously `OP_NOP2` )
+    **Opcode**: 178
+    **Hex**: 0xb2
+  
+    CHECKSEQUENCEVERIFY (CSV) marks transaction as invalid if the relative lock time of the input (enforced by BIP 68 with nSequence) is not equal to or longer than the value of the top stack item. 
+    The precise semantics are described in BIP 112.
+  
+    If the sequence number field is filled in, require the output being spent to have a relative minimum height.
+    e.g a sequence number 200 means there must be at least 200 blocks between the block including the parent transaction and the block includng the child tx. 
+    This allows the creation of revocable outputs bearing increasing sequence number.
+    CHECKSEQUENCEVERIFY sets a relative locktime, unlike a CLTV locktime which relates to a hard date.
+
+  }
+)
+
+Post.create(
+  id: 14,
+  title: "EQUALVERIFY",
+  published_at: Time.now,
+  body: 
+  %Q{### EQUALVERIFY
+    
+    **Word**: `OP_EQUALVERIFY`
+    **Opcode**: 136
+    **Hex**: 0x88
+  
+    EQUALVERIFY, predictably, runs EQUAL, then VERIFY.
+    EQUAL returns 1 if the inputs are exactly equal, 0 otherwise.
+    VERIFY marks transaction as invalid if top stack value is not true.
+
+  }
+)
+
+Post.create(
+  id: 15,
+  title: "CHECKSIGVERIFY",
+  published_at: Time.now,
+  body: 
+  %Q{### CHECKSIGVERIFY
+    
+    **Word**: `OP_CHECKSIGVERIFY`
+    **Opcode**: 173
+    **Hex**: 0xad
+  
+    CHECKSIGVERIFY, predictably, runs CHECKSIG, then VERIFY.
+    CHECKSIG: The entire transaction's outputs, inputs, and script are hashed. 
+    The signature used by CHECKSIG must be a valid signature for this hash and public key. If it is, 1 is returned, 0 otherwise.
+    VERIFY marks transaction as invalid if top stack value is not true.
+
+  }
 )

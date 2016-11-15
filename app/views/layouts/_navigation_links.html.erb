@@ -14,6 +14,17 @@
           </ul>
         </li>
 
+		<li class="dropdown">
+		          <a href="#" class="dropdown-toggle" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Opcodes <span class="caret"></span></a>
+		          <ul class="dropdown-menu">
+					<li><a href="<%= page_path('equalverify') %>">EQUALVERIFY</a></li>
+					<li><a href="<%= page_path('checksigverify') %>">CHECKSIGVERIFY</a></li>
+		            <li><a href="<%= page_path('checksequenceverify') %>">CHECKSEQUENCEVERIFY</a></li>
+		            <li><a href="<%= page_path('checklocktimeverify') %>">CHECKLOCKTIMEVERIFY</a></li>
+		            <li><a href="<%= page_path('checksequenceverify') %>">CHECKSEQUENCEVERIFY</a></li>
+		          </ul>
+		        </li>
+
 <% if user_signed_in? %>
   <li><a href="<%= signout_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Sign out</a></li>
 <% else %>
