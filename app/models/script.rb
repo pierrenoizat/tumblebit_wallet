@@ -1,30 +1,4 @@
-class PrivateKeyValidator < ActiveModel::Validator
-  def validate(record)
-    require 'btcruby/extensions'
-    @notice = ""
-    @attr_array = [record.priv_key, record.oracle_1_priv_key, record.oracle_2_priv_key, record.alice_priv_key_1, 
-                  record.alice_priv_key_2, record.bob_priv_key_1, record.bob_priv_key_2]
-    @attr_array.each do |wif_private_key|
-      if wif_private_key
-        begin
-          @key=BTC::Key.new(wif:wif_private_key)
-          @compressed_public_key = @key.compressed_public_key
-        rescue Exception => e  
-          @notice = "Invalid private key"
-        end
-        unless @notice.blank?
-          record.errors[:priv_key] << @notice
-        end
-      end
-    end
-    
-  end
-end
-
 class Script < ActiveRecord::Base
-  
-  include ActiveModel::Validations
-  validates_with PrivateKeyValidator
   
   validates_presence_of :title
   validates :expiry_date, :timeliness => {:after => lambda { Date.current }, :type => :datetime }

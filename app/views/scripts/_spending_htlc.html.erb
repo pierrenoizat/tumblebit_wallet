@@ -8,7 +8,6 @@
 <p>P2SH Address: <strong><%= @script.hash_address if @script %></strong></p>
 <p>Unspent Output (Tx_id:index):  <%= @script.tx_hash if @script %> : <%= @script.index if @script %></br>
 <p>Amount: <%= @script.amount if @script %></br>
-<p>Confirmations: <%= @script.confirmations if @script %></p>
 	
 <%= form_for(@script, url: url_for(controller: 'scripts', action: 'sign_tx'), multipart: true) do |f| %>
 	  <% if @script.errors.any? %>
@@ -52,6 +51,11 @@
 		<p><%= f.label 'Bob (WIF compressed) Private Key 2' %></p>
 		<p><%= f.text_field :bob_priv_key_2, :style => "width:420px;" %></p>
 	</div>
+	
+	<div class="field">
+    	<p><%= f.label 'Refund (Destination) Address' %></p>
+    	<p><%= f.text_field :refund_address, :style => "width:420px;" %></p>
+  	</div>
 
 	<%= f.submit 'Create Signed Transaction', :class => "btn btn-primary" %>
 <% end %>

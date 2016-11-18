@@ -295,6 +295,7 @@ class ScriptsController < ApplicationController
     @script.bob_priv_key_1 = params[:script][:bob_priv_key_1]
     @script.bob_priv_key_2 = params[:script][:bob_priv_key_2]
     @script.secret = params[:script][:secret]
+    @script.refund_address = params[:script][:refund_address]
     
     @script.index = params[:script][:index]
     @script.tx_hash = params[:script][:tx_hash]
@@ -302,7 +303,16 @@ class ScriptsController < ApplicationController
     fee = 0.0001  # approx. 5 cts when 1 BTC = 500 EUR
     @previous_index = @script.index.to_i
     @previous_id = @script.tx_hash
-    @refund_address = BTC::Address.parse("16zQaNAg77jco2EDVSsU4bEAq5DgfZPZP4") # my electrum wallet
+    # @refund_address = BTC::Address.parse("16zQaNAg77jco2EDVSsU4bEAq5DgfZPZP4") # my electrum wallet
+    
+    begin  
+      @refund_address = BTC::Address.parse(@script.refund_address)
+    rescue Exception => era
+      redirect_to @script, alert: "Invalid refund destination address."
+      return
+    end
+    @script.save
+
     @value = (@script.amount.to_f - fee) * BTC::COIN # @value is expressed in satoshis
     @funding_script = @script.funding_script
     
@@ -315,8 +325,9 @@ class ScriptsController < ApplicationController
           # trying to spend 54 minutes after expiry returns "non-final"
           begin  
             @user_key = BTC::Key.new(wif:@script.oracle_1_priv_key)
-          rescue Exception => e  
-            @notice = "Bad private key."
+          rescue Exception => e
+            redirect_to @script, alert: "Invalid user private key."
+            return
           end
           # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
           
@@ -342,8 +353,9 @@ class ScriptsController < ApplicationController
           # this error message means that the network rejects the tx based on the expiry date set int the script even if the tx locktime is in the past.
           begin  
             @user_key = BTC::Key.new(wif:@script.oracle_1_priv_key)
-          rescue Exception => e  
-            @notice = "Bad private key."
+          rescue Exception => e
+            redirect_to @script, alert: "Invalid user private key."
+            return
           end
           # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
           tx = BTC::Transaction.new
@@ -352,6 +364,7 @@ class ScriptsController < ApplicationController
                                                   previous_index: @previous_index,
                                                   sequence: 0))
           tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
+          
           hashtype = BTC::SIGHASH_ALL
           sighash = tx.signature_hash(input_index: 0,
                                       output_script: @funding_script,
@@ -369,11 +382,12 @@ class ScriptsController < ApplicationController
           puts "We are after expiry: 2FA expired, require user key only"
           # spending with both user key and service key is still possible.
           # trying to spend 31 minutes after expiry returns "non-final"
-          # trying to spend 56 minutes after expiry works!"
+          # trying to spend 56 minutes after expiry works!
           begin  
             @user_key = BTC::Key.new(wif:@script.oracle_2_priv_key)
-          rescue Exception => e 
-            @notice = "Bad private key."
+          rescue Exception => e
+            redirect_to @script, alert: "Invalid user private key."
+            return
           end
           # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
           tx = BTC::Transaction.new
@@ -383,6 +397,7 @@ class ScriptsController < ApplicationController
                                                   previous_index: @previous_index,
                                                   sequence: 0))
           tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
+
           hashtype = BTC::SIGHASH_ALL
           sighash = tx.signature_hash(input_index: 0,
                                       output_script: @funding_script,
@@ -399,15 +414,15 @@ class ScriptsController < ApplicationController
           # this error message means that the network rejects the tx based on the expiry date set int the script even if the tx locktime is in the past.
           begin  
             @user_key = BTC::Key.new(wif:@script.oracle_2_priv_key)
-          rescue Exception => e2
-            puts "#{e2.message}"  
-            @notice = "Bad private key."
+          rescue Exception => e
+            redirect_to @script, alert: "Invalid user private key."
+            return
           end
           begin  
-            @escrow_key=BTC::Key.new(wif:@script.oracle_1_priv_key)
-          rescue Exception => e1
-            puts "#{e1.message}"
-            @notice = "Bad private key."
+            @escrow_key = BTC::Key.new(wif:@script.oracle_1_priv_key)
+          rescue Exception => e
+            redirect_to @script, alert: "Invalid user private key."
+            return
           end
           # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
           tx = BTC::Transaction.new
@@ -416,6 +431,7 @@ class ScriptsController < ApplicationController
                                                   previous_index: @previous_index,
                                                   sequence: 0))
           tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
+          
           hashtype = BTC::SIGHASH_ALL
           sighash = tx.signature_hash(input_index: 0,
                                       output_script: @funding_script,
@@ -440,14 +456,14 @@ class ScriptsController < ApplicationController
         begin  
           @user_key = BTC::Key.new(wif:@script.oracle_1_priv_key)
         rescue Exception => e1
-          puts "e1: #{e1}"
-          @notice = "Bad private key."
+          redirect_to @script, alert: "Invalid user private key."
+          return
         end
         begin  
-          @escrow_key=BTC::Key.new(wif:@script.oracle_2_priv_key)
+          @escrow_key = BTC::Key.new(wif:@script.oracle_2_priv_key)
         rescue Exception => e2
-          puts "e2: #{e2}"
-          @notice = "Bad private key."
+          redirect_to @script, alert: "Invalid user private key."
+          return
         end
          # Private keys associated with compressed public keys are 52 characters and start with a capital L or K on mainnet (c on testnet).
         tx = BTC::Transaction.new
@@ -455,6 +471,7 @@ class ScriptsController < ApplicationController
                                                 previous_index: @previous_index,
                                                 sequence: 0))
         tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
+        
         hashtype = BTC::SIGHASH_ALL
         sighash = tx.signature_hash(input_index: 0,
                                     output_script: @funding_script,
@@ -492,16 +509,17 @@ class ScriptsController < ApplicationController
                                       
         if @script.secret == @script.contract
           puts "require Alice key 1 and Bob key 1, knowing S"
-        
           begin  
             @alice_key_1 = BTC::Key.new(wif:@script.alice_priv_key_1)
           rescue Exception => ea1
-            @notice = "Bad private key."
+            redirect_to @script, alert: "Invalid private key for Alice."
+            return
           end
           begin  
-            @bob_key_1=BTC::Key.new(wif:@script.bob_priv_key_1)
+            @bob_key_1 = BTC::Key.new(wif:@script.bob_priv_key_1)
           rescue Exception => eb1
-            @notice = "Bad private key."
+            redirect_to @script, alert: "Invalid private key for Bob."
+            return
           end
           
           if ea1.blank?
@@ -518,13 +536,15 @@ class ScriptsController < ApplicationController
           
           begin  
             @alice_key_2 = BTC::Key.new(wif:@script.alice_priv_key_2)
-          rescue Exception => ea2 
-            @notice = "Bad private key."
+          rescue Exception => ea2
+            redirect_to @script, alert: "Invalid private key for Alice."
+            return
           end
           begin  
-            @bob_key_2=BTC::Key.new(wif:@script.bob_priv_key_2)
+            @bob_key_2 = BTC::Key.new(wif:@script.bob_priv_key_2)
           rescue Exception => eb2
-            @notice = "Bad private key."
+            redirect_to @script, alert: "Invalid private key for Bob."
+            return
           end
           
           if ea2.blank?
@@ -540,6 +560,7 @@ class ScriptsController < ApplicationController
 
     end # of case statement
     @script.signed_tx = tx.to_s
+    
     s = @notice
     if e
       s += e.message
@@ -579,7 +600,7 @@ class ScriptsController < ApplicationController
   private
  
      def script_params
-       params.require(:script).permit(:alice_pub_key_1, :alice_pub_key_2, :bob_pub_key_1, :bob_pub_key_2,:oracle_1_pub_key,:oracle_2_pub_key, :contract, :title, :text, :expiry_date, :category, :user_id, public_keys_attributes: [:name, :compressed, :script_id])
+       params.require(:script).permit(:refund_address, :alice_pub_key_1, :alice_pub_key_2, :bob_pub_key_1, :bob_pub_key_2,:oracle_1_pub_key,:oracle_2_pub_key, :contract, :title, :text, :expiry_date, :category, :user_id, public_keys_attributes: [:name, :compressed, :script_id])
      end
 
 end
