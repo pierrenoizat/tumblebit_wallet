@@ -5,21 +5,21 @@
 	<%= form_for(@script, multipart: true) do |f| %>
 	
 	<div class="field" id="contract_string">
-	    <p><%= f.label 'Contract String' %></p>
-	  	<p><%= f.text_field :contract, :style => "width:400px;", :placeholder => "{time_limit:1474299166,rate_limit:545.00}" %></p>
+	    <p><%= f.label 'Contract String' %></br>
+	  	<%= f.text_field :contract, :style => "width:400px;", :placeholder => "{time_limit:1474299166,rate_limit:545.00}" %></p>
 		</div>
 	
 	<div class="field">
-		<p><%= f.label 'Beneficiary (compressed) Public Key' %></p>
-		<p><%= f.text_field :oracle_1_pub_key, :style => "width:540px;" %></p>
+		<p><%= f.label 'Beneficiary (compressed) Public Key' %></br>
+		<%= f.text_field :oracle_1_pub_key, :style => "width:540px;" %></p>
 	</div>
 	
 	<div class="field">
-		<p><%= f.label 'Oracle (compressed) Public Key' %></p>
-		<p><%= f.text_field :oracle_2_pub_key, :style => "width:540px;" %></p>
+		<p><%= f.label 'Oracle (compressed) Public Key' %></br>
+		<%= f.text_field :oracle_2_pub_key, :style => "width:540px;" %></p>
 	</div>
 	
-	<%= f.submit 'Update contract with parameters', :class => "btn btn-primary" %>
+	<%= f.submit 'Update contract with parameters', :class => "btn btn-primary" %> |<%= link_to "Cancel", @script %>
 
 	<% end %>
 </br>

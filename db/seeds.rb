@@ -28,6 +28,7 @@ Post.create(
     This application allows users to create transactions using the Bitcoin scripting language.
 
     Need help? Contact me at pierre dot noizat at paymium dot com
+    Need bitcoins ? Sign up at [paymium.com](https://paymium.com) !
 
     If the application doesn't work as expected, please report an issue.
     and include the diagnostics.
@@ -61,6 +62,8 @@ Post.create(
     Depending on the set time conditions, the network will either reject the signed spending transaction as non-final or confirm it.
     
     If the time conditions are not met, the network nodes will return an error message like "Locktime requirement not satisfied".
+    
+    If you enter the wrong private key in the transaction signing form, your signed transaction can be broadcast but you are likely to get an error message from the network like "Script evaluated without error but finished with a false/empty top stack element".
     
     More scripts will be added over time after being carefully tested.
     

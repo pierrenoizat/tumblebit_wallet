@@ -44,7 +44,7 @@
 	<p>Raw Signed Transaction:<pre style="width:600px"><code><%= @script.signed_tx %></code></pre></p>
 	<%= f.hidden_field :confirmations, :value => @script.confirmations %>
 	<%= f.hidden_field :signed_tx, :value => @script.signed_tx %>
-	<%= f.submit 'Broadcast Transaction', :class => "btn btn-primary" %>
+	<%= f.submit 'Broadcast Transaction', :class => "btn btn-primary" %> |<%= link_to "Cancel", @script %>
 	<% end %>
    </div>
 </div>

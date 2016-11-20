@@ -23,14 +23,13 @@
 	<%= f.hidden_field :amount, :value => @script.amount %>
 	<%= f.hidden_field :confirmations, :value => @script.confirmations %>
 	<div class="field">
-    	<p><%= f.label 'User Private Key (WIF compressed format)' %></p>
-    	<p><%= f.text_field :oracle_1_priv_key, :style => "width:420px;", :placeholder => "L1ejpmscmjV9pqjJ6WwNpbnbMm7QgcmgNLUHFtDeaLbK3JM8ktKK" %></p>
+    	<p><%= f.label 'User Private Key (WIF compressed format)' %></br>
+    	<%= f.text_field :oracle_1_priv_key, :style => "width:420px;", :placeholder => "L1ejpmscmjV9pqjJ6WwNpbnbMm7QgcmgNLUHFtDeaLbK3JM8ktKK" %>
   	</div>
-
 	<div class="field">
-    	<p><%= f.label 'Refund (Destination) Address' %></p>
-    	<p><%= f.text_field :refund_address, :style => "width:420px;" , :placeholder => "1DzNLsyrLweU6CFb4fhpxmrqxoYYt3iK6A" %></p>
+    	<p><%= f.label 'Refund (Destination) Address' %></br>
+    	<%= f.text_field :refund_address, :style => "width:420px;" , :placeholder => "1DzNLsyrLweU6CFb4fhpxmrqxoYYt3iK6A" %></p>
   	</div>
 
-	<%= f.submit 'Create Signed Transaction', :class => "btn btn-primary" %>
+	<%= f.submit 'Create Signed Transaction', :class => "btn btn-primary" %> |<%= link_to "Cancel", @script %>
 <% end %>

@@ -37,12 +37,11 @@ class Script < ActiveRecord::Base
         "<contract_hash> DROP 2 <beneficiary pubkey> <oracle pubkey> 2 CHECKMULTISIG"
         
       when "hashed_timelocked_contract"
-        "
-        IF
-        HASH160 <hash160(S)> EQUALVERIFY
-        2 <AlicePubkey1> <BobPubkey1>
+        "        IF
+          HASH160 <hash160(S)> EQUALVERIFY
+          2 <AlicePubkey1> <BobPubkey1>
         ELSE
-        2 <AlicePubkey2> <BobPubkey2>
+          2 <AlicePubkey2> <BobPubkey2>
         ENDIF
         2 CHECKMULTISIG"
     end

@@ -22,7 +22,7 @@
 			<p>Script is not funded yet or no UTXO is available/confirmed to create a spending transaction.</p>
 		<% else %>
 			<p>Script requires public key(s):</p>
-			<p><%= link_to "Edit", edit_script_path(@script), :class => 'btn btn-xs btn-success' %></p>
+			<p><%= link_to "Edit", edit_script_path(@script), :class => "btn btn-primary" %></p>
 		<% end %>
 	<% end %>
 	

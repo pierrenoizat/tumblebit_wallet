@@ -5,8 +5,8 @@
 	<%= form_for(@script, multipart: true) do |f| %>
 	
 	<div class="field">
-		<p><%= f.label 'User (compressed) Public Key' %></p>
-		<p><%= f.text_field :oracle_1_pub_key, :style => "width:540px;", :default => @script.oracle_1_pub_key %></p>
+		<p><%= f.label 'User (compressed) Public Key' %></br>
+		<%= f.text_field :oracle_1_pub_key, :style => "width:540px;", :default => @script.oracle_1_pub_key %></p>
 	</div>
 	
 	<div class="field">
@@ -15,7 +15,7 @@
     <p><%= f.datetime_select(:expiry_date, {:start_year => Date.today.year, :end_year => 2024, :default => @script.expiry_date, :use_two_digit_numbers => true, :prompt => {:day => "day", :month => "month", :year => "year", :hour => "hour", :minute => "minute"}}, {:style => "width: 80px;"}) %></p>
   </div>
 	
-	<%= f.submit 'Update contract with parameters', :class => "btn btn-primary" %>
+	<%= f.submit 'Update contract with parameters', :class => "btn btn-primary" %> |<%= link_to "Cancel", @script %>
 
 	<% end %>
 </br>
