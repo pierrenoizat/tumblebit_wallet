@@ -42,12 +42,19 @@ class ApplicationController < ActionController::Base
       @script = Script.find(params[:id])
       unless current_user
         if current_client and @script.client_id
-          @client = User.find(@script.client_id)
+          @client = Client.find(@script.client_id)
           unless current_client == @client
           redirect_to root_url, :alert => "Access denied: this script belongs to another user."
           end
         else
           redirect_to root_url, :alert => "Access denied: this script belongs to another user."
+        end
+      end
+      
+      if current_user and @script.user_id
+        @user = User.find(@script.user_id)
+        unless current_user == @user
+        redirect_to root_url, :alert => "Access denied: this script belongs to another user."
         end
       end
     end
