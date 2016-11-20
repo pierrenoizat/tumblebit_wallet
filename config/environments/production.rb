@@ -51,9 +51,10 @@ Rails.application.configure do
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # config.force_ssl = true
 
-  # Use the lowest log level to ensure availability of diagnostic information
+  # Use the lowest log level (:debug) to ensure availability of diagnostic information
   # when problems arise.
-  config.log_level = :debug
+  # config.log_level = :debug
+  config.log_level = :warn # to prevent devise password reset tokens from being leaked into the logs
 
   # Prepend all log lines with the following tags.
   # config.log_tags = [ :subdomain, :uuid ]
@@ -98,7 +99,9 @@ Rails.application.configure do
     :password => Figaro.env.mail_password,
     :enable_starttls_auto  => true # changed from true 27 april 2013
   }
+  
+  config.action_mailer.default_url_options = { host: 'bitcoinscri.pt' }
 
-  $MAIN_URL = "http://btcscript.herokuapp.com"
+  $MAIN_URL = "http://bitcoinscri.pt"
 
 end

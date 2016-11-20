@@ -34,27 +34,27 @@
 	
 	<div class="field">
 		<p><%= f.label 'Alice (WIF compressed) Private Key 1' %></p>
-		<p><%= f.text_field :alice_priv_key_1, :style => "width:420px;" %></p>
+		<p><%= f.text_field :alice_priv_key_1, :style => "width:420px;", :placeholder => "L1ejpmscmjV9pqjJ6WwNpbnbMm7QgcmgNLUHFtDeaLbK3JM8ktKK" %></p>
 	</div>
 	
 	<div class="field">
 		<p><%= f.label 'Bob (WIF compressed) Private Key 1' %></p>
-		<p><%= f.text_field :bob_priv_key_1, :style => "width:420px;" %></p>
+		<p><%= f.text_field :bob_priv_key_1, :style => "width:420px;", :placeholder => "Kyj2bKvR6UkhAU57xtTxCffVQFTZRyYLaWfR9hnBFdvMyTCdRv8m" %></p>
 	</div>
 	</br>
 	<div class="field">
 		<p><%= f.label 'Alice (WIF compressed) Private Key 2' %></p>
-		<p><%= f.text_field :alice_priv_key_2, :style => "width:420px;" %></p>
+		<p><%= f.text_field :alice_priv_key_2, :style => "width:420px;", :placeholder => "L1ejpmscmjV9pqjJ6WwNpbnbMm7QgcmgNLUHFtDeaLbK3JM8ktKK" %></p>
 	</div>
 	
 	<div class="field">
 		<p><%= f.label 'Bob (WIF compressed) Private Key 2' %></p>
-		<p><%= f.text_field :bob_priv_key_2, :style => "width:420px;" %></p>
+		<p><%= f.text_field :bob_priv_key_2, :style => "width:420px;", :placeholder => "Kyj2bKvR6UkhAU57xtTxCffVQFTZRyYLaWfR9hnBFdvMyTCdRv8m" %></p>
 	</div>
 	
 	<div class="field">
     	<p><%= f.label 'Refund (Destination) Address' %></p>
-    	<p><%= f.text_field :refund_address, :style => "width:420px;" %></p>
+    	<p><%= f.text_field :refund_address, :style => "width:420px;", :placeholder => "1DzNLsyrLweU6CFb4fhpxmrqxoYYt3iK6A" %></p>
   	</div>
 
 	<%= f.submit 'Create Signed Transaction', :class => "btn btn-primary" %>

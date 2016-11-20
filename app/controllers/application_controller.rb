@@ -39,20 +39,24 @@ class ApplicationController < ActionController::Base
     end
     
     def script_user?
-      if current_user
-        @script = Script.find(params[:id])
-        @user = User.find(@script.user_id)
-        unless current_user == @user
-          redirect_to root_url, :alert => "Access denied."
+      @script = Script.find(params[:id])
+      unless current_user
+        if current_client and @script.client_id
+          @client = User.find(@script.client_id)
+          unless current_client == @client
+          redirect_to root_url, :alert => "Access denied: this script belongs to another user."
+          end
+        else
+          redirect_to root_url, :alert => "Access denied: this script belongs to another user."
         end
-      else
-        redirect_to root_url, :alert => 'You need to sign in for access to this page.'
       end
     end
 
     def authenticate_user!
       if !current_user
-        redirect_to root_url, :alert => 'You need to sign in for access to this page.'
+        if !current_client
+          redirect_to root_url, :alert => 'You need to sign in or sign up for access to this page.'
+        end
       end
     end
     

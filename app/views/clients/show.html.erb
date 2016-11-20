@@ -1,0 +1,13 @@
+<div class="container">
+  <div class="row">
+	<h3>Registered Visitor</h3>
+	<p>Id: <%= @client.id %></p>
+	<p>Email: <%= @client.email %></p>
+	
+	<%= link_to 'Edit', edit_client_path(@client) %> |
+	<%= link_to 'Back', clients_path %>
+	
+  </div>
+</div>
+
+

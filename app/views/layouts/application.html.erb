@@ -51,7 +51,13 @@
 	}(document, 'script', 'facebook-jssdk'));</script>
 	
     <main role="main" style="padding-top: 100px;">
-       <%= render 'layouts/messages' %>
+       <!--<%= render 'layouts/messages' %>-->
+	<% if notice %>
+	  <p class="alert alert-success"><%= notice %></p>
+	<% end %>
+	<% if alert %>
+	  <p class="alert alert-danger"><%= alert %></p>
+	<% end %>
        <%= yield %>
     </main>
    </div>

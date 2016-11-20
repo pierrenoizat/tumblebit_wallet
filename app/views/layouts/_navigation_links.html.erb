@@ -4,7 +4,7 @@
   <li><a href="<%= new_script_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >New Contract</a></li>
 <li><a href="<%= scripts_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Contracts</a></li>
 
-<li class="dropdown">
+		<li class="dropdown">
           <a href="#" class="dropdown-toggle" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Scripts <span class="caret"></span></a>
           <ul class="dropdown-menu">
             <li><a href="<%= page_path('timelocked_address') %>">Timelocked Address</a></li>
@@ -24,12 +24,14 @@
 		          </ul>
 		        </li>
 
-<% if user_signed_in? %>
+<% if user_signed_in? or client_signed_in? %>
   <li><a href="<%= signout_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Sign out</a></li>
 <% else %>
-  <li><a href="<%= signin_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Sign in</a></li>
+  <li><a href="<%= new_client_session_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Log in</a></li>
+<li><a href="<%= new_client_registration_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Sign up</a></li>
 <% end %>
 <% if user_signed_in? %>
-  <li><a href="<%= users_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Users</a></li>
+  <li><a href="<%= users_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Admins</a></li>
+<li><a href="<%= clients_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Registrations</a></li>
 <% end %>
   

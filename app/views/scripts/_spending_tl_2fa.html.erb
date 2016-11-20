@@ -5,7 +5,7 @@
 
 <p>P2SH Address: <strong><%= @script.hash_address if @script %></strong></p>
 <p>Unspent Output (Tx_id:index):  <%= @script.tx_hash if @script %> : <%= @script.index if @script %></br>
-<p>Amount: <%= @script.amount if @script %></br>
+<p>Amount: <strong><%= @script.amount if @script %></strong></br>
 	
 <%= form_for(@script, url: url_for(controller: 'scripts', action: 'sign_tx'), multipart: true) do |f| %>
 	<% if @script.errors.any? %>

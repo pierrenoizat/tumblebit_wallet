@@ -28,6 +28,8 @@ Rails.application.configure do
     :password => Figaro.env.mail_password,
     :enable_starttls_auto  => true # changed from true 27 april 2013
   }
+  
+  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

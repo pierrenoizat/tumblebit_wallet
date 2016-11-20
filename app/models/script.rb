@@ -14,6 +14,7 @@ class Script < ActiveRecord::Base
   
   has_many :public_keys
   belongs_to :user
+  belongs_to :client
   
   after_initialize :init
   

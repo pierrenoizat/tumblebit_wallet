@@ -1,6 +1,8 @@
 class ScriptsController < ApplicationController
   before_filter :authenticate_user!, :except => [:index]
   before_filter :script_user?, :except => [:index, :new, :create]
+  
+  # before_action :authenticate_client!
 
   def index
     @scripts = Script.all
@@ -12,7 +14,15 @@ class ScriptsController < ApplicationController
   
   def create
       @script = Script.new(script_params)
-      @script.user_id = current_user.id
+      if current_user
+        @script.user_id = current_user.id
+      else
+        if current_client
+          @script.client_id = current_client.id
+        else
+          redirect_to new_script_path, alert: "Contract could not be created: please sign in first."
+        end
+      end
       if @script.save
         redirect_to edit_script_path(@script), notice: 'Contract was successfully created.'
        else
