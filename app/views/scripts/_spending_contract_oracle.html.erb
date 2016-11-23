@@ -9,17 +9,6 @@ Contract hash: <%= Digest::SHA256.hexdigest @script.contract if @script.contract
 <p>Amount: <%= @script.amount if @script %></br>
 	
 <%= form_for(@script, url: url_for(controller: 'scripts', action: 'sign_tx'), multipart: true) do |f| %>
-	  <% if @script.errors.any? %>
-	    <div id="error_explanation">
-	      <h2><%= pluralize(@script.errors.count, "error") %> prohibited this script from being saved:</h2>
-
-	      <ul>
-	      <% @script.errors.full_messages.each do |msg| %>
-	        <li><%= msg %></li>
-	      <% end %>
-	      </ul>
-	    </div>
-	  <% end %>
 	
 	<%= f.hidden_field :tx_hash, :value => @script.tx_hash %>
 	<%= f.hidden_field :index, :value => @script.index %>

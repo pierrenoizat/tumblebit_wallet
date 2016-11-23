@@ -1,0 +1,4 @@
+<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></p>
+<p>h1: <strong><%= BTC.ripemd160(@script.contract).to_hex if @script.contract %></strong></p>
+<p>Alice (Compressed) Public Key: <strong><%= @script.alice_pub_key_1.compressed if @script.alice_pub_key_1 %></strong></p>
+<p>Tumbler (Compressed) Public Key: <strong><%= @script.oracle_1_pub_key.compressed if @script.oracle_1_pub_key %></strong></p>

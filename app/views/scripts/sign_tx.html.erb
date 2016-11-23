@@ -1,46 +1,39 @@
 <div class="container">
   <div class="row">
 	<h3>Broadcast Transaction for <%= @script.title if @script.title %></h3>
-	<p>Category: <strong><%= @script.category if @script.category %></strong></br>
+	<p>Category: <strong><%= category_of(@script.category) if @script.category %></strong></br>
 	Script:</br><pre style="width:650px"><code> <%= @script.description if @script %></code></pre></p>
-	<% if ["timelocked_address", "timelocked_2fa"].include? @script.category %>
+	<% if ["timelocked_address", "timelocked_2fa", "tumblebit_puzzle"].include? @script.category %>
 	<!--<p>Expiry: <%= @script.expiry_date if @script %></p>-->
-	<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></p>
+	<p>Expiry: <%= Time.at(@script.expiry_date.to_time.to_i).utc %></p>
 	<% end %>
 	
-	<% if @script.category == "contract_oracle" %>
-	<!--<p>Expiry: <%= @script.expiry_date if @script %></p>-->
-	<p>Contract: <strong><%= @script.contract %></strong></br>
-	Contract hash: <%= Digest::SHA256.hexdigest @script.contract if @script.contract %></p>
+	<% case @script.category %>
+  	<% when "timelocked_address" %>
+		<p>Compressed Public Key: <%= @script.oracle_1_pub_key %></p>
+  	<% when "timelocked_2fa" %>
+    	<p>Escrow Service (Compressed) Public Key: <strong><%= @script.oracle_1_pub_key %></strong></p>
+		<p>User (Compressed) Public Key: <strong><%= @script.oracle_2_pub_key %></strong></p>
+  	<% when "contract_oracle" %>
+    	<p>Contract: <strong><%= @script.contract %></strong></br>
+		Contract hash: <%= Digest::SHA256.hexdigest @script.contract if @script.contract %></p>
+		<p>Oracle (Compressed) Public Key: <strong><%= @script.oracle_2_pub_key %></strong></p>
+		<p>Beneficiary (Compressed) Public Key: <strong><%= @script.oracle_1_pub_key %></strong></p>
+  	<% when "hashed_timelocked_contract" %>
+    	<%= render partial: "htlc" %>
+	<% when "tumblebit_puzzle" %>
+	    <p>h1: <%= BTC.ripemd160(@script.contract).to_hex if @script.contract %></p>
+		<p>Alice (Compressed) Public Key: <strong><%= @script.alice_pub_key_1 %></strong></p>
+		<p>Tumbler (Compressed) Public Key: <strong><%= @script.oracle_1_pub_key %></strong></p>
 	<% end %>
 	
-	<% if @script.category == "timelocked_2fa" or @script.category == "contract_oracle" %>
-		<% key = @public_keys.first %>
-		<p>Escrow: <%= key.name if key %></br>
-		Escrow (Compressed) Public Key: <%= key.compressed if key %></p>
-		<% key = @public_keys.last %>
-		<p>User: <%= key.name if key %></br>
-		User (Compressed) Public Key: <%= key.compressed if key %></p>
-	<% else %>
-		<%= render partial: "htlc" %>
-	<% end %>
 	<p>P2SH Address: <strong><%= @script.hash_address if @script %></strong></p>
 	<p>Unspent Output (Tx_id:index):  <%= @script.tx_hash if @script %> : <%= @script.index if @script %></br>
 	<p>Amount: <strong><%= @script.amount if @script %></strong></br>
 	<p>Refund (Destination) Address: <strong><%= @script.refund_address if @script %></strong></p>
 	
 	<%= form_for(@script, url: url_for(controller: 'scripts', action: 'broadcast'), multipart: true) do |f| %>
-	  <% if @script.errors.any? %>
-	    <div id="error_explanation">
-	      <h2><%= pluralize(@script.errors.count, "error") %> prohibited this transaction from being broadcast:</h2>
 
-	      <ul>
-	      <% @script.errors.full_messages.each do |msg| %>
-	        <li><%= msg %></li>
-	      <% end %>
-	      </ul>
-	    </div>
-	  <% end %>
 	<p>Raw Signed Transaction:<pre style="width:600px"><code><%= @script.signed_tx %></code></pre></p>
 	<%= f.hidden_field :confirmations, :value => @script.confirmations %>
 	<%= f.hidden_field :signed_tx, :value => @script.signed_tx %>

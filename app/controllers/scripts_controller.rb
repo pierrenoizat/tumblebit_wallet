@@ -47,6 +47,7 @@ class ScriptsController < ApplicationController
           @script.oracle_1_pub_key = ""
         end
         render :template => 'scripts/edit_tla'
+        
       when "timelocked_2fa"
         if PublicKey.where(:script_id => @script.id, :name => "Service").last
           @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Service").last.compressed
@@ -59,6 +60,7 @@ class ScriptsController < ApplicationController
           @script.oracle_2_pub_key = ""
         end
         render :template => 'scripts/edit_tl_2fa'
+        
       when "contract_oracle"
         if PublicKey.where(:script_id => @script.id, :name => "User").last
           @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "User").last.compressed
@@ -71,8 +73,8 @@ class ScriptsController < ApplicationController
           @script.oracle_2_pub_key = ""
         end
         render :template => 'scripts/edit_contract_oracle'
-      when "hashed_timelocked_contract"
         
+      when "hashed_timelocked_contract"
         if PublicKey.where(:script_id => @script.id, :name => "Alice 1").last
           @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice 1").last.compressed
         else
@@ -95,10 +97,25 @@ class ScriptsController < ApplicationController
         end
         
         render :template => 'scripts/edit_htlc'
-      else
-        render :template => 'scripts/edit'
+        
+      when "tumblebit_puzzle"
+        if PublicKey.where(:script_id => @script.id, :name => "Alice").last
+          @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last.compressed
+        else
+          @script.alice_pub_key_1 = ""
+        end
+        if PublicKey.where(:script_id => @script.id, :name => "Tumbler").last
+          @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
+        else
+          @script.oracle_1_pub_key = ""
+        end
+        @script.contract = "a"
+        
+        render :template => 'scripts/edit_tumblebit_puzzle'
+        
     end
   end
+  
 
   def update
     @script = Script.find(params[:id])
@@ -186,6 +203,29 @@ class ScriptsController < ApplicationController
           else
             redirect_to @script, alert: @notice
           end
+          
+        when "tumblebit_puzzle"
+          
+          if @script.alice_pub_key_1
+            @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.alice_pub_key_1, :name => "Alice")
+            @public_key.save
+            @notice << @public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')
+          end
+          if @script.oracle_1_pub_key
+            @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.oracle_1_pub_key, :name => "Tumbler")
+            @public_key.save
+            @notice << @public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')
+          end
+          
+          @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last
+          @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last
+        
+          if @notice.blank?
+            render 'show_tumblebit_puzzle'
+          else
+            redirect_to @script, alert: @notice
+          end
+          
         else
           @public_keys = @script.public_keys
           render 'show'
@@ -239,8 +279,12 @@ class ScriptsController < ApplicationController
         @script.bob_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Bob 1").last
         @script.bob_pub_key_2 = PublicKey.where(:script_id => @script.id, :name => "Bob 2").last
         render 'show_htlc'
-      else
-        render 'show'
+        
+      when "tumblebit_puzzle"
+        @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last
+        @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last
+        render 'show_tumblebit_puzzle'
+
     end
     
   end
@@ -248,12 +292,15 @@ class ScriptsController < ApplicationController
   
   def destroy
     @script = Script.find_by_id(params[:id])
-    @script.public_keys.each do |public_key|
-      public_key.destroy
+    if @script.virgin?
+      @script.public_keys.each do |public_key|
+        public_key.destroy
+      end
+      @script.destroy
+      redirect_to scripts_path, notice: 'Contract was successfully deleted.'
+    else
+      redirect_to @script, alert: 'Contract was funded, it cannot be deleted.'
     end
-    @script.destroy
-      
-    redirect_to scripts_path, notice: 'Script was successfully deleted.'
   end
   
   def create_spending_tx
@@ -278,12 +325,17 @@ class ScriptsController < ApplicationController
         @script.bob_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Bob 1").last.compressed
         @script.bob_pub_key_2 = PublicKey.where(:script_id => @script.id, :name => "Bob 2").last.compressed
         
+      when "tumblebit_puzzle"
+        @script.update(contract: "a")
+        @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last.compressed
+        @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
+        
     end
     
     if @script.funded?
       @script.first_unspent_tx
     else
-      redirect_to @script, alert: 'Script not funded: no UTXO available.'
+      redirect_to @script, alert: 'Contract not funded or already spent: no UTXO available.'
     end
   end
 
@@ -291,7 +343,7 @@ class ScriptsController < ApplicationController
     
     require 'btcruby/extensions'
     
-    @notice = "Script spending tx was successfully signed."
+    @notice = "Contract spending transaction was successfully signed."
     @script = Script.find(params[:id])
     @public_keys = @script.public_keys
     
@@ -307,6 +359,23 @@ class ScriptsController < ApplicationController
     @script.secret = params[:script][:secret]
     @script.refund_address = params[:script][:refund_address]
     
+    # ignore secret_ki parameters except secret_k1 for the demo, they are hardcoded to simplify the demo
+    @script.secret_k1 = params[:script][:secret_k1] 
+    @script.secret_k2 = params[:script][:secret_k2]
+    @script.secret_k3 = params[:script][:secret_k3]
+    @script.secret_k4 = params[:script][:secret_k4]
+    @script.secret_k5 = params[:script][:secret_k5]
+    @script.secret_k6 = params[:script][:secret_k6]
+    @script.secret_k7 = params[:script][:secret_k7]
+    @script.secret_k8 = params[:script][:secret_k8]
+    @script.secret_k9 = params[:script][:secret_k9]
+    @script.secret_k10 = params[:script][:secret_k10]
+    @script.secret_k11 = params[:script][:secret_k11]
+    @script.secret_k12 = params[:script][:secret_k12]
+    @script.secret_k13 = params[:script][:secret_k13]
+    @script.secret_k14 = params[:script][:secret_k14]
+    @script.secret_k15 = params[:script][:secret_k15]
+    
     @script.index = params[:script][:index]
     @script.tx_hash = params[:script][:tx_hash]
     @script.amount = params[:script][:amount]
@@ -321,7 +390,7 @@ class ScriptsController < ApplicationController
       redirect_to @script, alert: "Invalid refund destination address."
       return
     end
-    @script.save
+    @script.update(refund_address: params[:script][:refund_address])
 
     @value = (@script.amount.to_f - fee) * BTC::COIN # @value is expressed in satoshis
     @funding_script = @script.funding_script
@@ -567,6 +636,80 @@ class ScriptsController < ApplicationController
         end
         
         tx.inputs[0].signature_script << @funding_script.data
+        
+      when "tumblebit_puzzle"
+        
+        @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last.compressed
+        @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
+                                      
+        unless @script.expired?
+          puts "require Tumbler key, knowing puzzle solution"
+          tx = BTC::Transaction.new
+          # tx.lock_time = 1471199999 # some time in the past (2016-08-14)
+          tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
+                                                  previous_index: @previous_index,
+                                                  sequence: 0))
+          tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
+          hashtype = BTC::SIGHASH_ALL
+          sighash = tx.signature_hash(input_index: 0,
+                                      output_script: @funding_script,
+                                      hash_type: hashtype)
+          tx.inputs[0].signature_script = BTC::Script.new
+          # tx.inputs[0].signature_script << BTC::Script::OP_0
+          
+          
+          begin  
+            @tumbler_key = BTC::Key.new(wif:@script.oracle_1_priv_key)
+          rescue Exception => et
+            redirect_to @script, alert: "Invalid private key for Tumbler."
+            return
+          end
+          if et.blank?
+            puts "Tumbler signature appended"
+            tx.inputs[0].signature_script << (@tumbler_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+          end
+          k = Array["o", "n", "m", "l", "k", "j", "i", "h", "g", "f", "e", "d", "c", "b", "a"] # ignore secret_ki parameters for the demo.
+
+          # for i in 0..14
+          #  tx.inputs[0].signature_script.append_pushdata(k[14-i]) # h[1] = BTC.ripemd160(k[1]) where k[1] is a string
+          #end
+          
+          for i in 0..14
+            @script.update(contract: k[i])
+            tx.inputs[0].signature_script.append_pushdata(@script.contract)
+          end
+          
+          # tx.inputs[0].signature_script.append_pushdata(@script.contract)
+
+          tx.inputs[0].signature_script << BTC::Script::OP_TRUE # force script execution into checking puzzle solution and Tumbler's signature
+          
+        else
+          puts "after expiry, require only Alice key, ignoring puzzle solution."
+          tx = BTC::Transaction.new
+          tx.lock_time = @script.expiry_date.to_i + 1
+          tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
+                                                  previous_index: @previous_index,
+                                                  sequence: 0))
+          tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
+          hashtype = BTC::SIGHASH_ALL
+          sighash = tx.signature_hash(input_index: 0,
+                                      output_script: @funding_script,
+                                      hash_type: hashtype)
+          tx.inputs[0].signature_script = BTC::Script.new
+          begin  
+            @alice_key = BTC::Key.new(wif:@script.alice_priv_key_1)
+          rescue Exception => ea
+            redirect_to @script, alert: "Invalid private key for Alice."
+            return
+          end
+          if ea.blank?
+            puts "Alice signature appended"
+            tx.inputs[0].signature_script << (@alice_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+          end
+          tx.inputs[0].signature_script << BTC::Script::OP_FALSE # force script execution into checking Alice's signature, ignoring puzzle solution
+        end
+        
+        tx.inputs[0].signature_script << @funding_script.data
 
     end # of case statement
     @script.signed_tx = tx.to_s
@@ -575,7 +718,7 @@ class ScriptsController < ApplicationController
     if e
       s += e.message
     end
-    unless s == "Script spending tx was successfully signed."
+    unless s == "Contract spending transaction was successfully signed."
       redirect_to @script, alert: s
     end
   end
@@ -610,7 +753,7 @@ class ScriptsController < ApplicationController
   private
  
      def script_params
-       params.require(:script).permit(:refund_address, :alice_pub_key_1, :alice_pub_key_2, :bob_pub_key_1, :bob_pub_key_2,:oracle_1_pub_key,:oracle_2_pub_key, :contract, :title, :text, :expiry_date, :category, :user_id, public_keys_attributes: [:name, :compressed, :script_id])
+       params.require(:script).permit(:signed_tx, :refund_address, :alice_pub_key_1, :alice_pub_key_2, :bob_pub_key_1, :bob_pub_key_2,:oracle_1_pub_key,:oracle_2_pub_key, :contract, :title, :text, :expiry_date, :category, :user_id, public_keys_attributes: [:name, :compressed, :script_id])
      end
 
 end

@@ -1,23 +1,17 @@
 <div class="container">
   <div class="row">
-	<h3>Oracle Contract # <%= @script.id %>: <%= @script.title %></h3>
-	<p>Script:</p><pre style="width:600px"><code> <%= @script.description %></code></pre>
+	<h3>Tumblebit Puzzle # <%= @script.id if @script %>: <%= @script.title if @script.title %></h3>
+	<p>Script:</p><pre style="width:600px"><code><%= @script.description if @script %></code></pre>
 
-	<p>contract_hash is the SHA256 of a string like "{param_1:value_1,param_2:value_2}"
-		</br>param_1 and 2 are described in the contract, value_1 and 2 come from external data sources
-		</br>value_1 and 2 must match the values set in the contract for the hash to match contract_hash.</p>
-	<p>Contract hash: <%= Digest::SHA256.hexdigest @script.contract.to_s %></p>
-	
-	<p>Beneficiary (Compressed) Public Key: <strong><%= @script.oracle_1_pub_key %></strong></p>
-	<p>Oracle (Compressed) Public Key: <strong><%= @script.oracle_2_pub_key %></strong></p>
+	<%= render partial: "tumblebit_puzzle" %>
 
 	<p>P2SH Address: 
 		<% if @script.funded? %>
-			<strong><%= @script.hash_address %></strong>
+			<strong><%= @script.hash_address if @script %></strong>
 		<% else %>
 			<% if @script.hash_address %>
 			<!-- Button trigger modal -->
-			<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#exampleModal" ><strong><%= @script.hash_address %></strong></button>
+			<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#exampleModal" ><strong><%= @script.hash_address if @script %></strong></button>
 			<% end %>
 		<% end %></p>
 	
@@ -28,41 +22,7 @@
 			<p>No UTXO is available to create a spending transaction: contract is not funded yet or its previous funding has been spent.</p>
 		<% else %>
 			<p>Script requires public key(s):</p>
-			<% if @script.id %>
-				<% unless PublicKey.where(:script_id => @script.id, :name => "User").last %>
-				<%= form_for([@script, @script.public_keys.build]) do |f| %>
-				<table class="table">
-			    	<tbody>
-			  		<tr>
-						<%= f.hidden_field :name, :value => "User" %>
-						<td><div class="field"><%= f.text_field :compressed, :style => "width:540px;", :placeholder => "02259B57015E60DE464E1D83C375BDD01D272290C51CEDE0B794301DE1B7770C7B" %></div></td>
-						<%= f.hidden_field :script_id, :value => @script.id %>
-			  			<td><div class="actions">
-			    		<%= f.submit "Add Beneficiary Public Key", :class => "btn btn-primary" %>
-						<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
-			                scripts_url, :class => 'btn' %></div></td>
-			  		</tr>
-				<% end %>
-				<% end %>
-				<% unless PublicKey.where(:script_id => @script.id, :name => "Service").last %>
-				<%= form_for([@script, @script.public_keys.build]) do |f| %>
-				<table class="table">
-			    	<tbody>
-			  		<tr>
-						<%= f.hidden_field :name, :value => "Service" %>
-						<td><div class="field"><%= f.text_field :compressed, :style => "width:540px;", :placeholder => "02259B57015E60DE464E1D83C375BDD01D272290C51CEDE0B794301DE1B7770C7B" %></div></td>
-						<%= f.hidden_field :script_id, :value => @script.id %>
-			  			<td><div class="actions">
-			    		<%= f.submit "Add Oracle Public Key", :class => "btn btn-primary" %>
-						<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
-			                scripts_url, :class => 'btn' %></div></td>
-			  		</tr>
-				<% end %>
-				<% end %>
-			    	</tbody>
-
-				</table>
-			<% end %>
+			<p><%= link_to "Edit", edit_script_path(@script), :class => "btn btn-primary" %></p>
 		<% end %>
 	<% end %>
 	

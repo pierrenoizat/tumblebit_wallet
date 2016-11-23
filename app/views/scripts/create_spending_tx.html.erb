@@ -1,7 +1,7 @@
 <div class="container">
   <div class="row">
 	<h3>Create Spending Transaction for <%= @script.title if @script.title %></h3>
-	<p>Category: <strong><%= @script.category if @script.category %></strong></br>
+	<p>Category: <strong><%= category_of(@script.category) if @script.category %></strong></br>
 	Script:</br><pre style="width:650px"><code> <%= @script.description if @script %></code></pre></p>
 	
 	<% case @script.category %>
@@ -13,6 +13,8 @@
     	<%= render partial: "spending_contract_oracle" %>
   	<% when "hashed_timelocked_contract" %>
     	<%= render partial: "spending_htlc" %>
+	<% when "tumblebit_puzzle" %>
+	    <%= render partial: "spending_tumblebit_puzzle" %>
   	<% else %>
     	<%= render 'show' %>
 	<% end %>

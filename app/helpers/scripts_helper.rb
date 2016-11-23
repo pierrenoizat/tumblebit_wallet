@@ -13,6 +13,9 @@ module ScriptsHelper
         
       when "hashed_timelocked_contract"
         "Hashed Timelocked Contract"
+        
+      when "tumblebit_puzzle"
+        "Tumblebit Puzzle Contract"
     end
   end
   

@@ -22,7 +22,7 @@
 		<p><%= link_to("Create Spending Tx", { controller: "scripts", action: "create_spending_tx" }, :class => "btn btn-primary") %></p>
 	<% else %>
 		<% if @script.hash_address %>
-			<p>Script is not funded yet or no UTXO is available/confirmed to create a spending transaction.</p>
+			<p>No UTXO is available to create a spending transaction: contract is not funded yet or its previous funding has been spent.</p>
 		<% else %>
 			<p>Script requires a public key:</p>
 			<% if @script.id %>

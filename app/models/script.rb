@@ -3,14 +3,16 @@ class Script < ActiveRecord::Base
   validates_presence_of :title
   validates :expiry_date, :timeliness => {:after => lambda { Date.current }, :type => :datetime }
   
-  enum category: [:timelocked_address, :timelocked_2fa, :contract_oracle, :hashed_timelocked_contract]
+  enum category: [:timelocked_address, :timelocked_2fa, :contract_oracle, :hashed_timelocked_contract, :tumblebit_puzzle]
   
   attr_accessor :priv_key, :oracle_1_priv_key, :oracle_2_priv_key, :oracle_1_pub_key, :oracle_2_pub_key
   attr_accessor :alice_priv_key_1, :alice_priv_key_2, :bob_priv_key_1, :bob_priv_key_2
   attr_accessor :alice_pub_key_1, :alice_pub_key_2, :bob_pub_key_1, :bob_pub_key_2
   attr_accessor :tx_hash, :index, :amount, :confirmations, :signed_tx, :secret
+  attr_accessor :secret_k1,:secret_k2,:secret_k3,:secret_k4,:secret_k5,:secret_k6,:secret_k7
+  attr_accessor :secret_k8,:secret_k9,:secret_k10,:secret_k11,:secret_k12,:secret_k13,:secret_k14,:secret_k15
   
-  # self.contract is a string of the form "{param_1:value_1,param_2:value_2}", e.g "{time_limit:1474299166,rate_limit:545.00}" for a futures contract on the EUR/BTC exchange rate
+  # self.contract is a string of the form "{param_1:value_1,param_2:value_2}", e.g "{time_limit:1474299166,price_limit:545.00}" for a futures contract on the EUR/BTC exchange rate
   
   has_many :public_keys
   belongs_to :user
@@ -44,6 +46,17 @@ class Script < ActiveRecord::Base
           2 <AlicePubkey2> <BobPubkey2>
         ENDIF
         2 CHECKMULTISIG"
+        
+      when "tumblebit_puzzle"
+        "       IF
+        RIPEMD160 <h1> EQUALVERIFY
+        ...
+        RIPEMD160 <h15> EQUALVERIFY
+        <tumbler pubkey> CHECKSIG
+        ELSE
+        <expiry time> CHECKLOCKTIMEVERIFY DROP
+        <AlicePubkey> CHECKSIG
+        ENDIF"
     end
   end
   
@@ -132,6 +145,38 @@ class Script < ActiveRecord::Base
         @funding_script<<BTC::Script::OP_2
         @funding_script<<BTC::Script::OP_CHECKMULTISIG
         
+      when "tumblebit_puzzle"
+        @alice_pub_key = PublicKey.where(:script_id => self.id, :name => "Alice").last
+        @tumbler_pub_key = PublicKey.where(:script_id => self.id, :name => "Tumbler").last
+        @alice_key=BTC::Key.new(public_key:BTC.from_hex(@alice_pub_key.compressed))
+        @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(@tumbler_pub_key.compressed))
+        
+        @expire_at = Time.at(self.expiry_date.to_time.to_i)
+        k = Array["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o"]
+        
+        @funding_script<<BTC::Script::OP_IF
+        for i in 0..14
+          @funding_script<<BTC::Script::OP_RIPEMD160
+          @funding_script.append_pushdata(BTC.ripemd160(k[i])) # h[1] = BTC.ripemd160(k[1]) where k[1] is a string
+          @funding_script<<BTC::Script::OP_EQUALVERIFY
+        end
+        # @funding_script<<BTC::Script::OP_RIPEMD160
+        # @funding_script.append_pushdata(BTC.ripemd160(self.contract))
+        # @funding_script<<BTC::Script::OP_EQUALVERIFY
+        
+        @funding_script<<@tumbler_key.compressed_public_key
+        @funding_script<<BTC::Script::OP_CHECKSIG
+        
+        @funding_script<<BTC::Script::OP_ELSE
+        
+        @funding_script<<BTC::WireFormat.encode_int32le(@expire_at.to_i)
+        @funding_script<<BTC::Script::OP_CHECKLOCKTIMEVERIFY
+        @funding_script<<BTC::Script::OP_DROP
+        @funding_script<<@alice_key.compressed_public_key
+        @funding_script<<BTC::Script::OP_CHECKSIG
+        
+        @funding_script<<BTC::Script::OP_ENDIF
+        
     end
     return @funding_script
   end
@@ -145,6 +190,7 @@ class Script < ActiveRecord::Base
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
             # <BTC::ScriptHashAddress:3F8fc3FboEKb5rnmYUNQTuihZBkyPy4aNM>
             # script uses the last public key saved with the script
+            
         when "timelocked_2fa"
           if PublicKey.where(:script_id => self.id, :name => "User").last
             self.oracle_2_pub_key = PublicKey.where(:script_id => self.id, :name => "User").last.compressed
@@ -157,6 +203,7 @@ class Script < ActiveRecord::Base
           else
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
           end
+          
         when "contract_oracle"
           if PublicKey.where(:script_id => self.id, :name => "User").last
             self.oracle_1_pub_key = PublicKey.where(:script_id => self.id, :name => "User").last.compressed
@@ -169,6 +216,7 @@ class Script < ActiveRecord::Base
           else
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
           end
+          
         when "hashed_timelocked_contract"
           if PublicKey.where(:script_id => self.id, :name => "Alice 1").last
             self.alice_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Alice 1").last.compressed
@@ -187,7 +235,20 @@ class Script < ActiveRecord::Base
           else
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
           end
-        end # of case statetement
+          
+        when "tumblebit_puzzle"
+          if PublicKey.where(:script_id => self.id, :name => "Alice").last
+            self.alice_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Alice").last.compressed
+          end
+          if PublicKey.where(:script_id => self.id, :name => "Tumbler").last
+            self.oracle_1_pub_key = PublicKey.where(:script_id => self.id, :name => "Tumbler").last.compressed
+          end
+          if (self.alice_pub_key_1.blank? or self.oracle_1_pub_key.blank? )
+            return nil # Script to Hash Address requires 2 keys.
+          else
+            funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
+          end
+        end # of case statement
   else
     return nil
   end
@@ -255,7 +316,7 @@ class Script < ActiveRecord::Base
   end
   
   def expired?
-    if (self.expiry_date and (["timelocked_address", "timelocked_2fa"].include? self.category))
+    if (self.expiry_date and (["timelocked_address", "timelocked_2fa", "tumblebit_puzzle"].include? self.category))
       return (Time.now.to_i > self.expiry_date.to_i)
     else
       return false

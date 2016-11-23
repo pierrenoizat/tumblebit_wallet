@@ -364,3 +364,47 @@ Post.create(
 
   }
 )
+
+Post.create(
+  id: 16,
+  title: "Tumblebit Puzzle Contract",
+  published_at: Time.now,
+  body: 
+  %Q{### Tumblebit Puzzle Contract 
+  
+  Tumblebit escrow transaction as proposed in the [Tumblebit white paper](https://eprint.iacr.org/2016/575.pdf).
+  Alice can insert a 0 (false) in the scriptSig to choose to enter through the else branch and recover her money after the expiry date, if Bob has not been paid.
+  Tumbler can insert a 1 (true) in the scriptSig to choose to enter through the if branch and send the money to Bob, Bob having supplied the solution to the puzzle.
+  
+  **Use case**:
+  Alice wants to send money to Bob via Tumbler, an untrusted anonymous payment hub.
+  In the escrow phase, Alice sends money to the P2SH Tumblebit Puzzle address.
+  The contract contains the hashes hi of 15 secret preimages (ki) that must be known by Tumbler for Tumbler to sign a transaction sending the funds to Bob.
+  Bob can collect his payment by supplying to Tumbler the solution to the Tumblebit puzzle in the form of the preimages ki (i in 1..15).
+  If Bob fails to collect his payment before the expiry time, Alice can collect her refund.
+  
+  
+  **Script**:```
+  IF
+  RIPEMD160 <h1> EQUALVERIFY
+  ...
+  RIPEMD160 <h15> EQUALVERIFY
+  <tumbler pubkey> CHECKSIG
+  ELSE
+  <expiry time> CHECKLOCKTIMEVERIFY DROP
+  <AlicePubkey> CHECKSIG
+  ENDIF
+  ```
+  
+  **Example**:
+  
+  h1: ee9eb446302cbaaeded21f6a50d7ffb6c240023d
+  
+  Alice Public Key 1: 02BE332AE534CC30FB84BA64817A748DBC9A9C9021463A645F5B3CF2AB4AEB0284
+
+  Tumbler Public Key 1: 039DD14C371FBB1BCA9860942D14ED32897CF4ABF8312A6446EBF716774769441B
+  
+  Tumblebit Puzzle Contract Address: 3LZgKZspe411v9vNGFddNMQZqGdzeTvd2Q
+
+  }
+)
