@@ -98,8 +98,10 @@ Post.create(
   Alice will then ask Bob to sign a refund transaction spending the 2-of-2 address to her timelocked address. 
   The payment channel will be open as long as Alice does not broadcast her timelocked refund transaction.
   
-  **Script**:
+  **scriptPubKey**:
   `<expiry time> CHECKLOCKTIMEVERIFY DROP <public key> CHECKSIG`
+  
+  **scriptSig (after expiry)**: `<signature>`
   
   **Example**:
   
@@ -122,12 +124,16 @@ Post.create(
   The Script requires two keys before the set expiry date and only one key after the expiry date. 
   If one of the keys is yours and the other belongs to a 2FA (2FA stands for two-factor authentication) service provider, the funds can be accessed after the expiry date even if the 2FA service provider has disappeared.
   
-  **Script**:```
+  **scriptPubKey**:```
   IF <service public key> CHECKSIGVERIFY
   ELSE <expiry time> CHECKLOCKTIMEVERIFY DROP 
   ENDIF
   <user public key> CHECKSIG
   ```
+  
+  **scriptSig (before expiry)**: `<user signature> <service signature> TRUE`
+  **scriptSig (after expiry)**: `<user signature> FALSE`
+  
   
   **Example**:
   
@@ -157,8 +163,10 @@ Post.create(
   For example, the insurance contract can be a promise to indemnify the user if a flight is canceled.
   Because the script includes a hash of the contract terms, the oracle signature of a transaction spending the Oracle Contract address to the user address is the oracle testimony that the flight was indeed canceled.  
   
-  **Script**:
+  **scriptPubKey**:
   `<contract_hash> DROP 2 <beneficiary pubkey> <oracle pubkey> 2 CHECKMULTISIG`
+  
+  **scriptSig**: `0 <beneficiary signature> <oracle signature>`
   
   **Example**:
   
@@ -199,7 +207,7 @@ Post.create(
   If Chuck fails to collect his payment before T2, Bob can collect his refund. If Bob fails to collect his payment before T1, Alice can collect her refund.
   
   
-  **Script**:```
+  **scriptPubKey**:```
   IF
   HASH160 <hash160(S)> EQUALVERIFY
   2 <AlicePubkey1> <BobPubkey1>
@@ -208,6 +216,10 @@ Post.create(
   ENDIF
   2 CHECKMULTISIG
   ```
+  
+  **scriptSig (knowing S)**: `0 <Alice signature 1> <Bob signature 1> <S> TRUE`
+  **scriptSig (ignoring S)**: `0 <Alice signature 2> <Bob signature 2> FALSE`
+  
   
   **Example**:
   
@@ -384,27 +396,35 @@ Post.create(
   If Bob fails to collect his payment before the expiry time, Alice can collect her refund.
   
   
-  **Script**:```
+  **scriptPubKey:**:```
   IF
   RIPEMD160 <h1> EQUALVERIFY
   ...
   RIPEMD160 <h15> EQUALVERIFY
-  <tumbler pubkey> CHECKSIG
+  <TumblerPubkey> CHECKSIG
   ELSE
   <expiry time> CHECKLOCKTIMEVERIFY DROP
   <AlicePubkey> CHECKSIG
   ENDIF
   ```
   
+  
+  **scriptSig (before expiry)**: `<Tumbler signature> <k15>..<k1> TRUE`
+  **scriptSig (after expiry)**: `<Alice signature> FALSE`
+  
+  
   **Example**:
   
-  h1: ee9eb446302cbaaeded21f6a50d7ffb6c240023d
+  k1: "a", k2: "b", k3: "c", ...,k14: "n", k15: "o"
+  hi = RIPEMD160(ki)
   
-  Alice Public Key 1: 02BE332AE534CC30FB84BA64817A748DBC9A9C9021463A645F5B3CF2AB4AEB0284
+  Expiry: 2016-11-24 08:56:00 UTC
+  
+  Alice Public Key 1: 023927B837A922696836E26399F759965328437F93AAFAF3E02767D22860C0FBA7
 
-  Tumbler Public Key 1: 039DD14C371FBB1BCA9860942D14ED32897CF4ABF8312A6446EBF716774769441B
+  Tumbler Public Key 1: 02259B57015E60DE464E1D83C375BDD01D272290C51CEDE0B794301DE1B7770C7B
   
-  Tumblebit Puzzle Contract Address: 3LZgKZspe411v9vNGFddNMQZqGdzeTvd2Q
+  Tumblebit Puzzle Contract Address: 36mVdtCTQz2dMbHEUAAMYkX6UjZq5u2xLG
 
   }
 )

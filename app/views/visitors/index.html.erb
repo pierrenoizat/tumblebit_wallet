@@ -28,7 +28,7 @@
                 <p class="heading__sub hero-heading__sub animated fadeInUp delay_1"><%= link_to 'Users:', users_path %> <%= User.count %> registered.</p>
 
               <!-- Hero buttons -->
-			<% if current_client %>
+			<% if current_client or current_user %>
 			<a href="<%= new_script_path %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Create your Smart Contract</a>
 			<% else %>
 			<a href="<%= new_client_registration_path %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Create your Smart Contract</a>

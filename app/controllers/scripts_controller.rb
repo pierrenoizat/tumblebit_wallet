@@ -5,7 +5,7 @@ class ScriptsController < ApplicationController
   # before_action :authenticate_client!
 
   def index
-    @scripts = Script.all
+    @scripts = Script.order(created_at: :asc) 
   end
   
   def new
@@ -531,7 +531,6 @@ class ScriptsController < ApplicationController
       when "contract_oracle" # <hash> OP_DROP 2 <beneficiary pubkey> <oracle pubkey> CHECKMULTISIG
                             # <hash>: SHA256 of a json file like { "param_1":"value_1", "param_2":"value_2" }
                             # param_1 and 2 are described in the contract, value_1 and 2 come from external data sources
-        puts "require both user key and oracle key"
         begin  
           @user_key = BTC::Key.new(wif:@script.oracle_1_priv_key)
         rescue Exception => e1
