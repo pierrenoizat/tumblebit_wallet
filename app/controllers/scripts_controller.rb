@@ -109,7 +109,21 @@ class ScriptsController < ApplicationController
         else
           @script.oracle_1_pub_key = ""
         end
-        @script.contract = "a"
+        @script.secret_k1 = @script.secret_k1 || "a"
+        @script.secret_k2 = @script.secret_k2 || "b"
+        @script.secret_k3 = @script.secret_k3 || "c"
+        @script.secret_k4 = @script.secret_k4 || "d"
+        @script.secret_k5 = @script.secret_k5 || "e"
+        @script.secret_k6 = @script.secret_k6 || "f"
+        @script.secret_k7 = @script.secret_k7 || "g"
+        @script.secret_k8 = @script.secret_k8 || "h"
+        @script.secret_k9 = @script.secret_k9 || "i"
+        @script.secret_k10 = @script.secret_k10 || "j"
+        @script.secret_k11 = @script.secret_k11 || "k"
+        @script.secret_k12 = @script.secret_k12 || "l"
+        @script.secret_k13 = @script.secret_k13 || "m"
+        @script.secret_k14 = @script.secret_k14 || "n"
+        @script.secret_k15 = @script.secret_k15 || "o"
         
         render :template => 'scripts/edit_tumblebit_puzzle'
         
@@ -219,19 +233,45 @@ class ScriptsController < ApplicationController
           
           @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last
           @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last
-        
+          
+          if @script.contract.blank?
+            @script.secret_k1 = params[:script][:secret_k1] 
+            @script.secret_k2 = params[:script][:secret_k2]
+            @script.secret_k3 = params[:script][:secret_k3]
+            @script.secret_k4 = params[:script][:secret_k4]
+            @script.secret_k5 = params[:script][:secret_k5]
+            @script.secret_k6 = params[:script][:secret_k6]
+            @script.secret_k7 = params[:script][:secret_k7]
+            @script.secret_k8 = params[:script][:secret_k8]
+            @script.secret_k9 = params[:script][:secret_k9]
+            @script.secret_k10 = params[:script][:secret_k10]
+            @script.secret_k11 = params[:script][:secret_k11]
+            @script.secret_k12 = params[:script][:secret_k12]
+            @script.secret_k13 = params[:script][:secret_k13]
+            @script.secret_k14 = params[:script][:secret_k14]
+            @script.secret_k15 = params[:script][:secret_k15]
+            k = Array[@script.secret_k1,@script.secret_k2,@script.secret_k3,@script.secret_k4,@script.secret_k5,@script.secret_k6,
+                      @script.secret_k7,@script.secret_k8,@script.secret_k9,@script.secret_k10,@script.secret_k11,
+                      @script.secret_k12,@script.secret_k13,@script.secret_k14,@script.secret_k15]
+            string = ""
+            for i in 0..14
+              unless k[i].blank?
+                string += BTC.ripemd160(k[i]).to_hex
+              end
+            end
+            if string.size == 600
+              @script.update(contract: string) # string is concatenation of ripemd(ki), i in 0..14
+            end
+          end
+          
           if @notice.blank?
             render 'show_tumblebit_puzzle'
           else
             redirect_to @script, alert: @notice
           end
-          
-        else
-          @public_keys = @script.public_keys
-          render 'show'
-    end
+    end # of case statement
 
-  end
+  end # of update method
   
   
 
@@ -284,10 +324,9 @@ class ScriptsController < ApplicationController
         @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last
         @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last
         render 'show_tumblebit_puzzle'
-
-    end
+    end # of case statement
     
-  end
+  end # of show method
   
   
   def destroy
@@ -326,7 +365,6 @@ class ScriptsController < ApplicationController
         @script.bob_pub_key_2 = PublicKey.where(:script_id => @script.id, :name => "Bob 2").last.compressed
         
       when "tumblebit_puzzle"
-        @script.update(contract: "a")
         @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last.compressed
         @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
         
@@ -379,7 +417,8 @@ class ScriptsController < ApplicationController
     @script.index = params[:script][:index]
     @script.tx_hash = params[:script][:tx_hash]
     @script.amount = params[:script][:amount]
-    fee = 0.0001  # approx. 5 cts when 1 BTC = 500 EUR
+    # fee = 0.0001  # approx. 7 cts when 1 BTC = 700 EUR
+    fee = 0.0002
     @previous_index = @script.index.to_i
     @previous_id = @script.tx_hash
     # @refund_address = BTC::Address.parse("16zQaNAg77jco2EDVSsU4bEAq5DgfZPZP4") # my electrum wallet
@@ -667,18 +706,22 @@ class ScriptsController < ApplicationController
             puts "Tumbler signature appended"
             tx.inputs[0].signature_script << (@tumbler_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
           end
-          k = Array["o", "n", "m", "l", "k", "j", "i", "h", "g", "f", "e", "d", "c", "b", "a"] # ignore secret_ki parameters for the demo.
-
-          # for i in 0..14
-          #  tx.inputs[0].signature_script.append_pushdata(k[14-i]) # h[1] = BTC.ripemd160(k[1]) where k[1] is a string
-          #end
-          
+          # k = Array["o", "n", "m", "l", "k", "j", "i", "h", "g", "f", "e", "d", "c", "b", "a"] # ignore secret_ki parameters for the demo.
+          k = Array[@script.secret_k1,@script.secret_k2,@script.secret_k3,@script.secret_k4,@script.secret_k5,@script.secret_k6,
+            @script.secret_k7,@script.secret_k8,@script.secret_k9,@script.secret_k10,@script.secret_k11,@script.secret_k12,
+            @script.secret_k13,@script.secret_k14,@script.secret_k15]
+          string = ""
+          backup = @script.contract
           for i in 0..14
             @script.update(contract: k[i])
+            string += BTC.ripemd160(k[14-i]).to_hex
             tx.inputs[0].signature_script.append_pushdata(@script.contract)
           end
-          
-          # tx.inputs[0].signature_script.append_pushdata(@script.contract)
+          if string.size == 600
+            @script.update(contract: string) # string is concatenation of ripemd(ki), i in 0..14
+          else
+            @script.update(contract: backup)
+          end
 
           tx.inputs[0].signature_script << BTC::Script::OP_TRUE # force script execution into checking puzzle solution and Tumbler's signature
           

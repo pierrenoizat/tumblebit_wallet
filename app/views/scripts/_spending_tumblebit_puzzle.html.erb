@@ -1,5 +1,4 @@
 <p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></p>
-<p>h1: <strong><%= BTC.ripemd160(@script.contract).to_hex if @script.contract %></strong></p>
 <p>Alice (Compressed) Public Key: <strong><%= @script.alice_pub_key_1 %></strong></p>
 <p>Tumbler (Compressed) Public Key: <strong><%= @script.oracle_1_pub_key %></strong></p>
 
@@ -14,19 +13,75 @@
 	<%= f.hidden_field :amount, :value => @script.amount %>
 	<%= f.hidden_field :confirmations, :value => @script.confirmations %>
 	
+	<div class="field" id="contract_string">
+	    <%= f.label 'Secret pre-image  k1 ' %> 
+	  	<%= f.text_field :secret_k1, :style => "width:416px;", :placeholder => "a" %>
+	</div>
+	<div class="field" id="contract_string">
+		<%= f.label 'Secret pre-image  k2 ' %> 
+		<%= f.text_field :secret_k2, :style => "width:416px;", :placeholder => "b" %>
+	</div>
+	<div class="field" id="contract_string">
+		<%= f.label 'Secret pre-image  k3 ' %> 
+		<%= f.text_field :secret_k3, :style => "width:416px;", :placeholder => "c" %>
+	</div>
+	<div class="field" id="contract_string">
+		<%= f.label 'Secret pre-image  k4 ' %> 
+		<%= f.text_field :secret_k4, :style => "width:416px;", :placeholder => "d" %>
+	</div>
+	<div class="field" id="contract_string">
+		<%= f.label 'Secret pre-image  k5 ' %> 
+		<%= f.text_field :secret_k5, :style => "width:416px;", :placeholder => "e" %>
+	</div>
+	<div class="field" id="contract_string">
+		<%= f.label 'Secret pre-image  k6 ' %> 
+		<%= f.text_field :secret_k6, :style => "width:416px;", :placeholder => "f" %>
+	</div>
+	<div class="field" id="contract_string">
+		<%= f.label 'Secret pre-image  k7 ' %> 
+		<%= f.text_field :secret_k7, :style => "width:416px;", :placeholder => "g" %>
+	</div>
+	<div class="field" id="contract_string">
+		<%= f.label 'Secret pre-image  k8 ' %> 
+		<%= f.text_field :secret_k8, :style => "width:416px;", :placeholder => "h" %>
+	</div>
+	<div class="field" id="contract_string">
+		<%= f.label 'Secret pre-image  k9 ' %> 
+		<%= f.text_field :secret_k9, :style => "width:416px;", :placeholder => "i" %>
+	</div>
+	<div class="field" id="contract_string">
+		<%= f.label 'Secret pre-image k10' %> 
+		<%= f.text_field :secret_k10, :style => "width:410px;", :placeholder => "j" %>
+	</div>
+	<div class="field" id="contract_string">
+		<%= f.label 'Secret pre-image k11' %> 
+		<%= f.text_field :secret_k11, :style => "width:410px;", :placeholder => "k" %>
+	</div>
+	<div class="field" id="contract_string">
+		<%= f.label 'Secret pre-image k12' %> 
+		<%= f.text_field :secret_k12, :style => "width:410px;", :placeholder => "l" %>
+	</div>
+	<div class="field" id="contract_string">
+		<%= f.label 'Secret pre-image k13' %> 
+		<%= f.text_field :secret_k13, :style => "width:410px;", :placeholder => "m" %>
+	</div>
+	<div class="field" id="contract_string">
+		<%= f.label 'Secret pre-image k14' %> 
+		<%= f.text_field :secret_k14, :style => "width:410px;", :placeholder => "n" %>
+	</div>
+	<div class="field" id="contract_string">
+		<%= f.label 'Secret pre-image k15' %> 
+		<%= f.text_field :secret_k15, :style => "width:410px;", :placeholder => "o" %>
+	</div>
+	</br>
 	<div class="field">
-		<p><%= f.label 'Secret Pre-image k1' %></br>
-		<%= f.text_field :secret_k1, :style => "width:420px;" %></p>
+		<p><%= f.label 'Tumbler (WIF) Private Key' %></br>
+		<%= f.text_field :oracle_1_priv_key, :style => "width:420px;", :placeholder => "5JkXFAxcgPkyoe4WEuZc5AAMx8bKBQhQAKULMXV5DgLxotH3wwz" %></p>
 	</div>
 	
 	<div class="field">
-		<p><%= f.label 'Tumbler (WIF compressed) Private Key' %></br>
-		<%= f.text_field :oracle_1_priv_key, :style => "width:420px;", :placeholder => "Kyj2bKvR6UkhAU57xtTxCffVQFTZRyYLaWfR9hnBFdvMyTCdRv8m" %></p>
-	</div>
-	
-	<div class="field">
-		<p><%= f.label 'Alice (WIF compressed) Private Key' %></br>
-		<%= f.text_field :alice_priv_key_1, :style => "width:420px;", :placeholder => "L1ejpmscmjV9pqjJ6WwNpbnbMm7QgcmgNLUHFtDeaLbK3JM8ktKK" %></p>
+		<p><%= f.label 'Alice (WIF) Private Key' %></br>
+		<%= f.text_field :alice_priv_key_1, :style => "width:420px;", :placeholder => "5KAYLPUCo3bTiHYxjhWk6r2abzF4GAFpysgHT8KGuEwFvN269n5" %></p>
 	</div>
 	
 	<div class="field">

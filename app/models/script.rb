@@ -1,7 +1,8 @@
 class Script < ActiveRecord::Base
   
   validates_presence_of :title
-  validates :expiry_date, :timeliness => {:after => lambda { Date.current }, :type => :datetime }
+  # validates :expiry_date, :timeliness => {:after => lambda { Date.current }, :type => :datetime }
+  validates :expiry_date, :timeliness => {:type => :datetime }
   
   enum category: [:timelocked_address, :timelocked_2fa, :contract_oracle, :hashed_timelocked_contract, :tumblebit_puzzle]
   
@@ -152,32 +153,55 @@ class Script < ActiveRecord::Base
         @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(@tumbler_pub_key.compressed))
         
         @expire_at = Time.at(self.expiry_date.to_time.to_i)
-        k = Array["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o"]
+        h = Array.new
+        unless self.contract.blank?
+          contract = self.contract
+          puts "Contract title: #{self.title}"
+          puts "Contract string: #{contract}"
+          puts "Contract string size: #{contract.size}"
+          h[1] = self.contract[0..39]
+                    h[2] = self.contract[40..79]
+                    h[3] =  self.contract[80..119]
+                    h[4] =  self.contract[120..159]
+                    h[5] =  self.contract[160..199]
+                    h[6] =  self.contract[200..239]
+                    h[7] = self.contract[240..279]
+                    h[8] = self.contract[280..319]
+                    h[9] = self.contract[320..359]
+                    h[10] = self.contract[360..399]
+                    h[11] = self.contract[400..439]
+                    h[12] = self.contract[440..479]
+                    h[13] =  self.contract[480..519]
+                    h[14] = self.contract[520..559]
+                    h[15] = self.contract[560..599]
+          @funding_script<<BTC::Script::OP_IF
+          j=0
+          for i in 1..15
+            # self.update(contract: h[i])
+            @funding_script<<BTC::Script::OP_RIPEMD160
+            # @funding_script.append_pushdata(BTC::Data.data_from_hex(BTC.ripemd160(h[i]).to_hex))
+            @funding_script.append_pushdata(BTC::Data.data_from_hex(h[i])) # h[1] = BTC.ripemd160(k[1]) where k[1] is a string, RIPEMD digest is 40 hex char. long
+            @funding_script<<BTC::Script::OP_EQUALVERIFY
+            j+=1
+          end
+          # self.update(contract: contract)
+          puts "Compteur: #{j}"
+          @funding_script<<@tumbler_key.compressed_public_key
+          @funding_script<<BTC::Script::OP_CHECKSIG
         
-        @funding_script<<BTC::Script::OP_IF
-        for i in 0..14
-          @funding_script<<BTC::Script::OP_RIPEMD160
-          @funding_script.append_pushdata(BTC.ripemd160(k[i])) # h[1] = BTC.ripemd160(k[1]) where k[1] is a string
-          @funding_script<<BTC::Script::OP_EQUALVERIFY
+          @funding_script<<BTC::Script::OP_ELSE
+        
+          @funding_script<<BTC::WireFormat.encode_int32le(@expire_at.to_i)
+          @funding_script<<BTC::Script::OP_CHECKLOCKTIMEVERIFY
+          @funding_script<<BTC::Script::OP_DROP
+          @funding_script<<@alice_key.compressed_public_key
+          @funding_script<<BTC::Script::OP_CHECKSIG
+        
+          @funding_script<<BTC::Script::OP_ENDIF
+        else
+          return nil
         end
-        # @funding_script<<BTC::Script::OP_RIPEMD160
-        # @funding_script.append_pushdata(BTC.ripemd160(self.contract))
-        # @funding_script<<BTC::Script::OP_EQUALVERIFY
-        
-        @funding_script<<@tumbler_key.compressed_public_key
-        @funding_script<<BTC::Script::OP_CHECKSIG
-        
-        @funding_script<<BTC::Script::OP_ELSE
-        
-        @funding_script<<BTC::WireFormat.encode_int32le(@expire_at.to_i)
-        @funding_script<<BTC::Script::OP_CHECKLOCKTIMEVERIFY
-        @funding_script<<BTC::Script::OP_DROP
-        @funding_script<<@alice_key.compressed_public_key
-        @funding_script<<BTC::Script::OP_CHECKSIG
-        
-        @funding_script<<BTC::Script::OP_ENDIF
-        
-    end
+    end # of case statement
     return @funding_script
   end
   
