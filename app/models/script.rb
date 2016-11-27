@@ -180,7 +180,10 @@ class Script < ActiveRecord::Base
             # self.update(contract: h[i])
             @funding_script<<BTC::Script::OP_RIPEMD160
             # @funding_script.append_pushdata(BTC::Data.data_from_hex(BTC.ripemd160(h[i]).to_hex))
-            @funding_script.append_pushdata(BTC::Data.data_from_hex(h[i])) # h[1] = BTC.ripemd160(k[1]) where k[1] is a string, RIPEMD digest is 40 hex char. long
+            # @funding_script.append_pushdata(BTC::Data.data_from_hex(h[i])) # h[1] = BTC.ripemd160(k[1]) where k[1] is a string, RIPEMD digest is 40 hex char. long
+            # @funding_script.append_pushdata(BTC::Data.data_from_hex(self.contract))
+            @funding_script.append_pushdata(BTC::Data.data_from_hex(h[i]))
+            puts "#{h[i]}"
             @funding_script<<BTC::Script::OP_EQUALVERIFY
             j+=1
           end
