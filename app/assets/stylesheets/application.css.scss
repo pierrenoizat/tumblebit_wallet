@@ -17,3 +17,9 @@
  *= require overrides
  *= require_self
  */
+
+@media screen and (min-width: 768px) {
+    .custom-class {
+        width: 310px; /* either % (e.g. 60%) or px (400px) */
+    }
+}

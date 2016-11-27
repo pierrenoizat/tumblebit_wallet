@@ -768,6 +768,8 @@ class ScriptsController < ApplicationController
     end
     unless s == "Contract spending transaction was successfully signed."
       redirect_to @script, alert: s
+    else
+      flash[:notice] = s
     end
   end
   
@@ -790,7 +792,7 @@ class ScriptsController < ApplicationController
     post_response = JSON.parse(response.body)
     if post_response["error"]
       puts "Tx broadcast failed: #{post_response["error"]}"
-      redirect_to @script, alert: "Tx broadcast failed. "+"#{post_response["error"]}"
+      render 'show_failed_broadcast_tx', alert: "Tx broadcast failed. #{post_response["error"]}. Alternatively: copy the signed transaction below then paste it to https://coinb.in/#broadcast or try the Bitcoin Core sendrawtransaction command."
     else
       puts "Tx was broadcast successfully with Tx ID: #{post_response['tx']['hash']}"
       redirect_to @script, notice: "Tx was broadcast successfully with Tx ID: #{post_response['tx']['hash']}"
