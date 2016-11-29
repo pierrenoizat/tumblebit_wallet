@@ -32,8 +32,8 @@ class ApplicationController < ActionController::Base
     end
 
     def correct_user?
-      @user = User.find(params[:id])
-      unless current_user == @user
+      @user = User.find_by_id(params[:id])
+      unless (current_user and current_user == @user)
         redirect_to root_url, :alert => "Access denied."
       end
     end
@@ -62,7 +62,7 @@ class ApplicationController < ActionController::Base
     def authenticate_user!
       if !current_user
         if !current_client
-          redirect_to root_url, :alert => 'You need to sign in or sign up for access to this page.'
+          redirect_to root_url, :alert => 'You need to log in or sign up for access to this page.'
         end
       end
     end

@@ -25,7 +25,7 @@
 
               <!-- Hero subheading -->
               
-                <p class="heading__sub hero-heading__sub animated fadeInUp delay_1"><%= link_to 'Users:', users_path %> <%= User.count %> registered.</p>
+                <p class="heading__sub hero-heading__sub animated fadeInUp delay_1"><strong><%= link_to "#{Script.count} contracts", scripts_path %></strong>, <%= Client.count %> users.</p>
 
               <!-- Hero buttons -->
 			<% if current_client or current_user %>
