@@ -26,6 +26,10 @@ Post.create(
     Hence, a P2SH address can be thought of as a digital vault connected to a tamper-proof clock.
     
     This application allows users to create transactions using the Bitcoin scripting language.
+    **Please note that the application does NOT store any private key or secret, 
+    only public key(s), expiry date(s) and hash(es) required by the script.
+    Make sure to backup and store your private keys and/or secrets securely before funding your P2SH address.
+    Do not use this application to move large sums of money: this is only a demo tutorial, not a commercial site!**
 
     Need help? Contact me at pierre dot noizat at paymium dot com
     Need bitcoins ? Sign up at [paymium.com](https://paymium.com) !
