@@ -25,13 +25,18 @@
 		          </ul>
 		        </li>
 
-<% if user_signed_in? or client_signed_in? %>
-  <li><a href="<%= signout_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Sign out</a></li>
+<% if client_signed_in? %>
+  <li><a href="<%= destroy_client_session_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Sign out</a></li>
 <% else %>
-  <li><a href="<%= new_client_session_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Log in</a></li>
-<li><a href="<%= new_client_registration_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Sign up</a></li>
+  <% unless user_signed_in? %>
+  	<li><a href="<%= new_client_session_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Log in</a></li>
+	<li><a href="<%= new_client_registration_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Sign up</a></li>
+  <% end %>
 <% end %>
+
+
 <% if user_signed_in? %>
+  <li><a href="<%= signout_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Sign out</a></li>
   <li><a href="<%= users_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Admins</a></li>
 <li><a href="<%= clients_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Registrations</a></li>
 <% end %>

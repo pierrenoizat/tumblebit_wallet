@@ -25,9 +25,7 @@ class ApplicationController < ActionController::Base
     
     def user_admin?
       if current_user
-        # current_user.uid == "418681302"
         current_user.uid == Figaro.env.btcscript_admin_uid.to_s
-        # return User.find(session[:user_id]).uid == ENV["BTCSCRIPT_ADMIN_UID"]
       end
     end
 
@@ -35,6 +33,15 @@ class ApplicationController < ActionController::Base
       @user = User.find_by_id(params[:id])
       unless (current_user and current_user == @user)
         redirect_to root_url, :alert => "Access denied."
+      end
+    end
+    
+    def correct_client?
+      unless user_admin?
+        @client = Client.find_by_id(params[:id])
+        unless (current_client and current_client == @client)
+          redirect_to root_url, :alert => "Access denied."
+        end
       end
     end
     
