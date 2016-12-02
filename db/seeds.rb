@@ -419,7 +419,8 @@ Post.create(
   
   **Example**:
   
-  k1: "a", k2: "b", k3: "c", ...,k14: "n", k15: "o"
+  k1-secret: "a", k2-secret: "b", ..., k14-secret: "n", k15-secret: "o"
+  ki = RIPEMD160(ki-secret)
   hi = RIPEMD160(ki)
   
   Expiry: 2016-11-24 08:56:00 UTC
