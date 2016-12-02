@@ -1,5 +1,5 @@
 class ClientsController < ApplicationController
-  before_action :set_client, only: [:show, :edit, :update, :destroy]
+  before_action :set_client, only: [:show, :edit, :update]
   
   before_filter :correct_client?, :except => [:new, :create]
 

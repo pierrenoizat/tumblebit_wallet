@@ -26,7 +26,7 @@
 		        </li>
 
 <% if client_signed_in? %>
-  <li><a href="<%= destroy_client_session_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Sign out</a></li>
+  <li><a href="<%= destroy_client_session_path %>" data-method="delete" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Log out</a></li>
 <% else %>
   <% unless user_signed_in? %>
   	<li><a href="<%= new_client_session_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Log in</a></li>

@@ -1,7 +1,11 @@
 class SessionsController < ApplicationController
-
+  
   def new
-    redirect_to '/auth/twitter'
+    unless client_signed_in?
+      redirect_to '/auth/twitter'
+    else
+      redirect_to root_url, :alert => 'You need to log out out before you sign in as admin.'
+    end
   end
 
   def create
