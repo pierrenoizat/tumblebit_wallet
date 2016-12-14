@@ -20,7 +20,7 @@ gem 'omniauth-twitter'
 gem 'figaro'
 gem 'fastercsv'
 gem 'cocaine', '= 0.5.7' # required for imagemagick
-gem 'will_paginate', '~> 3.0.6'
+gem 'will_paginate', '~> 3.1.0'
 gem 'redcarpet', '~> 3.0.0'
 gem 'mail_form'
 gem 'email_validator'
@@ -30,6 +30,9 @@ gem 'capistrano-rails'
 gem 'font-awesome-rails'
 gem 'pg'
 gem 'btcruby', '~> 1.5'
+
+gem 'bitcoin-ruby', git: 'https://github.com/lian/bitcoin-ruby', branch: 'master', require: 'bitcoin'
+
 gem 'mechanize'
 gem 'validates_timeliness', '~> 4.0'
 gem 'rails-i18n'

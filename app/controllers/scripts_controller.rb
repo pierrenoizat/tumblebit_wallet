@@ -1,11 +1,11 @@
 class ScriptsController < ApplicationController
   before_filter :authenticate_user!, :except => [:index]
   before_filter :script_user?, :except => [:index, :new, :create]
-  
-  # before_action :authenticate_client!
 
   def index
-    @scripts = Script.order(created_at: :asc) 
+    @scripts = Script.page(params[:page]).order(created_at: :asc)
+    # @posts = Post.paginate(:page => params[:page])
+    
   end
   
   def new
@@ -127,6 +127,13 @@ class ScriptsController < ApplicationController
         
         render :template => 'scripts/edit_tumblebit_puzzle'
         
+      when "segwit_p2sh_p2wpkh"
+        if PublicKey.where(:script_id => @script.id, :name => "Alice").last
+          @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last.compressed
+        else
+          @script.alice_pub_key_1 = ""
+        end
+        render :template => 'scripts/edit_segwit_p2sh_p2wpkh'
     end
   end
   
@@ -137,28 +144,26 @@ class ScriptsController < ApplicationController
     @notice = ""
     case @script.category
         when "timelocked_address"
-          if @script.oracle_1_pub_key
+          if valid_pubkey?(@script.oracle_1_pub_key)
             @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.oracle_1_pub_key, :name => "User")
             @public_key.save
-            @notice << @public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')
-          end
-
-          if @notice.blank?
             render 'show_tla'
           else
-            redirect_to @script, alert: @notice
+            redirect_to @script, alert: "Invalid Public Key. "
           end
 
         when "timelocked_2fa"
-          if @script.oracle_1_pub_key
+          if valid_pubkey?(@script.oracle_1_pub_key)
             @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.oracle_1_pub_key, :name => "Service")
             @public_key.save
-            @notice << @public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')
+          else
+            @notice << "Invalid Service Public Key"
           end
-          if @script.oracle_2_pub_key
+          if valid_pubkey?(@script.oracle_2_pub_key)
             @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.oracle_2_pub_key, :name => "User")
             @public_key.save
-            @notice << @public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')
+          else
+            @notice << "Invalid User Public Key. "
           end
 
           if @notice.blank?
@@ -168,15 +173,18 @@ class ScriptsController < ApplicationController
           end
 
         when "contract_oracle"
-          if @script.oracle_1_pub_key
+          if valid_pubkey?(@script.oracle_1_pub_key)
             @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.oracle_1_pub_key, :name => "User")
             @public_key.save
-            @notice << @public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')
+          else
+            @notice << "Invalid User Public Key. "
           end
-          if @script.oracle_2_pub_key
+          if valid_pubkey?(@script.oracle_2_pub_key)
             @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.oracle_2_pub_key, :name => "Service")
             @public_key.save
-            @notice << @public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')
+            # @notice << @public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')
+          else
+            @notice << "Invalid Service Public Key. "
           end
 
           if @notice.blank?
@@ -187,25 +195,29 @@ class ScriptsController < ApplicationController
           
         when "hashed_timelocked_contract"
           
-          if @script.alice_pub_key_1
+          if valid_pubkey?(@script.alice_pub_key_1)
             @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.alice_pub_key_1, :name => "Alice 1")
             @public_key.save
-            @notice << @public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')
+          else
+            @notice << "Invalid Alice 1 Public Key. "
           end
-          if @script.alice_pub_key_2
+          if valid_pubkey?(@script.alice_pub_key_2)
             @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.alice_pub_key_2, :name => "Alice 2")
             @public_key.save
-            @notice << @public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')
+          else
+            @notice << "Invalid Alice 2 Public Key. "
           end
-          if @script.bob_pub_key_1
+          if valid_pubkey?(@script.bob_pub_key_1)
             @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.bob_pub_key_1, :name => "Bob 1")
             @public_key.save
-            @notice << @public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')
+          else
+            @notice << "Invalid Bob 1 Public Key. "
           end
-          if @script.bob_pub_key_2
+          if valid_pubkey?(@script.bob_pub_key_2)
             @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.bob_pub_key_2, :name => "Bob 2")
             @public_key.save
-            @notice << @public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')
+          else
+            @notice << "Invalid Bob 2 Public Key. "
           end
           @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice 1").last
           @script.alice_pub_key_2 = PublicKey.where(:script_id => @script.id, :name => "Alice 2").last
@@ -220,15 +232,17 @@ class ScriptsController < ApplicationController
           
         when "tumblebit_puzzle"
           
-          if @script.alice_pub_key_1
+          if valid_pubkey?(@script.alice_pub_key_1)
             @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.alice_pub_key_1, :name => "Alice")
             @public_key.save
-            @notice << @public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')
+          else
+            @notice << "Invalid User Public Key. "
           end
-          if @script.oracle_1_pub_key
+          if valid_pubkey?(@script.oracle_1_pub_key)
             @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.oracle_1_pub_key, :name => "Tumbler")
             @public_key.save
-            @notice << @public_key.errors[:compressed].map { |s| "#{s}" }.join(' ')
+          else
+            @notice << "Invalid Tumbler Public Key. "
           end
           
           @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last
@@ -277,6 +291,21 @@ class ScriptsController < ApplicationController
           else
             redirect_to @script, alert: @notice
           end
+          
+      when "segwit_p2sh_p2wpkh"
+        if valid_pubkey?(@script.alice_pub_key_1)
+          @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.alice_pub_key_1, :name => "Alice")
+          @public_key.save
+        else
+          @notice << "Invalid User Public Key. "
+        end
+        @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last
+        if @notice.blank?
+          render 'show_segwit_p2sh_p2wpkh'
+        else
+          redirect_to @script, alert: @notice
+        end
+        
     end # of case statement
 
   end # of update method
@@ -332,6 +361,11 @@ class ScriptsController < ApplicationController
         @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last
         @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last
         render 'show_tumblebit_puzzle'
+        
+      when "segwit_p2sh_p2wpkh"
+        @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last.compressed
+        render 'show_segwit_p2sh_p2wpkh'
+        
     end # of case statement
     
   end # of show method
@@ -375,6 +409,9 @@ class ScriptsController < ApplicationController
       when "tumblebit_puzzle"
         @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last.compressed
         @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
+      
+      when "segwit_p2sh_p2wpkh"
+        @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last.compressed
         
     end
     
@@ -758,6 +795,10 @@ class ScriptsController < ApplicationController
         end
         
         tx.inputs[0].signature_script << @funding_script.data
+        
+    when "segwit_p2sh_p2wpkh"
+      # TODO
+      # Do NOT include SegWit support until SegWit is activated
 
     end # of case statement
     @script.signed_tx = tx.to_s

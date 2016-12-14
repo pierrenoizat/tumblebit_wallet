@@ -8,6 +8,7 @@ class ApplicationController < ActionController::Base
   helper_method :correct_user?
   helper_method :user_admin?
   helper_method :script_user?
+  helper_method :valid_pubkey?
 
   private
   
@@ -74,5 +75,15 @@ class ApplicationController < ActionController::Base
       end
     end
     
+    def bitcoin_elliptic_curve
+          ::OpenSSL::PKey::EC.new("secp256k1")
+        end
+        
+    def valid_pubkey?(pubkey)
+      ::OpenSSL::PKey::EC::Point.from_hex(bitcoin_elliptic_curve.group, pubkey)
+      true
+      rescue OpenSSL::PKey::EC::Point::Error,OpenSSL::BNError
+      false
+    end
 
 end

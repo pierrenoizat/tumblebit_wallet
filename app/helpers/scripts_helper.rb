@@ -16,6 +16,9 @@ module ScriptsHelper
         
       when "tumblebit_puzzle"
         "Tumblebit Puzzle Contract"
+        
+      when "segwit_p2sh_p2wpkh"
+        "SegWit P2SH-P2WPKH"
     end
   end
   

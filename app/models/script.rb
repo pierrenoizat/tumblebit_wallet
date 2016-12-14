@@ -1,11 +1,11 @@
 class Script < ActiveRecord::Base
   
   validates_presence_of :title
-  # validates :expiry_date, :timeliness => {:after => lambda { Date.current }, :type => :datetime }
+  # validates :expiry_date, :timeliness => {:after => lambda { Date.current }, :type => :datetime }  uncomment to prevent user from creating expired address
   validates :expiry_date, :timeliness => {:type => :datetime }
   
-  enum category: [:timelocked_address, :timelocked_2fa, :contract_oracle, :hashed_timelocked_contract, :tumblebit_puzzle]
-  
+  # enum category: [:timelocked_address, :timelocked_2fa, :contract_oracle, :hashed_timelocked_contract, :tumblebit_puzzle, :segwit_p2sh_p2wpkh]
+  enum category: [:timelocked_address, :timelocked_2fa, :contract_oracle, :hashed_timelocked_contract, :tumblebit_puzzle] # do not include segwit until segwit is activated
   attr_accessor :priv_key, :oracle_1_priv_key, :oracle_2_priv_key, :oracle_1_pub_key, :oracle_2_pub_key
   attr_accessor :alice_priv_key_1, :alice_priv_key_2, :bob_priv_key_1, :bob_priv_key_2
   attr_accessor :alice_pub_key_1, :alice_pub_key_2, :bob_pub_key_1, :bob_pub_key_2
@@ -24,6 +24,8 @@ class Script < ActiveRecord::Base
   require 'btcruby/extensions'
   require 'mechanize'
   require 'digest'
+  
+  self.per_page = 10
   
   def description
     case self.category
@@ -58,6 +60,9 @@ class Script < ActiveRecord::Base
         <expiry time> CHECKLOCKTIMEVERIFY DROP
         <AlicePubkey> CHECKSIG
         ENDIF"
+        
+      when "segwit_p2sh_p2wpkh"
+        "0 <hash160(compressed public key)>"
     end
   end
   
@@ -159,29 +164,26 @@ class Script < ActiveRecord::Base
           puts "Contract title: #{self.title}"
           puts "Contract string: #{contract}"
           puts "Contract string size: #{contract.size}"
-          h[1] = self.contract[0..39]
-                    h[2] = self.contract[40..79]
-                    h[3] =  self.contract[80..119]
-                    h[4] =  self.contract[120..159]
-                    h[5] =  self.contract[160..199]
-                    h[6] =  self.contract[200..239]
-                    h[7] = self.contract[240..279]
-                    h[8] = self.contract[280..319]
-                    h[9] = self.contract[320..359]
-                    h[10] = self.contract[360..399]
-                    h[11] = self.contract[400..439]
-                    h[12] = self.contract[440..479]
-                    h[13] =  self.contract[480..519]
-                    h[14] = self.contract[520..559]
-                    h[15] = self.contract[560..599]
+          h[1] = self.contract[0..39] # each RIPEMD digest is 40 hex char. long
+          h[2] = self.contract[40..79]
+          h[3] =  self.contract[80..119]
+          h[4] =  self.contract[120..159]
+          h[5] =  self.contract[160..199]
+          h[6] =  self.contract[200..239]
+          h[7] = self.contract[240..279]
+          h[8] = self.contract[280..319]
+          h[9] = self.contract[320..359]
+          h[10] = self.contract[360..399]
+          h[11] = self.contract[400..439]
+          h[12] = self.contract[440..479]
+          h[13] =  self.contract[480..519]
+          h[14] = self.contract[520..559]
+          h[15] = self.contract[560..599]
           @funding_script<<BTC::Script::OP_IF
           j=0
           for i in 1..15
             # self.update(contract: h[i])
             @funding_script<<BTC::Script::OP_RIPEMD160
-            # @funding_script.append_pushdata(BTC::Data.data_from_hex(BTC.ripemd160(h[i]).to_hex))
-            # @funding_script.append_pushdata(BTC::Data.data_from_hex(h[i])) # h[1] = BTC.ripemd160(k[1]) where k[1] is a string, RIPEMD digest is 40 hex char. long
-            # @funding_script.append_pushdata(BTC::Data.data_from_hex(self.contract))
             @funding_script.append_pushdata(BTC::Data.data_from_hex(h[i]))
             puts "#{h[i]}"
             @funding_script<<BTC::Script::OP_EQUALVERIFY
@@ -204,13 +206,20 @@ class Script < ActiveRecord::Base
         else
           return nil
         end
+        
+    when "segwit_p2sh_p2wpkh"
+        @alice_pub_key = PublicKey.where(:script_id => self.id, :name => "Alice").last
+        @alice_key=BTC::Key.new(public_key:BTC.from_hex(@alice_pub_key.compressed))
+        @funding_script<<BTC::Script::OP_0
+        @funding_script.append_pushdata(BTC.hash160(@alice_key.compressed_public_key))
+        
     end # of case statement
     return @funding_script
   end
   
   
   def hash_address
-    
+    # compute P2SH address for self.funding_script
     unless self.public_keys.count == 0
       case self.category
         when "timelocked_address"
@@ -272,6 +281,16 @@ class Script < ActiveRecord::Base
           end
           if (self.alice_pub_key_1.blank? or self.oracle_1_pub_key.blank? )
             return nil # Script to Hash Address requires 2 keys.
+          else
+            funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
+          end
+          
+        when "segwit_p2sh_p2wpkh"
+          if PublicKey.where(:script_id => self.id, :name => "Alice").last
+            self.alice_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Alice").last.compressed
+          end
+          if self.alice_pub_key_1.blank?
+            return nil # Script to Hash Address requires 1 key.
           else
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
           end

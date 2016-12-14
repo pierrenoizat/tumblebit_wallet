@@ -15,6 +15,8 @@
     	<%= render partial: "spending_htlc" %>
 	<% when "tumblebit_puzzle" %>
 	    <%= render partial: "spending_tumblebit_puzzle" %>
+	<% when "segwit_p2sh_p2wpkh" %>
+		<%= render partial: "spending_segwit_p2sh_p2wpkh" %>
   	<% else %>
     	<%= render 'show' %>
 	<% end %>

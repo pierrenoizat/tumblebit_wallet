@@ -92,6 +92,18 @@ ready = function() {
 				select.innerHTML="The script is funded by Alice and can be spent to pay Bob if signed by Tumbler, knowing all ki, pre-images of hi, for i in 1..15.";
 						}
 			codeSnippet = "IF&#10;RIPEMD160  &#60;h1&#62; EQUALVERIFY&#10;...&#10;RIPEMD160  &#60;h15&#62; EQUALVERIFY&#10;&#60;TumblerPubkey&#62;CHECKSIG&#10;ELSE&#10;&#60;expiry time&#62; CHECKLOCKTIMEVERIFY DROP &#60;AlicePubkey&#62; CHECKSIG&#10;ENDIF";
+			break;
+		case "segwit_p2sh_p2wpkh":
+			select = document.getElementById("subFormLine1");
+			if (select) {
+				select.innerHTML="In the Tumblebit puzzle solving protocol, Alice pays Bob through Tumbler, a trustless intermediary.";
+						}
+			select = document.getElementById("subFormLine2");
+			if (select) {
+				select.innerHTML="The script is funded by Alice and can be spent to pay Bob if signed by Tumbler, knowing all ki, pre-images of hi, for i in 1..15.";
+						}
+			codeSnippet = "0  &#60;hash160(compressed public key)&#62;";
+		
 	}
 	element.innerHTML = codeSnippet;
 	console.log(codeSnippet);

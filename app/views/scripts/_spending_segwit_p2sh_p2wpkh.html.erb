@@ -1,0 +1,28 @@
+<p>Contract: <strong><%= @script.contract %></strong></br>
+Contract hash: <%= Digest::SHA256.hexdigest @script.contract if @script.contract %></p>
+
+<p>Compressed Public Key: <strong><%= @script.alice_pub_key_1 %></strong></p>
+
+<p>P2SH Address: <strong><%= @script.hash_address if @script %></strong></p>
+<p>Unspent Output (Tx_id:index):  <%= @script.tx_hash if @script %> : <%= @script.index if @script %></br>
+<p>Amount: <%= @script.amount if @script %></br>
+	
+<%= form_for(@script, url: url_for(controller: 'scripts', action: 'sign_tx'), multipart: true) do |f| %>
+	
+	<%= f.hidden_field :tx_hash, :value => @script.tx_hash %>
+	<%= f.hidden_field :index, :value => @script.index %>
+	<%= f.hidden_field :amount, :value => @script.amount %>
+	<%= f.hidden_field :confirmations, :value => @script.confirmations %>
+
+	<div class="field">
+		<p><%= f.label '(WIF) Private Key' %></br>
+		<%= f.text_field :alice_priv_key_1, :style => "width:420px;", :placeholder => "5KAYLPUCo3bTiHYxjhWk6r2abzF4GAFpysgHT8KGuEwFvN269n5" %></p>
+	</div>
+
+	<div class="field">
+    	<p><%= f.label 'Refund (Destination) Address' %></p>
+    	<p><%= f.text_field :refund_address, :style => "width:420px;", :placeholder => "1DzNLsyrLweU6CFb4fhpxmrqxoYYt3iK6A" %></p>
+  	</div>
+
+	<%= f.submit 'Create Signed Transaction', :class => "btn btn-primary" %>
+<% end %>
