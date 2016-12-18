@@ -1,0 +1,3 @@
+<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></p>
+<p>Bob (Compressed) Public Key: <strong><%= @script.bob_pub_key_1.compressed if @script.bob_pub_key_1 %></strong></p>
+<p>Tumbler (Compressed) Public Key: <strong><%= @script.oracle_1_pub_key.compressed if @script.oracle_1_pub_key %></strong></p>

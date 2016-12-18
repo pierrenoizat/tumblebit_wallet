@@ -19,6 +19,9 @@ module ScriptsHelper
         
       when "segwit_p2sh_p2wpkh"
         "SegWit P2SH-P2WPKH"
+        
+      when "tumblebit_escrow_contract"
+        "Tumblebit Escrow Contract"
     end
   end
   

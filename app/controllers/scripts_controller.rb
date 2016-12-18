@@ -3,9 +3,7 @@ class ScriptsController < ApplicationController
   before_filter :script_user?, :except => [:index, :new, :create]
 
   def index
-    @scripts = Script.page(params[:page]).order(created_at: :asc)
-    # @posts = Post.paginate(:page => params[:page])
-    
+    @scripts = Script.page(params[:page]).order(created_at: :asc) 
   end
   
   def new
@@ -134,6 +132,20 @@ class ScriptsController < ApplicationController
           @script.alice_pub_key_1 = ""
         end
         render :template => 'scripts/edit_segwit_p2sh_p2wpkh'
+        
+      when "tumblebit_escrow_contract"
+        if PublicKey.where(:script_id => @script.id, :name => "Bob").last
+          @script.bob_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Bob").last.compressed
+        else
+          @script.bob_pub_key_1 = ""
+        end
+        if PublicKey.where(:script_id => @script.id, :name => "Tumbler").last
+          @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
+        else
+          @script.oracle_1_pub_key = ""
+        end
+        render :template => 'scripts/edit_tumblebit_escrow_contract' 
+        
     end
   end
   
@@ -306,6 +318,28 @@ class ScriptsController < ApplicationController
           redirect_to @script, alert: @notice
         end
         
+      when "tumblebit_escrow_contract"
+        if valid_pubkey?(@script.bob_pub_key_1)
+          @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.bob_pub_key_1, :name => "Bob")
+          @public_key.save
+        else
+          @notice << "Invalid User Public Key. "
+        end
+        if valid_pubkey?(@script.oracle_1_pub_key)
+          @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.oracle_1_pub_key, :name => "Tumbler")
+          @public_key.save
+        else
+          @notice << "Invalid Tumbler Public Key. "
+        end
+        
+        @script.bob_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Bob").last.compressed
+        @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
+        if @notice.blank?
+          render 'show_tumblebit_escrow_contract'
+        else
+          redirect_to @script, alert: @notice
+        end
+        
     end # of case statement
 
   end # of update method
@@ -366,6 +400,11 @@ class ScriptsController < ApplicationController
         @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last.compressed
         render 'show_segwit_p2sh_p2wpkh'
         
+      when "tumblebit_escrow_contract"
+        @script.bob_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Bob").last.compressed
+        @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
+        render 'show_tumblebit_escrow_contract'
+        
     end # of case statement
     
   end # of show method
@@ -412,6 +451,10 @@ class ScriptsController < ApplicationController
       
       when "segwit_p2sh_p2wpkh"
         @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last.compressed
+        
+      when "tumblebit_escrow_contract"
+        @script.bob_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Bob").last.compressed
+        @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
         
     end
     
@@ -799,6 +842,76 @@ class ScriptsController < ApplicationController
     when "segwit_p2sh_p2wpkh"
       # TODO
       # Do NOT include SegWit support until SegWit is activated
+      
+    when "tumblebit_escrow_contract"
+      
+      if @script.expired?
+        puts "We are after expiry: require Tumbler key only"
+        begin  
+          @tumbler_key = BTC::Key.new(wif:@script.oracle_1_priv_key)
+        rescue Exception => e
+          redirect_to @script, alert: "Invalid Tumbler private key."
+          return
+        end
+
+        tx = BTC::Transaction.new
+        tx.lock_time = @script.expiry_date.to_i + 1 # time after expiry and before present (in the past)
+        tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
+                                                previous_index: @previous_index,
+                                                sequence: 0))
+        tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
+
+        hashtype = BTC::SIGHASH_ALL
+        sighash = tx.signature_hash(input_index: 0,
+                                    output_script: @funding_script,
+                                    hash_type: hashtype)
+        tx.inputs[0].signature_script = BTC::Script.new
+        
+        if e.blank?
+          tx.inputs[0].signature_script << (@tumbler_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+        end
+        tx.inputs[0].signature_script << BTC::Script::OP_FALSE # force script execution into checking that expiry was before locktime, then locktime is checked to be in the past as well
+        tx.inputs[0].signature_script << @funding_script.data
+      else
+        puts "Before expiry, require both Tumbler's key and Bob's key"
+        begin  
+          @user_key = BTC::Key.new(wif:@script.bob_priv_key_1)
+        rescue Exception => e
+          redirect_to @script, alert: "Invalid user private key."
+          return
+        end
+        begin  
+          @tumbler_key = BTC::Key.new(wif:@script.oracle_1_priv_key)
+        rescue Exception => e
+          redirect_to @script, alert: "Invalid Tumbler private key."
+          return
+        end
+
+        tx = BTC::Transaction.new
+        tx.lock_time = 1471199999 # some time in the past (2016-08-14)
+        tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
+                                                previous_index: @previous_index,
+                                                sequence: 0))
+        tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
+        
+        hashtype = BTC::SIGHASH_ALL
+        sighash = tx.signature_hash(input_index: 0,
+                                    output_script: @funding_script,
+                                    hash_type: hashtype)
+
+        tx.inputs[0].signature_script = BTC::Script.new
+        tx.inputs[0].signature_script << BTC::Script::OP_0
+        if e2.blank?
+          puts "e2 blank"
+          tx.inputs[0].signature_script << (@tumbler_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+        end
+        if e1.blank?
+          puts "e1 blank"
+          tx.inputs[0].signature_script << (@user_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+        end
+        tx.inputs[0].signature_script << BTC::Script::OP_TRUE # force script execution into checking 2 signatures, ignoring expiry
+        tx.inputs[0].signature_script << @funding_script.data
+      end
 
     end # of case statement
     @script.signed_tx = tx.to_s

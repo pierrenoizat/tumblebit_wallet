@@ -318,9 +318,9 @@ Post.create(
     **Hex**: 0xb2
   
     CHECKSEQUENCEVERIFY (CSV) marks transaction as invalid if the relative lock time of the input (enforced by BIP 68 with nSequence) is not equal to or longer than the value of the top stack item. 
-    The precise semantics are described in BIP 112.
-    BIP 68 introduces relative lock-time consensus-enforced semantics of the sequence number field to enable a signed transaction input to remain invalid for a defined period of time after confirmation of its corresponding outpoint.
-    BIP112 (soft fork to enforce CSV) allows users to make bitcoins unspendable for a period of time, much like CheckLockTimeVerify (CLTV), but with a **relative** timelock. 
+    The precise semantics are described in [BIP 112](https://github.com/bitcoin/bips/blob/master/bip-0112.mediawiki), soft fork to enforce CSV.
+    [BIP 68](https://github.com/bitcoin/bips/blob/master/bip-0068.mediawiki) introduces relative lock-time consensus-enforced semantics of the sequence number field to enable a signed transaction input to remain invalid for a defined period of time after confirmation of its corresponding outpoint.
+    BIP 112 allows users to make bitcoins unspendable for a period of time, much like CheckLockTimeVerify (CLTV), but with a **relative** timelock. 
     Whereas CLTV locks bitcoins up until a specific, absolute time in the future, CSV locks bitcoins up for a specific amount of time after the CSV transaction is included in a block.
     
     If the sequence number field is filled in, require the output being spent to have a relative minimum height.
@@ -333,13 +333,13 @@ Post.create(
     This creates a incentive for miners to set their header times to future values in order to include locktimed transactions which weren’t supposed to be included for up to two more hours.
     The consensus rules also specify that valid blocks may have a header time greater than that of the median of the 11 previous blocks. 
     This GetMedianTimePast() time has a key feature we generally associate with time: it can’t go backwards.
-    BIP113 specifies a soft fork enforced in the Bitcoin Core 0.12.1 release that weakens this perverse incentive for individual miners to use a future time by requiring that valid blocks have a computed GetMedianTimePast() greater than the locktime specified in any transaction in that block.
+    [BIP 113](https://github.com/bitcoin/bips/blob/master/bip-0113.mediawiki) specifies a soft fork enforced in the Bitcoin Core 0.12.1 release that weakens this perverse incentive for individual miners to use a future time by requiring that valid blocks have a computed GetMedianTimePast() greater than the locktime specified in any transaction in that block.
     Mempool inclusion rules currently require transactions to be valid for immediate inclusion in a block in order to be accepted into the mempool. 
     The Bitcoin Core 0.12.1 release begins applying the BIP113 rule to received transactions, so transaction whose time is greater than the GetMedianTimePast() will no longer be accepted into the mempool.
-    Implication for miners: you will begin rejecting transactions that would not be valid under BIP113, which will prevent you from producing invalid blocks when BIP113 is enforced on the network. 
-    Any transactions which are valid under the current rules but not yet valid under the BIP113 rules will either be mined by other miners or delayed until they are valid under BIP113.
+    Implication for miners: you will begin rejecting transactions that would not be valid under BIP 113, which will prevent you from producing invalid blocks when BIP 113 is enforced on the network. 
+    Any transactions which are valid under the current rules but not yet valid under the BIP 113 rules will either be mined by other miners or delayed until they are valid under BIP 113.
     Implication for users: GetMedianTimePast() always trails behind the current time, so a transaction locktime set to the present time will be rejected by nodes running this release until the median time moves forward. 
-    To compensate, subtract one hour (3,600 seconds) from your locktimes to allow those transactions to be included in mempools at approximately the expected time.
+    To compensate, subtract one hour from your locktimes to allow those transactions to be included in mempools at approximately the expected time.
 
   }
 )
@@ -388,16 +388,17 @@ Post.create(
   body: 
   %Q{### Tumblebit Puzzle Contract 
   
-  Tumblebit escrow transaction as proposed in the [Tumblebit white paper](https://eprint.iacr.org/2016/575.pdf).
+  Tumblebit puzzle transaction as proposed in the [Tumblebit white paper](https://eprint.iacr.org/2016/575.pdf).
   Alice can insert a 0 (false) in the scriptSig to choose to enter through the else branch and recover her money after the expiry date, if Bob has not been paid.
   Tumbler can insert a 1 (true) in the scriptSig to choose to enter through the if branch and send the money to Bob, Bob having supplied the solution to the puzzle.
   
   **Use case**:
   Alice wants to send money to Bob via Tumbler, an untrusted anonymous payment hub.
   In the escrow phase, Alice sends money to the P2SH Tumblebit Puzzle address.
-  The contract contains the hashes hi of 15 secret preimages (ki) that must be known by Tumbler for Tumbler to sign a transaction sending the funds to Bob.
-  Bob can collect his payment by supplying to Tumbler the solution to the Tumblebit puzzle in the form of the preimages ki (i in 1..15).
-  If Bob fails to collect his payment before the expiry time, Alice can collect her refund.
+  The contract contains the hashes hi of 15 secret preimages (ki) that must be revealed by Tumbler for Tumbler to get paid.
+  Bob can collect his payment by using the solution to the Tumblebit puzzle found by Alice.
+  The solution is in the form of a symetric encryption key used by Tumbler to encrypt his signature over a transaction paying Bob.
+  If Tumbler fails to collect his payment before the expiry time, Alice can collect her refund.
   
   
   **scriptPubKey:**:```
@@ -425,11 +426,59 @@ Post.create(
   
   Expiry: 2016-11-24 08:56:00 UTC
   
-  Alice Public Key 1: 023927B837A922696836E26399F759965328437F93AAFAF3E02767D22860C0FBA7
+  Alice Public Key: 023927B837A922696836E26399F759965328437F93AAFAF3E02767D22860C0FBA7
 
-  Tumbler Public Key 1: 02259B57015E60DE464E1D83C375BDD01D272290C51CEDE0B794301DE1B7770C7B
+  Tumbler Public Key: 02259B57015E60DE464E1D83C375BDD01D272290C51CEDE0B794301DE1B7770C7B
   
   Tumblebit Puzzle Contract Address: 36mVdtCTQz2dMbHEUAAMYkX6UjZq5u2xLG
+
+  }
+)
+
+Post.create(
+  id: 17,
+  title: "Tumblebit Escrow Contract",
+  published_at: Time.now,
+  body: 
+  %Q{### Tumblebit Escrow Contract 
+  
+  Tumblebit escrow transaction as proposed in the [Tumblebit white paper](https://eprint.iacr.org/2016/575.pdf).
+  This script is functionally equivalent to the Timelocked 2FA script.
+  Tumbler can insert a 0 (false) in the scriptSig to choose to enter through the else branch and recover his money after the expiry date, if Bob has not been paid.
+  Bob can insert a 1 (true) in the scriptSig to choose to enter through the if branch and send the money to himself, having found the solution to the puzzle.
+  The solution to the puzzle is a symetric encryption key used by Tumbler to encrypt his signature.
+  
+  **Use case**:
+  Alice wants to send money to Bob via Tumbler, an untrusted anonymous payment hub.
+  In the escrow phase, Tumbler sends money to the P2SH Tumblebit Escrow address.
+  Bob can collect his payment by using the solution to the Tumblebit puzzle found by Alice.
+  The solution is in the form of a symetric encryption key used by Tumbler to encrypt his signature over a transaction paying Bob.
+  If Bob fails to collect his payment before the expiry time, Tumbler can collect his refund.
+  
+  
+  **scriptPubKey:**:```
+  IF
+  2 <TumblerPubkey> <BobPubkey> 2 CHECKMULTISIG
+  ELSE
+  <expiry time> CHECKLOCKTIMEVERIFY DROP
+  <TumblerPubkey> CHECKSIG
+  ENDIF
+  ```
+  
+  
+  **scriptSig (before expiry)**: `0 <Tumbler signature> <Bob signature> TRUE`
+  **scriptSig (after expiry)**: `<Tumbler signature> FALSE`
+  
+  
+  **Example**:
+  
+  Expiry: 2016-12-19 08:14:00 UTC
+  
+  Bob Public Key: 023927B837A922696836E26399F759965328437F93AAFAF3E02767D22860C0FBA7
+
+  Tumbler Public Key: 02259B57015E60DE464E1D83C375BDD01D272290C51CEDE0B794301DE1B7770C7B
+  
+  Tumblebit Escrow Address: 3M9CDcPe6b5uYjp1BBGohTAbeZ3GK54mxs
 
   }
 )

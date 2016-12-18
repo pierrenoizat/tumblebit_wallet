@@ -1,0 +1,9 @@
+<div class="container">
+	<div class="row">
+	<% content_for :title do %>Tumblebit Escrow Contract<% end %>
+	<!-- Posts are created in db/seeds.rb -->
+	<% @post = Post.find_by_title("Tumblebit Escrow Contract") %>
+	<%= markdown(@post.body) %>
+	</br>
+	</div>
+</div>

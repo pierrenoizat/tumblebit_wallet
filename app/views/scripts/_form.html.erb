@@ -32,8 +32,6 @@ ready = function() {
 
 	var codeSnippet = $('#snippet').data('code');
 	var element = document.getElementById("contrat");
-	//element.parentNode.removeChild(element);
-	//document.body.appendChild(form);
 	
 	var form_field_value = $("#script_category").val()
 	
@@ -93,6 +91,18 @@ ready = function() {
 						}
 			codeSnippet = "IF&#10;RIPEMD160  &#60;h1&#62; EQUALVERIFY&#10;...&#10;RIPEMD160  &#60;h15&#62; EQUALVERIFY&#10;&#60;TumblerPubkey&#62;CHECKSIG&#10;ELSE&#10;&#60;expiry time&#62; CHECKLOCKTIMEVERIFY DROP &#60;AlicePubkey&#62; CHECKSIG&#10;ENDIF";
 			break;
+		case "tumblebit_escrow_contract":
+			select = document.getElementById("subFormLine1");
+			if (select) {
+				select.innerHTML="A transaction spending from this address cannot be included in a block until the set date and time has passed, unless the 2 required signatures are provided.";
+				}
+			select = document.getElementById("subFormLine2");
+			if (select) {
+				select.innerHTML="After the set date and time has passed, the Tumbler's signature is sufficient to move the funds.";
+				}
+		    codeSnippet = "IF&#10;2 &#60;Tumbler&#62;&#60;Bob&#62; 2 CHECKMULTISIG&#10;ELSE&#10;&#60;expiry time&#62; CHECKLOCKTIMEVERIFY DROP&#10;&#60;Tumbler&#62; CHECKSIG&#10;ENDIF";
+		      break;			
+			
 		case "segwit_p2sh_p2wpkh":
 			select = document.getElementById("subFormLine1");
 			if (select) {

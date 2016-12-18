@@ -5,7 +5,7 @@ class Script < ActiveRecord::Base
   validates :expiry_date, :timeliness => {:type => :datetime }
   
   # enum category: [:timelocked_address, :timelocked_2fa, :contract_oracle, :hashed_timelocked_contract, :tumblebit_puzzle, :segwit_p2sh_p2wpkh]
-  enum category: [:timelocked_address, :timelocked_2fa, :contract_oracle, :hashed_timelocked_contract, :tumblebit_puzzle] # do not include segwit until segwit is activated
+  enum category: [:timelocked_address, :timelocked_2fa, :contract_oracle, :hashed_timelocked_contract, :tumblebit_puzzle, :tumblebit_escrow_contract] # do not include segwit until segwit is activated
   attr_accessor :priv_key, :oracle_1_priv_key, :oracle_2_priv_key, :oracle_1_pub_key, :oracle_2_pub_key
   attr_accessor :alice_priv_key_1, :alice_priv_key_2, :bob_priv_key_1, :bob_priv_key_2
   attr_accessor :alice_pub_key_1, :alice_pub_key_2, :bob_pub_key_1, :bob_pub_key_2
@@ -63,6 +63,14 @@ class Script < ActiveRecord::Base
         
       when "segwit_p2sh_p2wpkh"
         "0 <hash160(compressed public key)>"
+        
+      when "tumblebit_escrow_contract"
+        "        IF 
+        2 <Tumbler> <Bob> 2 CHECKMULTISIG
+        ELSE 
+        <expiry time> CHECKLOCKTIMEVERIFY DROP
+        <Tumbler> CHECKSIG
+        ENDIF"
     end
   end
   
@@ -213,6 +221,27 @@ class Script < ActiveRecord::Base
         @funding_script<<BTC::Script::OP_0
         @funding_script.append_pushdata(BTC.hash160(@alice_key.compressed_public_key))
         
+    when "tumblebit_escrow_contract"
+        self.bob_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Bob").last.compressed
+        self.oracle_1_pub_key = PublicKey.where(:script_id => self.id, :name => "Tumbler").last.compressed
+        @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(self.oracle_1_pub_key))
+        @user_key=BTC::Key.new(public_key:BTC.from_hex(self.bob_pub_key_1))
+        @expire_at = Time.at(self.expiry_date.to_time.to_i)
+        
+        @funding_script<<BTC::Script::OP_IF
+        @funding_script<<BTC::Script::OP_2
+        @funding_script<<@tumbler_key.compressed_public_key
+        @funding_script<<@user_key.compressed_public_key
+        @funding_script<<BTC::Script::OP_2
+        @funding_script<<BTC::Script::OP_CHECKMULTISIG
+        @funding_script<<BTC::Script::OP_ELSE
+        @funding_script<<BTC::WireFormat.encode_int32le(@expire_at.to_i)
+        @funding_script<<BTC::Script::OP_CHECKLOCKTIMEVERIFY
+        @funding_script<<BTC::Script::OP_DROP
+        @funding_script<<@tumbler_key.compressed_public_key
+        @funding_script<<BTC::Script::OP_CHECKSIG
+        @funding_script<<BTC::Script::OP_ENDIF
+        
     end # of case statement
     return @funding_script
   end
@@ -294,6 +323,19 @@ class Script < ActiveRecord::Base
           else
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
           end
+          
+        when "tumblebit_escrow_contract"
+          if PublicKey.where(:script_id => self.id, :name => "Bob").last
+            self.bob_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Bob").last.compressed
+          end
+          if PublicKey.where(:script_id => self.id, :name => "Tumbler").last
+            self.oracle_1_pub_key = PublicKey.where(:script_id => self.id, :name => "Tumbler").last.compressed
+          end
+          if (self.bob_pub_key_1.blank? or self.oracle_1_pub_key.blank? )
+            return nil # Script to Hash Address requires 2 keys.
+          else
+            funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
+          end
         end # of case statement
   else
     return nil
@@ -362,7 +404,7 @@ class Script < ActiveRecord::Base
   end
   
   def expired?
-    if (self.expiry_date and (["timelocked_address", "timelocked_2fa", "tumblebit_puzzle"].include? self.category))
+    if (self.expiry_date and (["timelocked_address", "timelocked_2fa", "tumblebit_puzzle", "tumblebit_escrow_contract"].include? self.category))
       return (Time.now.to_i > self.expiry_date.to_i)
     else
       return false

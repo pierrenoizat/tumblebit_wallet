@@ -11,12 +11,12 @@
 	
 	<div class="field">
 		<p><%= f.label 'Beneficiary (compressed) Public Key' %></br>
-		<%= f.text_field :oracle_1_pub_key, :style => "width:540px;" %></p>
+		<%= f.text_field :oracle_1_pub_key, :style => "width:540px;", :placeholder => "039DD14C371FBB1BCA9860942D14ED32897CF4ABF8312A6446EBF716774769441B" %></p>
 	</div>
 	
 	<div class="field">
 		<p><%= f.label 'Oracle (compressed) Public Key' %></br>
-		<%= f.text_field :oracle_2_pub_key, :style => "width:540px;" %></p>
+		<%= f.text_field :oracle_2_pub_key, :style => "width:540px;", :placeholder => "02BE332AE534CC30FB84BA64817A748DBC9A9C9021463A645F5B3CF2AB4AEB0284" %></p>
 	</div>
 	
 	<%= f.submit 'Update contract with parameters', :class => "btn btn-primary" %> |<%= link_to "Cancel", @script %>
