@@ -2,7 +2,7 @@
   <div class="row">
 	<h3>Broadcast Transaction for <%= @script.title if @script.title %></h3>
 	<p>Category: <strong><%= category_of(@script.category) if @script.category %></strong></br>
-	Script:</br><pre style="width:650px"><code> <%= @script.description if @script %></code></pre></p>
+	Script:</br><pre style="width:600px"><code> <%= @script.description if @script %></code></pre></p>
 	<% if ["timelocked_address", "timelocked_2fa", "tumblebit_puzzle", "tumblebit_escrow_contract"].include? @script.category %>
 	<p>Expiry: <%= Time.at(@script.expiry_date.to_time.to_i).utc %></p>
 	<% end %>
@@ -27,6 +27,7 @@
 	<% when "tumblebit_escrow_contract" %>
 		<p>Bob (Compressed) Public Key: <strong><%= @script.bob_pub_key_1 %></strong></p>
 		<p>Tumbler (Compressed) Public Key: <strong><%= @script.oracle_1_pub_key %></strong></p>
+		<p>Tumbler Encrypted Signature: <pre style="width:600px"><code><%= @tumbler_encrypted_signature %></code></pre></p>
 	<% end %>
 	
 	<p>P2SH Address: <strong><%= @script.hash_address if @script %></strong></p>

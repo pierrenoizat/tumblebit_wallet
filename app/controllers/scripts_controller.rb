@@ -876,7 +876,7 @@ class ScriptsController < ApplicationController
         puts "Before expiry, require both Tumbler's key and Bob's key"
         begin  
           @user_key = BTC::Key.new(wif:@script.bob_priv_key_1)
-        rescue Exception => e
+        rescue Exception => e1
           redirect_to @script, alert: "Invalid user private key."
           return
         end
@@ -901,12 +901,51 @@ class ScriptsController < ApplicationController
 
         tx.inputs[0].signature_script = BTC::Script.new
         tx.inputs[0].signature_script << BTC::Script::OP_0
-        if e2.blank?
-          puts "e2 blank"
+        if e.blank?
+          data = @tumbler_key.ecdsa_signature(sighash)
+          @tumbler_signature = BTC::Data.hex_from_data(data)
+          # encrypt Tumbler's signature for Bob with symetric encryption key stored in @script.contract
+          cipher = OpenSSL::Cipher::AES.new(128, :CBC)
+          cipher.encrypt
+          if @script.contract.blank?
+            key = cipher.random_key  # generate random AES encryption key
+            key_hex = key.to_hex
+            puts key_hex
+          
+            iv = cipher.random_iv # generate random AES initialization vector
+            iv_hex = iv.to_hex
+          
+            contract = key_hex + iv_hex
+            @script.update(contract: contract) # store key + iv in @script contract attribute
+          else
+            contract = @script.contract
+          end
+          
+          key_hex = contract.to_s[0..31]
+          iv_hex = contract.to_s[32..63]
+          key = key_hex.from_hex
+          iv = iv_hex.from_hex
+          
+          cipher.key = key
+          cipher.iv = iv
+          encrypted = cipher.update(data) + cipher.final
+
+          decipher = OpenSSL::Cipher::AES.new(128, :CBC)
+          decipher.decrypt
+          
+          decipher.key = key
+          decipher.iv = iv
+
+          plain = decipher.update(encrypted) + decipher.final
+          if data == plain
+            @tumbler_encrypted_signature = BTC::Data.hex_from_data(encrypted)
+          else
+            @tumbler_encrypted_signature = "Problem with signature encryption."
+          end
+
           tx.inputs[0].signature_script << (@tumbler_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
         end
         if e1.blank?
-          puts "e1 blank"
           tx.inputs[0].signature_script << (@user_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
         end
         tx.inputs[0].signature_script << BTC::Script::OP_TRUE # force script execution into checking 2 signatures, ignoring expiry
