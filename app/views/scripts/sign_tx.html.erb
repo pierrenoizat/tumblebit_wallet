@@ -25,23 +25,28 @@
 		<p>Alice (Compressed) Public Key: <strong><%= @script.alice_pub_key_1 %></strong></p>
 		<p>Tumbler (Compressed) Public Key: <strong><%= @script.oracle_1_pub_key %></strong></p>
 	<% when "tumblebit_escrow_contract" %>
-		<p>Bob (Compressed) Public Key: <strong><%= @script.bob_pub_key_1 %></strong></p>
-		<p>Tumbler (Compressed) Public Key: <strong><%= @script.oracle_1_pub_key %></strong></p>
-		<p>Tumbler Encrypted Signature: <pre style="width:600px"><code><%= @tumbler_encrypted_signature %></code></pre></p>
+		<p>Bob (Compressed) Public Key: <%= @script.bob_pub_key_1 %></p>
+		<p>Tumbler (Compressed) Public Key: <%= @script.oracle_1_pub_key %></p>
+		<p><strong>Tumbler Encrypted Signature</strong>: <pre style="width:600px"><code><%= @puzzle.encrypted_signature %></code></pre></p>
+		<p><strong>Puzzle</strong>:<pre style="width:600px"><code><%= @puzzle.y %></code></pre></p>
+		<p><strong>Tumbler RSA Public Key</strong>:<pre style="width:600px"><code><%= $TUMBLER_RSA_PUBLIC_KEY %></code></pre></p>
 	<% end %>
 	
 	<p>P2SH Address: <strong><%= @script.hash_address if @script %></strong></p>
 	<p>Unspent Output (Tx_id:index):  <%= @script.tx_hash if @script %> : <%= @script.index if @script %></br>
-	<p>Amount: <strong><%= @script.amount if @script %></strong></br>
-	<p>Refund (Destination) Address: <strong><%= @script.refund_address if @script %></strong></p>
+	<p>Amount: <%= @script.amount if @script %></br>
+	<p>Refund (Destination) Address: <%= @script.refund_address if @script %></p>
 	
+	<% unless @script.category == "tumblebit_escrow_contract" %>
 	<%= form_for(@script, url: url_for(controller: 'scripts', action: 'broadcast'), multipart: true) do |f| %>
 
 	<p>Raw Signed Transaction:<pre style="width:600px"><code><%= @script.signed_tx %></code></pre></p>
 	<%= f.hidden_field :confirmations, :value => @script.confirmations %>
 	<%= f.hidden_field :signed_tx, :value => @script.signed_tx %>
 	<%= f.submit 'Broadcast Transaction', :class => "btn btn-primary" %> |<%= link_to "Cancel", @script %>
-	
+	<% end %>
+	<% else %>
+	<p>Redeem Script:<pre style="width:600px"><code><%= @redeem_script %></code></pre></p>
 	<% end %>
    </div>
 </div>

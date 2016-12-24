@@ -1,0 +1,19 @@
+<div class="container">
+  <div class="row">
+    <h3>Puzzles</h3>
+    <div class="column">
+      <table class="table">
+        <tbody>
+          <% @puzzles.each do |puzzle| %>
+            <tr>
+              <%= render puzzle %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+	  <div class="apple_pagination">
+		<%= will_paginate @puzzles %>
+	  </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+<div class="container">
+  <div class="row">
+	<h3>Tumblebit Escrow Contract # <%= @script.id if @script %>: <%= @script.title if @script %></h3>
+	<p>P2SH Address: <strong><%= @script.hash_address if @script %></strong></p>
+	<p>Bob's Address: <strong><%= @script.refund_address if @script %></strong></p>
+
+	<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></br>
+	Expiry in seconds since epoch time (1/1/1970): <%= @script.expiry_date.to_time.to_i %></p>
+	
+
+	<p>Puzzle y:</p><pre style="width:600px"><code><%= @puzzle.y %></code></pre>
+	<p>Tumbler encrypted signature:</p><pre style="width:600px"><code><%= @puzzle.encrypted_signature %></code></pre>
+	
+	<p>Tumbler RSA Public Key:</p><pre style="width:600px"><code><%= $TUMBLER_RSA_PUBLIC_KEY %></code></pre>
+	
+	</div>
+</div>

@@ -19,6 +19,7 @@ Rails.application.routes.draw do
 
   resources :users
   resources :clients
+  resources :puzzles
   
   resources :scripts do
     resources :public_keys

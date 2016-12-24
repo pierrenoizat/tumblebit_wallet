@@ -1,6 +1,6 @@
 class ScriptsController < ApplicationController
   before_filter :authenticate_user!, :except => [:index]
-  before_filter :script_user?, :except => [:index, :new, :create]
+  before_filter :script_user?, :except => [:index, :new, :create, :puzzle_list]
 
   def index
     @scripts = Script.page(params[:page]).order(created_at: :asc) 
@@ -134,6 +134,20 @@ class ScriptsController < ApplicationController
         render :template => 'scripts/edit_segwit_p2sh_p2wpkh'
         
       when "tumblebit_escrow_contract"
+        
+        cipher = OpenSSL::Cipher::AES.new(128, :CBC)
+        cipher.encrypt
+        if @script.contract.blank?
+          key = cipher.random_key  # generate random AES encryption key
+          key_hex = key.to_hex
+          puts key_hex
+        
+          iv = cipher.random_iv # generate random AES initialization vector
+          iv_hex = iv.to_hex
+        
+          @script.contract = key_hex + iv_hex # store key + iv in @script contract attribute
+        end
+        
         if PublicKey.where(:script_id => @script.id, :name => "Bob").last
           @script.bob_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Bob").last.compressed
         else
@@ -874,12 +888,12 @@ class ScriptsController < ApplicationController
         tx.inputs[0].signature_script << @funding_script.data
       else
         puts "Before expiry, require both Tumbler's key and Bob's key"
-        begin  
-          @user_key = BTC::Key.new(wif:@script.bob_priv_key_1)
-        rescue Exception => e1
-          redirect_to @script, alert: "Invalid user private key."
-          return
-        end
+        # begin  
+        #  @user_key = BTC::Key.new(wif:@script.bob_priv_key_1)
+        #rescue Exception => e1
+        #  redirect_to @script, alert: "Invalid user private key."
+        #  return
+        #end
         begin  
           @tumbler_key = BTC::Key.new(wif:@script.oracle_1_priv_key)
         rescue Exception => e
@@ -915,7 +929,7 @@ class ScriptsController < ApplicationController
             iv = cipher.random_iv # generate random AES initialization vector
             iv_hex = iv.to_hex
           
-            contract = key_hex + iv_hex
+            contract = key_hex + iv_hex  # epsilon
             @script.update(contract: contract) # store key + iv in @script contract attribute
           else
             contract = @script.contract
@@ -942,14 +956,34 @@ class ScriptsController < ApplicationController
           else
             @tumbler_encrypted_signature = "Problem with signature encryption."
           end
+          
+          # generate puzzle y by encrypting encryption key (@script.contract) with Tumbler RSA public key
+          # rsa_priv_key = OpenSSL::PKey::RSA.new(Figaro.env.tumbler_rsa_private_key)
+          tumbler_rsa_pub_key = OpenSSL::PKey::RSA.new File.read 'public_key.pem'
+          puzzle = tumbler_rsa_pub_key.public_encrypt(contract.to_s).to_hex
+          puts puzzle
+          # puzzle solution
+          tumbler_rsa_priv_key = OpenSSL::PKey::RSA.new File.read 'private_key.pem'
+          solution = tumbler_rsa_priv_key.private_decrypt(puzzle.from_hex)
+          puts solution
+          puts contract.to_s
+          
+          if @script.puzzles.blank?
+            @puzzle = Puzzle.create(:script_id => @script.id, :y => puzzle, :encrypted_signature => @tumbler_encrypted_signature)
+          else
+            @puzzle = @script.puzzles.last
+          end
 
-          tx.inputs[0].signature_script << (@tumbler_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+          # tx.inputs[0].signature_script << (@tumbler_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
         end
-        if e1.blank?
-          tx.inputs[0].signature_script << (@user_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
-        end
-        tx.inputs[0].signature_script << BTC::Script::OP_TRUE # force script execution into checking 2 signatures, ignoring expiry
-        tx.inputs[0].signature_script << @funding_script.data
+        # if e1.blank?
+        #  tx.inputs[0].signature_script << (@user_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
+        # end
+        # tx.inputs[0].signature_script << BTC::Script::OP_TRUE # force script execution into checking 2 signatures, ignoring expiry
+        # tx.inputs[0].signature_script << @funding_script.data
+        
+        @redeem_script = @funding_script.data.to_hex
+        
       end
 
     end # of case statement
@@ -990,6 +1024,12 @@ class ScriptsController < ApplicationController
       puts "Tx was broadcast successfully with Tx ID: #{post_response['tx']['hash']}"
       redirect_to @script, notice: "Tx was broadcast successfully with Tx ID: #{post_response['tx']['hash']}"
     end
+  end
+  
+  
+  def puzzle_list
+    @scripts = Script.where(:category => 5).page(params[:page])
+    # @scripts = Script.page(params[:page]).where(:category => "tumblebit_escrow_contract").order(created_at: :asc) 
   end
 
 

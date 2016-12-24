@@ -16,6 +16,7 @@ class Script < ActiveRecord::Base
   # self.contract is a string of the form "{param_1:value_1,param_2:value_2}", e.g "{time_limit:1474299166,price_limit:545.00}" for a futures contract on the EUR/BTC exchange rate
   
   has_many :public_keys
+  has_many :puzzles
   belongs_to :user
   belongs_to :client
   
