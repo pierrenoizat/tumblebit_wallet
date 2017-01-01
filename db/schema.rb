@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161222191800) do
+ActiveRecord::Schema.define(version: 20170101224352) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -59,8 +59,10 @@ ActiveRecord::Schema.define(version: 20161222191800) do
     t.integer  "script_id"
     t.text     "y"
     t.text     "encrypted_signature"
-    t.datetime "created_at",          null: false
-    t.datetime "updated_at",          null: false
+    t.datetime "created_at",                       null: false
+    t.datetime "updated_at",                       null: false
+    t.text     "real_indices",        default: [],              array: true
+    t.text     "beta_values",         default: [],              array: true
   end
 
   create_table "scripts", force: :cascade do |t|

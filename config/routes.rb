@@ -19,7 +19,12 @@ Rails.application.routes.draw do
 
   resources :users
   resources :clients
-  resources :puzzles
+  resources :puzzles do
+    member do
+      get 'create_blinding_factors'
+      get 'tumbler_encrypts_values'
+    end
+  end
   
   resources :scripts do
     resources :public_keys

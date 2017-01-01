@@ -55,7 +55,7 @@ Post.create(
 
     Once your script is created, fill in the required parameters, typically one or more public keys and date/time values.
     
-    To generate your own Bitcoin public/private key pairs, I recommend [bitaddress.org](https://bitaddress.org)
+    To generate your own Bitcoin public/private key pairs, I recommend [coinb.in](https://coinb.in/#newAddress) or [bitaddress.org](https://bitaddress.org)
     
     Once this first step is completed, the application will display the corresponding P2SH address.
     

@@ -360,7 +360,24 @@ class Script < ActiveRecord::Base
       result = JSON.parse(data)
       puts result
       puts "True? #{result['data']['balance']}"
-      return (result['data']['balance'] > 0)
+      if  (result['data']['balance'] > 0)
+        return true
+      else
+        string = $BLOCKCHAIN_ADDRESS_BALANCE_URL + self.hash_address.to_s + "?format=json" # check another source, just in case
+        begin
+          page = @agent.get string
+        rescue Exception => e
+          page = e.page
+        end
+
+        data = page.body
+        result = JSON.parse(data)
+        if  (result['final_balance'] > 0)
+          return true
+        else
+          return false
+        end
+      end
     else
       return false
     end
@@ -413,6 +430,7 @@ class Script < ActiveRecord::Base
   end
   
   def first_unspent_tx
+    
     string = $BLOCKR_ADDRESS_UNSPENT_URL + self.hash_address.to_s + "?unconfirmed=1" # with_unconfirmed
     @agent = Mechanize.new
 

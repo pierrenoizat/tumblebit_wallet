@@ -958,15 +958,18 @@ class ScriptsController < ApplicationController
           end
           
           # generate puzzle y by encrypting encryption key (@script.contract) with Tumbler RSA public key
-          # rsa_priv_key = OpenSSL::PKey::RSA.new(Figaro.env.tumbler_rsa_private_key)
-          tumbler_rsa_pub_key = OpenSSL::PKey::RSA.new File.read 'public_key.pem'
-          puzzle = tumbler_rsa_pub_key.public_encrypt(contract.to_s).to_hex
-          puts puzzle
+
+          m = contract.to_s.to_i(16)
+          modulus = $TUMBLER_RSA_PUBLIC_KEY
+          pubexp = $TUMBLER_RSA_PUBLIC_EXPONENT
+          puzzle = mod_pow(m,pubexp,modulus) # epsilon^e mod modulus
+          puts "puzzle: %x" % puzzle
+
           # puzzle solution
-          tumbler_rsa_priv_key = OpenSSL::PKey::RSA.new File.read 'private_key.pem'
-          solution = tumbler_rsa_priv_key.private_decrypt(puzzle.from_hex)
+          d = Figaro.env.tumbler_rsa_private_key.to_i(16)
+          solution = mod_pow(puzzle,d,modulus) # puzzle^d mod modulus
           puts solution
-          puts contract.to_s
+          puts contract.to_s # solution should be equal to contract
           
           if @script.puzzles.blank?
             @puzzle = Puzzle.create(:script_id => @script.id, :y => puzzle, :encrypted_signature => @tumbler_encrypted_signature)

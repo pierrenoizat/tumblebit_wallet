@@ -23,7 +23,7 @@ development:
   mailchimp_list_id: <%= ENV["MAILCHIMP_LIST_ID"] %>
   btcscript_admin_uid: <%= ENV["BTCSCRIPT_ADMIN_UID"] %>
   tumbler_rsa_public_key: <%= ENV["TUMBLER_RSA_PUBLIC_KEY"] %>
-  tumbler_rsa_encrypted_key: <%= ENV["TUMBLER_RSA_PRIVATE_KEY"] %>
+  tumbler_rsa_private_key: <%= ENV["TUMBLER_RSA_PRIVATE_KEY"] %>
 
 production:
   <<: *default
@@ -36,4 +36,4 @@ production:
   mailchimp_api_key: <%= ENV["MAILCHIMP_API_KEY"] %>
   mailchimp_list_id: <%= ENV["MAILCHIMP_LIST_ID"] %>
   tumbler_rsa_public_key: <%= ENV["TUMBLER_RSA_PUBLIC_KEY"] %>
-  tumbler_rsa_encrypted_key: <%= ENV["TUMBLER_RSA_PRIVATE_KEY"] %>
+  tumbler_rsa_private_key: <%= ENV["TUMBLER_RSA_PRIVATE_KEY"] %>
