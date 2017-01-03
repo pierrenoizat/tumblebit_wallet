@@ -7,13 +7,9 @@
 	<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></br>
 	Expiry in seconds since epoch time (1/1/1970): <%= @script.expiry_date.to_time.to_i %></p>
 	
-
-	<p>Puzzle y:</p><pre style="width:600px"><code><%=  @puzzle.y.to_i.to_s(16) %></code></pre>
-	<p>Tumbler encrypted signature:</p><pre style="width:600px"><code><%= @puzzle.encrypted_signature %></code></pre>
+	<p><%=link_to "Tumbler encrypts values", tumbler_encrypts_values_puzzle_path, :class => "btn btn-primary" %></p>
 	
-	<p>Tumbler RSA Public Key:</p><pre style="width:600px"><code><%= $TUMBLER_RSA_PUBLIC_KEY.to_s(16) %></code></pre>
 	
-	<p><%= link_to("Create real/fake blinding factors", { controller: "puzzles", action: "create_blinding_factors" }, :class => "btn btn-primary") %></p>
 	
 	</div>
 </div>

@@ -113,26 +113,6 @@ class ApplicationController < ActionController::Base
     end
     
     
-    def dump_to_csv(puzzle_id)
-      require 'openssl'
-      require 'csv'
-      @puzzle = Puzzle.find(puzzle_id)
-      string = OpenSSL::Digest::SHA256.new.digest(puzzle_id.to_s).unpack('H*').first
-      string = string[0..5]
-      
-      if File.exists?("tmp/puzzle_" + "#{string}" + ".csv")
-        File.delete("tmp/puzzle_#{string}.csv") # delete any previous version of puzzle.csv file
-        end
-      
-      CSV.open("tmp/puzzle_#{string}.csv", "ab") do |csv|
-
-        @puzzle.beta_values.each do |beta|
-          csv << [beta]
-          end
-        end # of CSV.open (writing to puzzle_123456.csv)
-        
-      end # of method dump_to_csv(puzzle_id))
-    
   # Perform a primality test
   class Integer
     # From http://snippets.dzone.com/posts/show/4636

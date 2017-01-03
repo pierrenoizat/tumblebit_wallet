@@ -930,6 +930,7 @@ class ScriptsController < ApplicationController
             iv_hex = iv.to_hex
           
             contract = key_hex + iv_hex  # epsilon
+            # TODO Encrypt epsilon before storing in database
             @script.update(contract: contract) # store key + iv in @script contract attribute
           else
             contract = @script.contract
