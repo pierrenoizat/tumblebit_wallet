@@ -23,6 +23,8 @@ Rails.application.routes.draw do
     member do
       get 'create_blinding_factors'
       get 'tumbler_encrypts_values'
+      get 'tumbler_checks_ro_values'
+      get 'sender_checks_k_values'
     end
   end
   
