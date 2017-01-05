@@ -19,6 +19,8 @@ class PuzzlesController < ApplicationController
     
     r=[]
     for i in 0..299  # create 300 blinding factors
+      # 285 ro values created by Alice
+      # 15 r values created by Bob. Alice knows only d = y*r^^pk
       r[i]=Random.new.bytes(10).unpack('H*')[0] # "8f0722a18b63d49e8d9a", size = 20 hex char, 80 bits, 10 bytes
     end
     
@@ -284,7 +286,7 @@ class PuzzlesController < ApplicationController
   
   def sender_checks_k_values
     
-    # Alice verifies now that h = H(k), computes s = Dec(k,c) and verifies also that s^^pk = ro
+    # Alice verifies now that h = H(k), computes s = Dec(k,c) and verifies also that s^^pk = beta
     
     @puzzle = Puzzle.find(params[:id])
     @script =Script.find(@puzzle.script_id)
@@ -310,8 +312,7 @@ class PuzzlesController < ApplicationController
     end # do |row| (read input file)
     puts "Number of (c,h) lines in file: " + row_count.to_s
     
-    # Alice reads the 300 k values from Tumbler's CSV file
-    # and verifies that h = H(k)
+    # Alice reads the 300 k values from Tumbler's CSV file and verifies that h = H(k)
     row_count = 0
     true_count = 0
     data = open("app/views/products/kvalues#{string}.csv").read
@@ -328,13 +329,57 @@ class PuzzlesController < ApplicationController
       end
       row_count+=1
     end # do |row| (read input file)
-    puts "Number of k lines in file: " + row_count.to_s
-    puts "Number of k values checked: " + true_count.to_s
+    puts "Number of k values checked successfully: " + true_count.to_s
     
     unless true_count == 300
       redirect_to @puzzle, alert: "Mismatch between h and H(k) values."
     else
-      # TODO: Alice now computes s = Dec(k,c) and verifies also that s^^pk = ro
+      # Alice now computes s = Dec(k,c) and verifies that s^^pk = beta
+      
+      # Exponent (part of the public key)
+      e = $TUMBLER_RSA_PUBLIC_EXPONENT
+      # The modulus (aka the public key, although this is also used in the private key as well)
+      n = $TUMBLER_RSA_PUBLIC_KEY
+
+      true_count = 0
+      @s_values = []
+
+      for i in 0..299
+        k = @k_values[i]
+        c = @c_values[i]
+        decipher = OpenSSL::Cipher::AES.new(128, :CBC)
+        decipher.decrypt
+        key_hex = k[0..31]
+        iv_hex = k[32..63]
+        key = key_hex.from_hex
+        iv = iv_hex.from_hex
+        decipher.key = key
+        decipher.iv = iv
+        @s_values[i] =  decipher.update(BTC::Data.data_from_hex(c)) + decipher.final
+      end
+      
+      row_count = 0
+      data = open("tmp/betavalues#{string}.csv").read
+      @beta_values = []
+      CSV.parse(data) do |row|
+        row.each do |beta|
+          @beta_values << beta.to_i(16)
+        end
+        row_count+=1
+      end # do |row| (read input file)
+      puts "Number of beta values in file: " + row_count.to_s
+      
+      true_count = 0
+      for i in 0..299
+        if (@beta_values[i] == mod_pow(@s_values[i].to_i(16),e,n))  # verify s^^pk = beta (real values)
+          true_count += 1
+        end
+      end
+      puts "Number of s values checked successfully: " + true_count.to_s
+      unless true_count == 300
+        redirect_to @puzzle, alert: "Mismatch between s and beta values."
+      end
+      
     end
     
   end
