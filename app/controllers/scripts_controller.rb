@@ -887,13 +887,7 @@ class ScriptsController < ApplicationController
         tx.inputs[0].signature_script << BTC::Script::OP_FALSE # force script execution into checking that expiry was before locktime, then locktime is checked to be in the past as well
         tx.inputs[0].signature_script << @funding_script.data
       else
-        puts "Before expiry, require both Tumbler's key and Bob's key"
-        # begin  
-        #  @user_key = BTC::Key.new(wif:@script.bob_priv_key_1)
-        #rescue Exception => e1
-        #  redirect_to @script, alert: "Invalid user private key."
-        #  return
-        #end
+        puts "Before expiry"
         begin  
           @tumbler_key = BTC::Key.new(wif:@script.oracle_1_priv_key)
         rescue Exception => e
@@ -947,7 +941,6 @@ class ScriptsController < ApplicationController
 
           decipher = OpenSSL::Cipher::AES.new(128, :CBC)
           decipher.decrypt
-          
           decipher.key = key
           decipher.iv = iv
 
@@ -959,7 +952,6 @@ class ScriptsController < ApplicationController
           end
           
           # generate puzzle y by encrypting encryption key (@script.contract) with Tumbler RSA public key
-
           m = contract.to_s.to_i(16)
           modulus = $TUMBLER_RSA_PUBLIC_KEY
           pubexp = $TUMBLER_RSA_PUBLIC_EXPONENT
@@ -977,19 +969,10 @@ class ScriptsController < ApplicationController
           else
             @puzzle = @script.puzzles.last
           end
-
-          # tx.inputs[0].signature_script << (@tumbler_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
         end
-        # if e1.blank?
-        #  tx.inputs[0].signature_script << (@user_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
-        # end
-        # tx.inputs[0].signature_script << BTC::Script::OP_TRUE # force script execution into checking 2 signatures, ignoring expiry
-        # tx.inputs[0].signature_script << @funding_script.data
         
         @redeem_script = @funding_script.data.to_hex
-        
       end
-
     end # of case statement
     @script.signed_tx = tx.to_s
     
@@ -1033,7 +1016,6 @@ class ScriptsController < ApplicationController
   
   def puzzle_list
     @scripts = Script.where(:category => 5).page(params[:page])
-    # @scripts = Script.page(params[:page]).where(:category => "tumblebit_escrow_contract").order(created_at: :asc) 
   end
 
 

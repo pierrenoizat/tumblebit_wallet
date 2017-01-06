@@ -1,7 +1,5 @@
 class PuzzlesController < ApplicationController
 
-  # require 'btcruby/extensions'
-
   def index
     @puzzles = Puzzle.page(params[:page]).order(created_at: :asc) 
   end
@@ -91,9 +89,6 @@ class PuzzlesController < ApplicationController
     puts "Total number of values: #{@beta_values.count}"
     
     # Alice sends the 300 values to Tumbler in a CSV file
-    # @puzzle.beta_values = beta_values
-    # @puzzle.save
-    
     # dump the 300 values to a new csv file for Tumbler
     
     if File.exists?("tmp/betavalues#{string}.csv")
@@ -121,17 +116,14 @@ class PuzzlesController < ApplicationController
     string = string[0..5]
     data = open("tmp/betavalues#{string}.csv").read
     @s_values = []
-    # Exponent (part of the public key)
+
     e = $TUMBLER_RSA_PUBLIC_EXPONENT
-    # The modulus (aka the public key, although this is also used in the private key as well)
     n = $TUMBLER_RSA_PUBLIC_KEY
-    # The secret exponent (aka the private key)
     d = Figaro.env.tumbler_rsa_private_key.to_i(16)
     require 'csv'
     CSV.parse(data) do |row|
       row.each do |beta|
-        b = beta.to_i(16)
-        s_val = mod_pow(b,d,n) # encrypt beta_value with d, tumbler's RSA private key (sk)
+        s_val = mod_pow(beta.to_i(16),d,n) # encrypt beta_value with d, tumbler's RSA private key (sk)
         @s_values << s_val.to_s(16)
       end
       row_count+=1
@@ -226,27 +218,18 @@ class PuzzlesController < ApplicationController
     string = string[0..5]
     data = open("app/views/products/rovalues#{string}.csv").read
     @ro_values = []
-    row_count = 0
+
     # Tumbler reads file with 285 "fake" ro values
     require 'csv'
     CSV.parse(data) do |row|
       row.each do |ro|
-        unless ro.blank?
-          @ro_values << ro.to_i(16)
-          row_count+=1
-        else
-          @ro_values << 0
-        end
+          @ro_values << ro
       end
     end # do |row| (read input file)
-    puts "Number of non-zero ro values in file: " + row_count.to_s
     
     # Tumbler verifies beta = ro^^pk for all ro values
-    # Exponent (part of the public key)
     e = $TUMBLER_RSA_PUBLIC_EXPONENT
-    # The modulus (aka the public key, although this is also used in the private key as well)
     n = $TUMBLER_RSA_PUBLIC_KEY
-    # The secret exponent (aka the private key)
     d = Figaro.env.tumbler_rsa_private_key.to_i(16)
     
     # Tumbler reads the 300 beta values from Alice's CSV file
@@ -266,11 +249,9 @@ class PuzzlesController < ApplicationController
     true_count = 0
     for i in 0..299
       unless @puzzle.real_indices.include? i.to_s
-        for j in 0..284
-          m = mod_pow(@ro_values[j],e,n)
-          if (@beta_values[i] == m)
-            true_count+=1
-          end
+        ro = @ro_values.shift.to_i(16)
+        if (@beta_values[i] == mod_pow(ro,e,n))
+          true_count+=1
         end
       end
     end
@@ -279,10 +260,32 @@ class PuzzlesController < ApplicationController
     unless true_count == 285
       redirect_to @puzzle, alert: "Invalid ro values."
     else
-      # Tumbler sends csv file with 300 k values (encryption keys) to Alice: download button in view
+      # Tumbler reads k values from his csv file
+      data = open("app/views/products/kvalues#{string}.csv").read
+      @k_values = []
+      CSV.parse(data) do |row|
+        row.each do |k|
+          @k_values << k
+        end
+      end # do |row| (read input file)
+      
+      # dump the 285 "fake" k values to a new csv file for Tumbler to send to Alice
+      if File.exists?("app/views/products/fkvalues#{string}.csv")
+        File.delete("app/views/products/fkvalues#{string}.csv") # delete any previous version of file
+      end
+
+      CSV.open("app/views/products/fkvalues#{string}.csv", "ab") do |csv|
+        for i in 0..299
+          unless @puzzle.real_indices.include? i.to_s
+            csv << [@k_values[i]]
+          end
+        end
+      end
+      # Tumbler sends csv file with 285 k values (encryption keys) to Alice: TODO download button in view
     end
     
   end
+  
   
   def sender_checks_k_values
     
@@ -291,7 +294,7 @@ class PuzzlesController < ApplicationController
     @puzzle = Puzzle.find(params[:id])
     @script =Script.find(@puzzle.script_id)
     
-    # Alice reads the 300  (c,h) values from Tumbler's CSV file
+    # Alice reads the 285 "fake" (c,h) values from Tumbler's CSV file
     row_count = 0
     string = OpenSSL::Digest::SHA256.new.digest(@puzzle.id.to_s).unpack('H*').first
     string = string[0..5]
@@ -300,52 +303,58 @@ class PuzzlesController < ApplicationController
     @h_values = []
     require 'csv'
     i = 0
+    j = 0
     CSV.parse(data) do |row|
       ch_array = []
       row.each do |c|
         ch_array << c
-        @c_values[i] = ch_array[0]
-        @h_values[i] = ch_array[1]
+      end
+      unless @puzzle.real_indices.include? i.to_s
+        @c_values[j] = row[0]
+        @h_values[j] = row[1]
+        j += 1
       end
       i += 1
       row_count+=1
     end # do |row| (read input file)
     puts "Number of (c,h) lines in file: " + row_count.to_s
+    puts "Number of fake c values: " + @c_values.count.to_s
     
-    # Alice reads the 300 k values from Tumbler's CSV file and verifies that h = H(k)
+    # Alice reads the 285 k values from Tumbler's CSV file and verifies that h = H(k)
     row_count = 0
     true_count = 0
-    data = open("app/views/products/kvalues#{string}.csv").read
-    @k_values = []
+    data = open("app/views/products/fkvalues#{string}.csv").read
+    @fk_values = []
     require 'csv'
     i = 0
     CSV.parse(data) do |row|
       row.each do |k|
-        @k_values[i] = k
-        if @h_values[i] == k.ripemd160.to_hex
+        @fk_values[i] = k
+        h = @h_values.shift
+        if h == k.ripemd160.to_hex
           true_count += 1
+        else
+          puts "h: " + h
+          puts "k: " + k
         end
-        i += 1
       end
+      i += 1
       row_count+=1
     end # do |row| (read input file)
     puts "Number of k values checked successfully: " + true_count.to_s
     
-    unless true_count == 300
+    unless true_count == 285
       redirect_to @puzzle, alert: "Mismatch between h and H(k) values."
     else
       # Alice now computes s = Dec(k,c) and verifies that s^^pk = beta
-      
-      # Exponent (part of the public key)
       e = $TUMBLER_RSA_PUBLIC_EXPONENT
-      # The modulus (aka the public key, although this is also used in the private key as well)
       n = $TUMBLER_RSA_PUBLIC_KEY
 
       true_count = 0
       @s_values = []
 
-      for i in 0..299
-        k = @k_values[i]
+      for i in 0..284
+        k = @fk_values[i]
         c = @c_values[i]
         decipher = OpenSSL::Cipher::AES.new(128, :CBC)
         decipher.decrypt
@@ -358,25 +367,27 @@ class PuzzlesController < ApplicationController
         @s_values[i] =  decipher.update(BTC::Data.data_from_hex(c)) + decipher.final
       end
       
-      row_count = 0
+      i = 0
       data = open("tmp/betavalues#{string}.csv").read
       @beta_values = []
       CSV.parse(data) do |row|
         row.each do |beta|
-          @beta_values << beta.to_i(16)
+          unless @puzzle.real_indices.include? i.to_s
+            @beta_values << beta.to_i(16)
+          end
         end
-        row_count+=1
+        i +=1
       end # do |row| (read input file)
-      puts "Number of beta values in file: " + row_count.to_s
+      puts "Number of beta values in file: " + i.to_s
       
       true_count = 0
-      for i in 0..299
+      for i in 0..284
         if (@beta_values[i] == mod_pow(@s_values[i].to_i(16),e,n))  # verify s^^pk = beta (real values)
           true_count += 1
         end
       end
       puts "Number of s values checked successfully: " + true_count.to_s
-      unless true_count == 300
+      unless true_count == 285
         redirect_to @puzzle, alert: "Mismatch between s and beta values."
       end
       
