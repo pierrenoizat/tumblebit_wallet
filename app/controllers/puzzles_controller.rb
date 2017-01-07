@@ -10,7 +10,7 @@ class PuzzlesController < ApplicationController
   end
   
   def create_blinding_factors
-    
+    # Fig. 2, steps 1,2,3
     # Alice creates 300 values for Tumbler, mixing 15 real values with 285 fake values
     @puzzle = Puzzle.find(params[:id])
     @script =Script.find(@puzzle.script_id)
@@ -90,7 +90,6 @@ class PuzzlesController < ApplicationController
     
     # Alice sends the 300 values to Tumbler in a CSV file
     # dump the 300 values to a new csv file for Tumbler
-    
     if File.exists?("tmp/betavalues#{string}.csv")
       File.delete("tmp/betavalues#{string}.csv") # delete any previous version of file
     end
@@ -105,7 +104,7 @@ class PuzzlesController < ApplicationController
   
   
   def tumbler_encrypts_values
-    
+    # Fig. 2, step 4
     @puzzle = Puzzle.find(params[:id])
     @script =Script.find(@puzzle.script_id)
     
@@ -179,9 +178,7 @@ class PuzzlesController < ApplicationController
         @c_values[i] = BTC::Data.hex_from_data(encrypted)
         @h_values[i] = k.ripemd160.to_hex
       else
-        @k_values[i] = "Problem with signature encryption."
-        @c_values[i] = "Problem with signature encryption."
-        @h_values[i] = "Problem with signature encryption."
+        redirect_to @puzzle, alert: "Problem with signature encryption."
       end
     end
     
@@ -211,7 +208,7 @@ class PuzzlesController < ApplicationController
   
   
   def tumbler_checks_ro_values
-    
+    # Fig. 2, step 6
     @puzzle = Puzzle.find(params[:id])
     @script =Script.find(@puzzle.script_id)
     string = OpenSSL::Digest::SHA256.new.digest(@puzzle.id.to_s).unpack('H*').first
@@ -288,7 +285,7 @@ class PuzzlesController < ApplicationController
   
   
   def sender_checks_k_values
-    
+    # Fig 2, step 7
     # Alice verifies now that h = H(k), computes s = Dec(k,c) and verifies also that s^^pk = beta
     
     @puzzle = Puzzle.find(params[:id])
