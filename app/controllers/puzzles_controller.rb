@@ -15,13 +15,6 @@ class PuzzlesController < ApplicationController
     @puzzle = Puzzle.find(params[:id])
     @script =Script.find(@puzzle.script_id)
     
-    r=[]
-    for i in 0..299  # create 300 blinding factors
-      # 285 ro values created by Alice
-      # 15 r values created by Bob. Alice knows only d = y*r^^pk
-      r[i]=Random.new.bytes(10).unpack('H*')[0] # "8f0722a18b63d49e8d9a", size = 20 hex char, 80 bits, 10 bytes
-    end
-    
     if @puzzle.real_indices.blank?
       real_indices = []
       prng = Random.new
@@ -36,11 +29,29 @@ class PuzzlesController < ApplicationController
     end
     puts "Real indices: #{@puzzle.real_indices}"
     
+    # Exponent (part of the public key)
+    e = $TUMBLER_RSA_PUBLIC_EXPONENT
+    # The modulus (aka the public key, although this is also used in the private key computations as well)
+    n = $TUMBLER_RSA_PUBLIC_KEY
+    
+    salt=Random.new.bytes(32).unpack('H*')[0] # 256-bit random integer
+    puts "Salt: #{salt}"
+    r=[]
+    for i in 0..299  # create 300 blinding factors
+      # 285 ro values created by Alice
+      # 15 r values created by Bob. Alice knows only d = y*r^^pk
+      if @puzzle.real_indices.include? i.to_s
+        r[i]=Random.new.bytes(10).unpack('H*')[0] # "8f0722a18b63d49e8d9a", size = 20 hex char, 80 bits, 10 bytes
+      else
+        r[i]=(Random.new.bytes(10).unpack('H*')[0].to_i(16)*salt.to_i(16) % n).to_s(16) # salt is same size as epsilon, otherwise Tumbler can easily tell real values from fake values based on the size of s
+      end
+    end
+    
+    
     # dump the 285 values to a new csv file for Tumbler
     @ro_values = []
     require 'csv'
-    string = OpenSSL::Digest::SHA256.new.digest(@puzzle.id.to_s).unpack('H*').first
-    string = string[0..5]
+    string = OpenSSL::Digest::SHA256.new.digest(@puzzle.id.to_s).unpack('H*').first[0..5]
     
     if File.exists?("app/views/products/rovalues#{string}.csv")
       File.delete("app/views/products/rovalues#{string}.csv") # delete any previous version of file
@@ -59,19 +70,30 @@ class PuzzlesController < ApplicationController
     
     @beta_values = []
     # first, compute 15 real beta values
-   
-    # Exponent (part of the public key)
-    e = $TUMBLER_RSA_PUBLIC_EXPONENT
-    # The modulus (aka the public key, although this is also used in the private key as well)
-    n = $TUMBLER_RSA_PUBLIC_KEY
+
+    p = @puzzle.y.to_i  # y = epsilon^^pk
     # The secret exponent (aka the private key)
     d = Figaro.env.tumbler_rsa_private_key.to_i(16)
-    p = @puzzle.y.to_i(16)%n
+    epsilon = mod_pow(p,d,n)
+    puts "y: #{@puzzle.y.to_i.to_s(16)}"
+    puts "Epsilon: #{epsilon.to_s(16)}"
+    puts "Epsilon in db: #{@script.contract}"
+    
+    m = @script.contract.to_i(16)
+    puzzle = mod_pow(m,e,n) # epsilon^pk mod n
+    puts "puzzle: %x" % puzzle
+
+    # puzzle solution
+    d = Figaro.env.tumbler_rsa_private_key.to_i(16)
+    solution = mod_pow(puzzle,d,n) # puzzle^sk mod modulus
+    puts "Solution (epsilon):" + solution.to_s(16)
+    puts "Script contract:" + @script.contract # solution should be equal to contract
+    
     
     @puzzle.real_indices.each do |i|
       m = r[i.to_i].to_i(16)
       b = mod_pow(m,e,n)
-      beta_value = (p*b)%n
+      beta_value = (p*b) % n
       @beta_values[i.to_i] = beta_value.to_s(16)
     end
     
@@ -111,19 +133,18 @@ class PuzzlesController < ApplicationController
     # Tumbler reads the 300 values from Alice's CSV file
     # then, Tumbler computes beta^^sk = s for each of the 300 beta values
     row_count = 0
-    string = OpenSSL::Digest::SHA256.new.digest(@puzzle.id.to_s).unpack('H*').first
-    string = string[0..5]
+    string = OpenSSL::Digest::SHA256.new.digest(@puzzle.id.to_s).unpack('H*').first[0..5]
     data = open("tmp/betavalues#{string}.csv").read
     @s_values = []
 
     e = $TUMBLER_RSA_PUBLIC_EXPONENT
     n = $TUMBLER_RSA_PUBLIC_KEY
+    # The secret exponent (aka the private key)
     d = Figaro.env.tumbler_rsa_private_key.to_i(16)
     require 'csv'
     CSV.parse(data) do |row|
       row.each do |beta|
-        s_val = mod_pow(beta.to_i(16),d,n) # encrypt beta_value with d, tumbler's RSA private key (sk)
-        @s_values << s_val.to_s(16)
+        @s_values << mod_pow(beta.to_i(16),d,n).to_s(16) # encrypt beta_value with d, tumbler's RSA private key (sk)
       end
       row_count+=1
     end # do |row| (read input file)
@@ -211,8 +232,7 @@ class PuzzlesController < ApplicationController
     # Fig. 2, step 6
     @puzzle = Puzzle.find(params[:id])
     @script =Script.find(@puzzle.script_id)
-    string = OpenSSL::Digest::SHA256.new.digest(@puzzle.id.to_s).unpack('H*').first
-    string = string[0..5]
+    string = OpenSSL::Digest::SHA256.new.digest(@puzzle.id.to_s).unpack('H*').first[0..5]
     data = open("app/views/products/rovalues#{string}.csv").read
     @ro_values = []
 
@@ -227,7 +247,6 @@ class PuzzlesController < ApplicationController
     # Tumbler verifies beta = ro^^pk for all ro values
     e = $TUMBLER_RSA_PUBLIC_EXPONENT
     n = $TUMBLER_RSA_PUBLIC_KEY
-    d = Figaro.env.tumbler_rsa_private_key.to_i(16)
     
     # Tumbler reads the 300 beta values from Alice's CSV file
     # then, Tumbler computes ro^^pk for each of the 285 ro values
@@ -293,8 +312,7 @@ class PuzzlesController < ApplicationController
     
     # Alice reads the 285 "fake" (c,h) values from Tumbler's CSV file
     row_count = 0
-    string = OpenSSL::Digest::SHA256.new.digest(@puzzle.id.to_s).unpack('H*').first
-    string = string[0..5]
+    string = OpenSSL::Digest::SHA256.new.digest(@puzzle.id.to_s).unpack('H*').first[0..5]
     data = open("app/views/products/chvalues#{string}.csv").read
     @c_values = []
     @h_values = []

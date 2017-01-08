@@ -923,7 +923,7 @@ class ScriptsController < ApplicationController
             iv = cipher.random_iv # generate random AES initialization vector
             iv_hex = iv.to_hex
           
-            contract = key_hex + iv_hex  # epsilon
+            contract = key_hex + iv_hex  # epsilon, 128-bit key + 128-bit iv, total 256 bits
             # TODO Encrypt epsilon before storing in database
             @script.update(contract: contract) # store key + iv in @script contract attribute
           else
@@ -952,7 +952,7 @@ class ScriptsController < ApplicationController
           end
           
           # generate puzzle y by encrypting encryption key (@script.contract) with Tumbler RSA public key
-          m = contract.to_s.to_i(16)
+          m = contract.to_i(16)
           modulus = $TUMBLER_RSA_PUBLIC_KEY
           pubexp = $TUMBLER_RSA_PUBLIC_EXPONENT
           puzzle = mod_pow(m,pubexp,modulus) # epsilon^e mod modulus
