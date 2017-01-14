@@ -25,13 +25,13 @@
 
               <!-- Hero subheading -->
               
-                <p class="heading__sub hero-heading__sub animated fadeInUp delay_1"><%= Client.count %> users: <strong><%= link_to "#{Script.count} contracts", scripts_path %></strong></p>
+                <p class="heading__sub hero-heading__sub animated fadeInUp delay_1"><%= Client.count %> users: <strong><%= link_to "#{Puzzle.count} puzzle(s)", scripts_path %></strong></p>
 
               <!-- Hero buttons -->
 			<% if current_client or current_user %>
-			<a href="<%= new_script_path %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Create your Smart Contract</a>
+			<a href="<%= new_script_path %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Create your Puzzle</a>
 			<% else %>
-			<a href="<%= new_client_registration_path %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Create your Smart Contract</a>
+			<a href="<%= new_client_registration_path %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Create your Puzzle</a>
 			<% end %>
 
             </div>
@@ -47,9 +47,9 @@
         <div class="container">
           <div class="row">
             <div class="col-xs-12">
-              <h4 class="heading">About Tumblebit</h4>
+              <h4 class="heading">About tumble.band</h4>
               <p class="heading__sub">
-                Scripting languages date back from thousands of years ago. Mathematic formulae are an example of scripting language. <br />Bitcoin scripts use a specialized <a href="https://en.bitcoin.it/wiki/Script#Words" target="blank">scripting language</a> to write secure smart contracts and complex transactions.
+                tumble.band is a classic Bitcoin tumbler, mixing together the transfer of one bitcoin from each of n distinct payers (Alice) to n distinct payees (Bob). TumbleBit is run with the payment phase shrunk to 30 seconds, so the protocol runs in epochs that require two blocks added to the blockchain. tumble.band provides k-anonymity within an epoch: no one, not even the Tumbler, can link one of the k transfers that were successfully completed during the epoch to a specific pair of payer and payee (Alice, Bob).
               </p>
             </div>
           </div> <!-- / .row -->
@@ -67,10 +67,10 @@
                 </div>
                 <div class="features-item__body">
                   <div class="features-item-body__title">
-                    Prepare your P2SH Address
+                    No Coordination
                   </div>
                   <div class="features-item-body__summary">
-                    A Smart Contract is initiated by computing a Bitcoin P2SH address. P2SH stands for Pay-to-Script-Hash, meaning the Contract Script is hashed into a unique address that will serve as a vault for the funds sent to it.
+                    If Alice wants to pay Bob, she need not interact with any other TumbleBit users. Instead, Alice and Bob need only interact with the Tumblebit server and each other.
                   </div>
                 </div> <!-- / .features-item__body -->
               </div> <!-- / .features__item -->
@@ -78,14 +78,14 @@
             <div class="col-sm-4">
               <div class="features__item wow fadeIn">
                 <div class="features-item__icon">
-                  <span class="fa fa-key"></span>
+                  <span class="fa fa-bitcoin"></span>
                 </div>
                 <div class="features-item__body">
                   <div class="features-item-body__title">
-                    Spend from the P2SH Address
+                    Bitcoin Compatibility
                   </div>
                   <div class="features-item-body__summary">
-                    To spend the funds previously sent to the Smart Contract P2SH address, you will need to provide the original redeem Script as well as one or more private keys required by the Script.
+                    TumbleBit is fully compatible with the Bitcoin protocol. Bitcoin scripts are used to validate the preimage of a hash and to validate an ECDSA signature on a Bitcoin transaction.
                   </div>
                 </div> <!-- / .features-item__body -->
               </div> <!-- / .features__item -->
@@ -98,10 +98,10 @@
                 </div>
                 <div class="features-item__body">
                   <div class="features-item-body__title">
-                    Timelock 
+                    Performance 
                   </div>
                   <div class="features-item-body__summary">
-                    A Script may enforce time conditions that must be met to unlock the funds held at the P2SH address. If you want to spend from the P2SH address of such Script, you may have to wait until the time lock expires.
+                    Performance is limited only by the time it takes for two blocks to be confirmed on the blockchain and the time it takes for transactions to be confirmed; this takes approximately 20 minutes. Meanwhile, off-blockchain payments can complete in seconds.
                   </div>
                 </div> <!-- / .features-item__body -->
               </div> <!-- / .features__item -->
@@ -118,9 +118,9 @@
           <div class="row"> 
             <div class="row-same-height">
               <div class="col-sm-5 col-sm-height col-middle">
-                <h4 class="heading heading_left">A Stack-based Scripting System</h4>
+                <h4 class="heading heading_left">Tumblebit Protocol Overview</h4>
                 <p class="heading__sub">
-                  Bitcoin uses a scripting system for complex transactions. Forth-like, Script is stack-based: instructions are <a href="<%= page_path('op_codes') %>" >1-byte opcodes</a> processed from left to right to be pushed on top of the stack sequentially, left-most first. All values are variable length byte arrays. Script is not Turing-complete, with no loops, for optimal security.
+                  TumbleBit replaces on-blockchain payments with off-blockchain RSA-puzzle solving, where Alice pays Bob by providing Bob with the solution to a blinded RSA-puzzle. The puzzle z is generated through interaction between Bob and Tumbler (the Tumblebit server) , and solved through an interaction between Alice and Tumbler . Each time a puzzle is solved, 1 bitcoin is transferred from Alice to the Tumbler and finally on to Bob.
                 </p>
               </div>
               <div class="col-sm-7 col-sm-height col-middle">
@@ -138,9 +138,9 @@
         <div class="container">
           <div class="row">
             <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
-              <h4 class="heading">Tumblebit: An Untrusted Bitcoin-Compatible Anonymous Payment Hub</h4>
+              <h4 class="heading">Tumblebit: An Untrusted Bitcoin-Compatible Anonymous Payment Protocol</h4>
               <p class="heading__sub">
-                This paper presents TumbleBit, a new uni- directional unlinkable payment hub that is fully com- patible with today’s Bitcoin protocol. TumbleBit allows parties to make fast, anonymous, off-blockchain payments through an untrusted intermediary called the Tumbler. TumbleBit’s anonymity properties are similar to classic Chaumian eCash: no one, not even the Tumbler, can link a payment from its payer to its payee. Every payment made via TumbleBit is backed by bitcoins, and comes with a guarantee that Tumbler can neither violate anonymity, nor steal bitcoins, nor “print money” by issuing payments to itself.
+                This paper, authored by Ethan Heilman, Leen AlShenibr, Foteini Baldimtsi, Alessandra Scafuro and Sharon Goldberg, presents TumbleBit, a new uni- directional unlinkable payment protocol that is fully com- patible with today’s Bitcoin protocol. TumbleBit allows parties to make fast, anonymous, off-blockchain payments through an untrusted intermediary called the Tumbler: no one, not even the Tumbler, can link a payment from its payer to its payee. Every payment made via TumbleBit is backed by bitcoins, and comes with a guarantee that Tumbler can neither violate anonymity, nor steal bitcoins, nor “print money” by issuing payments to itself.
               </p>
               <a href="<%= products_path('tumblebitpaper.pdf') %>" class="btn btn-lg btn-primary heading__btn wow fadeInUp" >Download White Paper</a>
             </div>
@@ -174,25 +174,4 @@
 
       <!-- FOOTER
       ============================== -->
-      <footer>
-        <div class="container">
-          <div class="row">
-            <div class="col-sm-6">
-              &copy; 2015-2017 <a href="https://paymium.com" target="blank" >Paymium.com</a>. All Rights Reserved.
-            </div>
-            <div class="col-sm-6">
-              <div class="footer__social">
-                <a href="https://twitter.com/intent/follow?original_referer=https%3A%2F%2Fabout.twitter.com%2Fresources%2Fbuttons&region=follow_link&screen_name=PierreNoizat&tw_p=followbutton" class="footer-social__link footer-social__link_twitter" target="blank" >
-	
-                  <i class="fa fa-twitter"></i>
-                </a>
 
-                <a href="https://fr-fr.facebook.com/Paymium" class="footer-social__link footer-social__link_facebook" target="blank" >
-                  <i class="fa fa-facebook"></i>
-                </a>
-
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>

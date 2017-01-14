@@ -6983,18 +6983,7 @@ body {
 .hero__btn.btn-link {
   color: rgba(255, 255, 255, 0.9);
 }
-/* Hero :: Agency */
-.hero_agency {
-  background-image: url(image-path('handwriting_and_laptop_resized_bg.jpg')) no-repeat;
-  text-align: center;
-}
 
-/* Hero :: Sign Up */
-.hero_sign-up {
-  padding-bottom: 388px;
-  background-image: url(image-path('bg_2.jpg'));
-  text-align: center;
-}
 @media (min-width: 768px) {
   .hero_sign-up {
     padding-bottom: 208px;
