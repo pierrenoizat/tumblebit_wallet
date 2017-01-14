@@ -1,6 +1,6 @@
 <div class="container">
   <div class="row">
-	<h3>Broadcast Transaction for <%= @script.title if @script.title %></h3>
+	<h3>Payout Transaction for <%= @script.title if @script.title %></h3>
 	<p>Category: <strong><%= category_of(@script.category) if @script.category %></strong></br>
 	Script:</br><pre style="width:600px"><code> <%= @script.description if @script %></code></pre></p>
 	<% if ["timelocked_address", "timelocked_2fa", "tumblebit_puzzle", "tumblebit_escrow_contract"].include? @script.category %>
@@ -35,7 +35,7 @@
 	<p>P2SH Address: <strong><%= @script.hash_address if @script %></strong></p>
 	<p>Unspent Output (Tx_id:index):  <%= @script.tx_hash if @script %> : <%= @script.index if @script %></br>
 	<p>Amount: <%= @script.amount if @script %></br>
-	<p>Refund (Destination) Address: <%= @script.refund_address if @script %></p>
+	<p>Bob's Address: <%= @script.refund_address if @script %></p>
 	
 	<% unless @script.category == "tumblebit_escrow_contract" %>
 	<%= form_for(@script, url: url_for(controller: 'scripts', action: 'broadcast'), multipart: true) do |f| %>

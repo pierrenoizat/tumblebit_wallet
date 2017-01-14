@@ -13,7 +13,7 @@ Post.create(
   title: "About",
   published_at: Time.now,
   body: 
-  %Q{### About bitcoinscri.pt
+  %Q{### About tumble.band
 
     A standard Bitcoin address works like a digital vault. There are one or more keys that allow key holders to release the coins by opening the vault.
     In addition to standard addresses, a certain type of Bitcoin addresses, known as Pay-to-Script-Hash or P2SH, require the knowledge of a redeem script.
@@ -49,7 +49,7 @@ Post.create(
   title: "Getting started",
   published_at: Time.now,
   body:
-  %Q{### Getting Started with Bitcoin Scripts
+  %Q{### Getting Started with Tumblebit
 
     To create a new script, select one amongst the available scripts and give it a name. 
 
@@ -83,7 +83,7 @@ Post.create(
   body:
   %Q{### License
 
-    © Pierre Noizat - Paymium 2015-2016 Soon to be released under the [MIT license](http://opensource.org/licenses/mit-license.php)}
+    © Pierre Noizat - Paymium 2015-2017 Soon to be released under the [MIT license](http://opensource.org/licenses/mit-license.php)}
 )
 
 Post.create(
