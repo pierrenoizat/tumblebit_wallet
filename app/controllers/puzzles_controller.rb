@@ -7,6 +7,7 @@ class PuzzlesController < ApplicationController
   def show
     @puzzle = Puzzle.find(params[:id])
     @script =Script.find(@puzzle.script_id)
+    @puzzle.generate_bitcoin_key_pair
   end
   
   def create_blinding_factors

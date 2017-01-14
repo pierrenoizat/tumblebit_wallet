@@ -6,7 +6,7 @@ require 'rails/all'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-module RailsOmniauth
+module Tumbler
   class Application < Rails::Application
 
     config.generators do |g|
@@ -46,7 +46,7 @@ module RailsOmniauth
     $BLOCKR_ADDRESS_TXS_URL ="http://btc.blockr.io/api/v1/address/txs/"
 
     $TUMBLER_RSA_PUBLIC_EXPONENT = 0x10001
-    $TUMBLER_RSA_PUBLIC_KEY=0xcd0b9724a2a09b16d7739bc9daa29274563765110ba93a2f8f880ce9191909050599ee361eadec462e7c9b167aa020d61c93d6787921242c76a8cfd7c29ec5fe626e36ed06134ffc37fe3638dff132be1f15ed0fa43c3d957436b67ef42a1bb58f6154f30e5b30e7048bbff83375ae666900808558269c30d297190883d83bf1
+    $TUMBLER_RSA_PUBLIC_KEY = 0xcd0b9724a2a09b16d7739bc9daa29274563765110ba93a2f8f880ce9191909050599ee361eadec462e7c9b167aa020d61c93d6787921242c76a8cfd7c29ec5fe626e36ed06134ffc37fe3638dff132be1f15ed0fa43c3d957436b67ef42a1bb58f6154f30e5b30e7048bbff83375ae666900808558269c30d297190883d83bf1
     
   end
 end

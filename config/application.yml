@@ -21,9 +21,10 @@ development:
   mail_password: <%= ENV["MAIL_PASSWORD"] %>
   mailchimp_api_key: <%= ENV["MAILCHIMP_API_KEY"] %>
   mailchimp_list_id: <%= ENV["MAILCHIMP_LIST_ID"] %>
-  btcscript_admin_uid: <%= ENV["BTCSCRIPT_ADMIN_UID"] %>
-  tumbler_rsa_public_key: <%= ENV["TUMBLER_RSA_PUBLIC_KEY"] %>
+  tumbler_admin_uid: <%= ENV["TUMBLER_ADMIN_UID"] %>
   tumbler_rsa_private_key: <%= ENV["TUMBLER_RSA_PRIVATE_KEY"] %>
+  tumbler_btc_mpk: <%= ENV["MPK"] %>
+  tumbler_btc_msk: <%= ENV["MSK"] %>
 
 production:
   <<: *default
@@ -35,5 +36,7 @@ production:
   mail_password: <%= ENV["MAIL_PASSWORD"] %>
   mailchimp_api_key: <%= ENV["MAILCHIMP_API_KEY"] %>
   mailchimp_list_id: <%= ENV["MAILCHIMP_LIST_ID"] %>
-  tumbler_rsa_public_key: <%= ENV["TUMBLER_RSA_PUBLIC_KEY"] %>
   tumbler_rsa_private_key: <%= ENV["TUMBLER_RSA_PRIVATE_KEY"] %>
+  tumbler_admin_uid: <%= ENV["TUMBLER_ADMIN_UID"] %>
+  tumbler_btc_mpk: <%= ENV["MPK"] %>
+  tumbler_btc_msk: <%= ENV["MSK"] %>

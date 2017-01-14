@@ -307,7 +307,7 @@ class ScriptsController < ApplicationController
     
     require 'btcruby/extensions'
     
-    @notice = "Contract spending transaction was successfully signed."
+    @notice = "Tumblebit payout transaction was successfully signed."
     @script = Script.find(params[:id])
     @public_keys = @script.public_keys
     
@@ -562,7 +562,7 @@ class ScriptsController < ApplicationController
     if e
       s += e.message
     end
-    unless s == "Contract spending transaction was successfully signed."
+    unless s == "Tumblebit payout transaction was successfully signed."
       redirect_to @script, alert: s
     else
       flash[:notice] = s

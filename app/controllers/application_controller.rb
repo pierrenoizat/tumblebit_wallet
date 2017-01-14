@@ -27,7 +27,7 @@ class ApplicationController < ActionController::Base
     
     def user_admin?
       if current_user
-        current_user.uid == Figaro.env.btcscript_admin_uid.to_s
+        current_user.uid == Figaro.env.tumbler_admin_uid.to_s
       end
     end
 
