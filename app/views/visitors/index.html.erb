@@ -47,7 +47,7 @@
         <div class="container">
           <div class="row">
             <div class="col-xs-12">
-              <h4 class="heading">About Bitcoin Scripts</h4>
+              <h4 class="heading">About Tumblebit</h4>
               <p class="heading__sub">
                 Scripting languages date back from thousands of years ago. Mathematic formulae are an example of scripting language. <br />Bitcoin scripts use a specialized <a href="https://en.bitcoin.it/wiki/Script#Words" target="blank">scripting language</a> to write secure smart contracts and complex transactions.
               </p>
@@ -124,118 +124,11 @@
                 </p>
               </div>
               <div class="col-sm-7 col-sm-height col-middle">
-				<%= image_tag "stack_image.gif", class: "img-responsive" %>
+				<%= image_tag "tumblebit_overview.png", class: "img-responsive" %>
               </div>
             </div> <!-- / .row-same-height -->
           </div> <!-- / .row -->
         </div> <!-- / .container -->
-      </div> <!-- / .section -->
-
-
-      <!-- PORTFOLIO
-      ============================== -->
-      <div class="section" id="portfolio">
-        <div class="container">
-          <div class="row">
-            <div class="col-xs-12">
-              <h4 class="heading">A portfolio of scripts</h4>
-              <p class="heading__sub">
-                There are many use cases for Bitcoin scripts.<br /> Stay tuned: you'll find here links to some more demos.
-              </p>
-            </div>
-          </div> <!-- / .row -->
-        </div> <!-- / .container -->
-
-        <div class="portfolio__items">
-
-          <div class="col-xs-6 col-sm-4 col-md-3">
-            <div class="portfolio__item">
-			  <a href="<%= page_path('timelocked_address') %>">
-              <div class="portfolio-item__img">
-					<%= image_tag "hourglass_289548902.jpg", class: "img-responsive" %>
-                  <div class="portfolio-item__mask">
-                    <div class="portfolio-item-mask__content">
-                      <div class="portfolio-item-mask__title">
-                        Time Locked Address
-                      </div>
-                      <div class="portfolio-item-mask__summary">
-                        This very simple script sets an expiry date and public key that must be matched to unlock the funds. The funds cannot move from the time locked address until the set expiry date and time. After the expiry, a single private key is required.
-                      </div>
-                    </div> <!-- / .portfolio-item-mask__content -->
-                  </div> <!-- / .portfolio-item__mask -->
-                <!--</a>-->
-              </div> <!-- / .portfolio-item__img -->
-			  </a>
-            </div> <!-- / .portfolio__item -->
-          </div>
-
-          <div class="col-xs-6 col-sm-4 col-md-3">
-            <div class="portfolio__item">
-			  <a href="<%= page_path('timelocked_2fa') %>">
-              <div class="portfolio-item__img">
-                  <%= image_tag "two_keys.jpg", class: "img-responsive" %>
-                  <div class="portfolio-item__mask">
-                    <div class="portfolio-item-mask__content">
-                      <div class="portfolio-item-mask__title">
-                        Time Locked 2FA
-                      </div>
-                      <div class="portfolio-item-mask__summary">
-                        The Script requires two keys before the set expiry date and only one key after the expiry date. If one of the keys is yours and the other belongs to a 2FA (2FA stands for two-factor authentication) service provider, the funds can be accessed after the expiry date even if the 2FA service provider has disappeared.
-                      </div>
-                    </div> <!-- / .portfolio-item-mask__content -->
-                  </div> <!-- / .portfolio-item__mask -->
-                <!--</a>-->
-              </div> <!-- / .portfolio-item__img -->
-			  </a>
-            </div> <!-- / .portfolio__item -->
-          </div>
-
-          <div class="col-xs-6 col-sm-4 col-md-3">
-            <div class="portfolio__item">
-			  <a href="<%= page_path('contract_oracle') %>" >
-              <div class="portfolio-item__img">
-                  <%= image_tag "contract_120067810.jpg", class: "img-responsive" %>
-                  <div class="portfolio-item__mask">
-                    <div class="portfolio-item-mask__content">
-                      <div class="portfolio-item-mask__title">
-                        Contract Oracle
-                      </div>
-                      <div class="portfolio-item-mask__summary">
-                        An external data source can be linked to a P2SH address with a certain value set in the script. The script requires two keys to unlock the funds, one key held by the beneficiary, the other key held by a trusted Oracle whose job is to validate that the value conditions are met.
-                      </div>
-                    </div> <!-- / .portfolio-item-mask__content -->
-                  </div> <!-- / .portfolio-item__mask -->
-                <!--</a>-->
-              </div> <!-- / .portfolio-item__img -->
-			  </a>
-            </div> <!-- / .portfolio__item -->
-          </div>
-
-		<div class="col-xs-6 col-sm-4 col-md-3">
-            <div class="portfolio__item">
-			  <a href="<%= page_path('hashed_timelocked_contract') %>" >
-              <div class="portfolio-item__img">
-                  <%= image_tag "lightning-network-image.jpg", class: "img-responsive" %>
-                  <div class="portfolio-item__mask">
-                    <div class="portfolio-item-mask__content">
-                      <div class="portfolio-item-mask__title">
-                        Hashed Timelocked Contract
-                      </div>
-                      <div class="portfolio-item-mask__summary">
-                        Hashed Timelock Contract (HTLC) as proposed in the lightning.network paper. The receiver can include a 0 or 1 in the scriptSig to choose to enter through if or else branch.
-                      </div>
-                    </div> <!-- / .portfolio-item-mask__content -->
-                  </div> <!-- / .portfolio-item__mask -->
-                <!--</a>-->
-              </div> <!-- / .portfolio-item__img -->
-			  </a>
-            </div> <!-- / .portfolio__item -->
-          </div>
-
-          <div class="clearfix"></div>
-
-        </div> <!-- / .portfolio__items -->
-
       </div> <!-- / .section -->
 
 
@@ -245,11 +138,11 @@
         <div class="container">
           <div class="row">
             <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
-              <h4 class="heading">Lightning Network: a compelling use case for Bitcoin scripts</h4>
+              <h4 class="heading">Tumblebit: An Untrusted Bitcoin-Compatible Anonymous Payment Hub</h4>
               <p class="heading__sub">
-                The Lightning Network white paper ( draft version 0.5.9.1 dated November 20, 2015) describes a decentralized network for scalable, efficient payment channels. Transactions are sent over this routing network of micropayment channels whose transfer of value occurs off-blockchain. Bitcoin scripts enable time locked and hash locked transactions so that the payment protocol between users, via any number of Lightning Network hubs, remains trustless. This white paper by Joseph Poon and Thaddeus Dryja is probably the most important contribution since the invention of Bitcoin.
+                This paper presents TumbleBit, a new uni- directional unlinkable payment hub that is fully com- patible with today’s Bitcoin protocol. TumbleBit allows parties to make fast, anonymous, off-blockchain payments through an untrusted intermediary called the Tumbler. TumbleBit’s anonymity properties are similar to classic Chaumian eCash: no one, not even the Tumbler, can link a payment from its payer to its payee. Every payment made via TumbleBit is backed by bitcoins, and comes with a guarantee that Tumbler can neither violate anonymity, nor steal bitcoins, nor “print money” by issuing payments to itself.
               </p>
-              <a href="<%= products_path('lightningpaper.pdf') %>" class="btn btn-lg btn-primary heading__btn wow fadeInUp" >Download White Paper</a>
+              <a href="<%= products_path('tumblebitpaper.pdf') %>" class="btn btn-lg btn-primary heading__btn wow fadeInUp" >Download White Paper</a>
             </div>
           </div> <!-- / .row -->
         </div> <!-- / .container -->
@@ -261,97 +154,6 @@
 
       <!-- TEAM
       ============================== -->
-      <div class="section" id="team">
-        <div class="container">
-          <div class="row">
-            <div class="col-xs-12">
-              <h4 class="heading">Reach out</h4>
-              <p class="heading__sub">
-                I have developped this website to help you write smart contracts using Bitcoin scripts. If you want to suggest a script be added to this demo portfolio, please let me know.
-              </p>
-            </div>
-          </div> <!-- / .row -->
-          <div class="row">
-            <div class="col-md-10 col-md-offset-1">
-              <div class="row">
-                <div class="col-xs-6 col-sm-4">
-                  <div class="team__item">
-                    <div class="team-item__img">
-                    </div>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="team-item__name"></div>
-                        <div class="team-item__position"></div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="team-item__contact">
-                          <a class="team-item-contact__link" href="#">
-                          </a>
-                          <a class="team-item-contact__link team-item-contact__link_facebook" href="#">
-                          </a>
-                          <div class="clearfix"></div>
-                        </div>
-                      </div>
-                    </div> <!-- / .row -->
-                  </div> <!-- / .team__item --> 
-                </div>
-
-                <div class="col-xs-6 col-sm-4">
-                  <div class="team__item">
-                    <div class="team-item__img">
-                      <%= image_tag "team_2.jpg", class: "img-responsive" %>
-                    </div>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="team-item__name">Pierre Noizat</div>
-                        <div class="team-item__position">Script Writer & Coder</div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="team-item__contact">
-                          <a class="team-item-contact__link" href="https://twitter.com/intent/follow?original_referer=https%3A%2F%2Fabout.twitter.com%2Fresources%2Fbuttons&region=follow_link&screen_name=PierreNoizat&tw_p=followbutton" target="blank" >
-                            <i class="fa fa-twitter"></i>
-                          </a>
-                          <a href="https://github.com/pierrenoizat" class="team-item-contact__link team-item-contact__link_facebook" target="blank" >
-						  <!--<a href="https://fr-fr.facebook.com/Paymium" class="team-item-contact__link team-item-contact__link_facebook" target="blank" >-->
-                            <i class="fa fa-github"></i>
-                          </a>
-                          <div class="clearfix"></div>
-                        </div>
-                      </div>
-                    </div> <!-- / .row -->
-                  </div> <!-- / .team__item --> 
-                </div>
-
-                <div class="col-xs-6 col-sm-4">
-                  <div class="team__item">
-                    <div class="team-item__img">
-                    </div>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="team-item__name"></div>
-                        <div class="team-item__position"></div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="team-item__contact">
-                          <a class="team-item-contact__link" href="#">
-                          </a>
-                          <a class="team-item-contact__link team-item-contact__link_facebook" href="#">
-                          </a>
-                          <div class="clearfix"></div>
-                        </div>
-                      </div>
-                    </div> <!-- / .row -->
-                  </div> <!-- / .team__item --> 
-                </div>
-
-               
-
-              </div> <!-- / .row -->
-            </div>
-
-          </div> <!-- / .row -->
-        </div> <!-- / .container -->
-      </div> <!-- / .section -->
 
 
       <!-- SKILLS
@@ -376,7 +178,7 @@
         <div class="container">
           <div class="row">
             <div class="col-sm-6">
-              &copy; 2015-2017 Pierre Noizat - <a href="https://paymium.com" target="blank" >Paymium.com</a>. All Rights Reserved.
+              &copy; 2015-2017 <a href="https://paymium.com" target="blank" >Paymium.com</a>. All Rights Reserved.
             </div>
             <div class="col-sm-6">
               <div class="footer__social">
