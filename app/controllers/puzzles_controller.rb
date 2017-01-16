@@ -1,5 +1,7 @@
 class PuzzlesController < ApplicationController
 
+  include Crypto # module in /lib
+
   def index
     @puzzles = Puzzle.page(params[:page]).order(created_at: :asc) 
   end
@@ -7,7 +9,7 @@ class PuzzlesController < ApplicationController
   def show
     @puzzle = Puzzle.find(params[:id])
     @script =Script.find(@puzzle.script_id)
-    @puzzle.generate_bitcoin_key_pair
+    @puzzle.generate_epsilon_values # TODO: remove, this is for testing purposes only, testing puzzle model
   end
   
   def create_blinding_factors
