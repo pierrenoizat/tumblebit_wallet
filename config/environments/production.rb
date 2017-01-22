@@ -100,8 +100,8 @@ Rails.application.configure do
     :enable_starttls_auto  => true # changed from true 27 april 2013
   }
   
-  config.action_mailer.default_url_options = { host: 'bitcoinscri.pt' }
+  config.action_mailer.default_url_options = { host: 'tumble.band' }
 
-  $MAIN_URL = "http://bitcoinscri.pt"
+  $MAIN_URL = "http://tumble.band"
 
 end

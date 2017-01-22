@@ -23,8 +23,8 @@ development:
   mailchimp_list_id: <%= ENV["MAILCHIMP_LIST_ID"] %>
   tumbler_admin_uid: <%= ENV["TUMBLER_ADMIN_UID"] %>
   tumbler_rsa_private_key: <%= ENV["TUMBLER_RSA_PRIVATE_KEY"] %>
-  tumbler_btc_mpk: <%= ENV["MPK"] %>
-  tumbler_btc_msk: <%= ENV["MSK"] %>
+  tumbler_btc_mpk: <%= ENV["TBB_MPK"] %>
+  tumbler_btc_msk: <%= ENV["TBB_MSK"] %>
 
 production:
   <<: *default
@@ -38,5 +38,5 @@ production:
   mailchimp_list_id: <%= ENV["MAILCHIMP_LIST_ID"] %>
   tumbler_rsa_private_key: <%= ENV["TUMBLER_RSA_PRIVATE_KEY"] %>
   tumbler_admin_uid: <%= ENV["TUMBLER_ADMIN_UID"] %>
-  tumbler_btc_mpk: <%= ENV["MPK"] %>
-  tumbler_btc_msk: <%= ENV["MSK"] %>
+  tumbler_btc_mpk: <%= ENV["TBB_MPK"] %>
+  tumbler_btc_msk: <%= ENV["TBB_MSK"] %>

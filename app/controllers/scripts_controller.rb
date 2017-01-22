@@ -1,6 +1,8 @@
 class ScriptsController < ApplicationController
   before_filter :authenticate_user!, :except => [:index]
   before_filter :script_user?, :except => [:index, :new, :create, :puzzle_list]
+  
+  require 'btcruby/extensions'
 
   def index
     @scripts = Script.page(params[:page]).order(created_at: :asc) 
@@ -22,6 +24,19 @@ class ScriptsController < ApplicationController
         end
       end
       if @script.save
+        # generate Tumbler ephemeral ECDSA key in Fig 4 step 1 (setup)
+        @puzzle = Puzzle.create(:script_id => @script.id)
+        # if @script.tumbler_key.blank?
+          key = @puzzle.generate_bitcoin_key_pair # path : @puzzle.script_id/id
+          # @script.tumbler_key = BTC::Key.new(wif:key.to_wif)
+          @script.tumbler_key = key.to_wif # TODO encrypt using Tumbler RSA public key before saving.
+          @script.save
+        # end
+
+        # get corresponding public key
+        key = BTC::Key.new(wif:@script.tumbler_key)
+        @xpub = key.compressed_public_key.to_hex
+        
         redirect_to edit_script_path(@script), notice: 'Contract was successfully created.'
        else
         alert_string = ""
@@ -88,8 +103,9 @@ class ScriptsController < ApplicationController
         else
           @script.bob_pub_key_1 = ""
         end
-        if PublicKey.where(:script_id => @script.id, :name => "Tumbler").last
-          @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
+        if @script.tumbler_key
+          key = BTC::Key.new(wif: @script.tumbler_key)
+          @script.oracle_1_pub_key = key.compressed_public_key.to_hex
         else
           @script.oracle_1_pub_key = ""
         end
@@ -182,20 +198,16 @@ class ScriptsController < ApplicationController
         else
           @notice << "Invalid User Public Key. "
         end
-        if valid_pubkey?(@script.oracle_1_pub_key)
-          @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.oracle_1_pub_key, :name => "Tumbler")
-          @public_key.save
-        else
-          @notice << "Invalid Tumbler Public Key. "
-        end
+
         if PublicKey.where(:script_id => @script.id, :name => "Bob").last
           @script.bob_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Bob").last.compressed
         else
           @script.bob_pub_key_1 = ""
         end
         
-        if PublicKey.where(:script_id => @script.id, :name => "Tumbler").last
-          @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
+        if @script.tumbler_key
+          key = BTC::Key.new(wif: @script.tumbler_key)
+          @script.oracle_1_pub_key = key.compressed_public_key.to_hex
         else
           @script.oracle_1_pub_key = ""
         end
@@ -237,12 +249,12 @@ class ScriptsController < ApplicationController
         else
            @script.bob_pub_key_1 = ""
         end
-       if PublicKey.where(:script_id => @script.id, :name => "Tumbler").last
-         @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
-       else
-         @script.oracle_1_pub_key = ""
+       
+       unless @script.tumbler_key.blank?
+         key = BTC::Key.new(wif:@script.tumbler_key)
+         @xpub = key.compressed_public_key.to_hex
+         puts @script.tumbler_key
        end
-        
         render 'show_tumblebit_escrow_contract'
         
     end # of case statement
@@ -263,6 +275,7 @@ class ScriptsController < ApplicationController
     end
   end
   
+  
   def create_spending_tx
     @script = Script.find(params[:id])
     
@@ -280,7 +293,6 @@ class ScriptsController < ApplicationController
           @script.oracle_1_pub_key = ""
         end
         
-        
       when "tumblebit_escrow_contract"
         if PublicKey.where(:script_id => @script.id, :name => "Bob").last
           @script.bob_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Bob").last.compressed
@@ -291,9 +303,7 @@ class ScriptsController < ApplicationController
           @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
         else
           @script.oracle_1_pub_key = ""
-        end
-        
-        
+        end  
     end
     
     if @script.funded?
@@ -301,6 +311,102 @@ class ScriptsController < ApplicationController
     else
       redirect_to @script, alert: 'Contract not funded or already spent: no UTXO available.'
     end
+  end
+  
+  
+  def create_puzzle_z
+    
+    @script = Script.find(params[:id])
+    if @script_funded
+      @script.first_unspent_tx
+    else
+      redirect_to @script, alert: 'Contract not funded or already spent: no UTXO available.'
+    end
+    
+    if @script.puzzles.blank?
+      @puzzle = Puzzle.create(:script_id => @script.id)
+    else
+      @puzzle = @script.puzzles.last
+    end
+     
+    @tumbler_key = @script.tumbler_key # wif format string
+    @previous_index = @script.index.to_i  # 
+    @previous_id = @script.tx_hash
+
+    tx = BTC::Transaction.new
+    tx.lock_time = 1471199999 # some time in the past (2016-08-14)
+    tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
+                                            previous_index: @previous_index,
+                                            sequence: 0))
+    tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
+    
+    hashtype = BTC::SIGHASH_ALL
+    sighash = tx.signature_hash(input_index: 0,
+                                output_script: @funding_script,
+                                hash_type: hashtype)
+
+    tx.inputs[0].signature_script = BTC::Script.new
+    tx.inputs[0].signature_script << BTC::Script::OP_0
+
+      data = @tumbler_key.ecdsa_signature(sighash)
+      @tumbler_signature = BTC::Data.hex_from_data(data)
+      # encrypt Tumbler's signature for Bob with symetric encryption key stored in @script.contract
+      cipher = OpenSSL::Cipher::AES.new(128, :CBC)
+      cipher.encrypt
+      if @script.contract.blank?
+        key = cipher.random_key  # generate random AES encryption key
+        key_hex = key.to_hex
+        puts key_hex
+      
+        iv = cipher.random_iv # generate random AES initialization vector
+        iv_hex = iv.to_hex
+      
+        contract = key_hex + iv_hex  # epsilon, 128-bit key + 128-bit iv, total 256 bits
+        # TODO Encrypt epsilon before storing in database
+        @script.update(contract: contract) # store key + iv in @script contract attribute
+      else
+        contract = @script.contract
+      end
+      
+      key_hex = contract.to_s[0..31]
+      iv_hex = contract.to_s[32..63]
+      key = key_hex.from_hex
+      iv = iv_hex.from_hex
+      
+      cipher.key = key
+      cipher.iv = iv
+      encrypted = cipher.update(data) + cipher.final
+
+      decipher = OpenSSL::Cipher::AES.new(128, :CBC)
+      decipher.decrypt
+      decipher.key = key
+      decipher.iv = iv
+
+      plain = decipher.update(encrypted) + decipher.final
+      if data == plain
+        @tumbler_encrypted_signature = BTC::Data.hex_from_data(encrypted)
+      else
+        @tumbler_encrypted_signature = "Problem with signature encryption."
+      end
+      
+      # generate puzzle y by encrypting encryption key (@script.contract) with Tumbler RSA public key
+      m = contract.to_i(16)
+      modulus = $TUMBLER_RSA_PUBLIC_KEY
+      pubexp = $TUMBLER_RSA_PUBLIC_EXPONENT
+      puzzle = mod_pow(m,pubexp,modulus) # epsilon^e mod modulus
+      puts "puzzle: %x" % puzzle
+
+      # puzzle solution
+      d = Figaro.env.tumbler_rsa_private_key.to_i(16)
+      solution = mod_pow(puzzle,d,modulus) # puzzle^d mod modulus
+      puts solution
+      puts contract.to_s # solution should be equal to contract
+      
+      if @script.puzzles.blank?
+        @puzzle = Puzzle.create(:script_id => @script.id, :y => puzzle, :encrypted_signature => @tumbler_encrypted_signature)
+      else
+        @puzzle = @script.puzzles.last
+      end
   end
 
   def sign_tx

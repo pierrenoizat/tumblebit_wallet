@@ -51,7 +51,7 @@
 		<% end %></p>
 	
 	<% if @script.funded? %>
-		<p><%= link_to("Create Spending Tx", { controller: "scripts", action: "create_spending_tx" }, :class => "btn btn-primary") %></p>
+		<p><%= link_to("Create Puzzle z", { controller: "scripts", action: "create_puzzle_z" }, :class => "btn btn-primary") %></p>
 	<% else %>
 		<% if @script.hash_address %>
 			<p>No UTXO is available to create a spending transaction: contract is not funded yet or its previous funding has been spent.</p>

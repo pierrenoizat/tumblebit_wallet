@@ -7,7 +7,7 @@
 	<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></br>
 	Expiry in seconds since epoch time (1/1/1970): <%= @script.expiry_date.to_time.to_i %></p>
 
-	<p>Tumbler (Compressed) Public Key: <strong><%= @script.oracle_1_pub_key %></strong></p>
+	<p>Tumbler (Compressed) Public Key: <strong><%= @xpub %></strong></p>
 
 	<p>Bob (Compressed) Public Key: <strong><%= @script.bob_pub_key_1 %></strong></p>
 
@@ -27,26 +27,8 @@
 		<% if @script.hash_address %>
 			<p>No UTXO is available to create a spending transaction: contract is not funded yet or its previous funding has been spent.</p>
 		<% else %>
-			<p>Script requires public key(s):</p>
+			<p>Script requires Bob's public key:</p>
 			<% if @script.id %>
-				<% if @script.oracle_1_pub_key.blank? %>
-				<%= form_for([@script, @script.public_keys.build]) do |f| %>
-				<table class="table">
-			    	<tbody>
-			  		<tr>
-						<td><div class="field"><%= f.text_field :compressed, :style => "width:540px;", :placeholder => "02259B57015E60DE464E1D83C375BDD01D272290C51CEDE0B794301DE1B7770C7B" %></div></td>
-						<%= f.hidden_field :script_id, :value => @script.id %>
-						<%= f.hidden_field :name, :value => "Tumbler" %>
-			  			<td><div class="actions">
-			    		<%= f.submit "Add Service Public Key", :class => "btn btn-primary" %>
-						<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
-			                script_path, :class => 'btn' %></div></td>
-			  		</tr>
-				<% end %>
-			    	</tbody>
-
-				</table>
-				<% end %>
 				<% if @script.bob_pub_key_1.blank? %>
 				<%= form_for([@script, @script.public_keys.build]) do |f| %>
 				<table class="table">
@@ -56,9 +38,9 @@
 						<%= f.hidden_field :script_id, :value => @script.id %>
 						<%= f.hidden_field :name, :value => "Bob" %>
 			  			<td><div class="actions">
-			    		<%= f.submit "Add User Public Key", :class => "btn btn-primary" %>
+			    		<%= f.submit "Add Bob's Public Key", :class => "btn btn-primary" %>
 						<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
-			                script_path, :class => 'btn' %></div></td>
+			                scripts_path, :class => 'btn' %></div></td>
 			  		</tr>
 				<% end %>
 			    	</tbody>

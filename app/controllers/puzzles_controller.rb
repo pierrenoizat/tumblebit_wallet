@@ -13,7 +13,7 @@ class PuzzlesController < ApplicationController
   end
   
   def create_blinding_factors
-    # Fig. 2, steps 1,2,3
+    # Fig. 3, steps 1,2,3
     # Alice creates 300 values for Tumbler, mixing 15 real values with 285 fake values
     @puzzle = Puzzle.find(params[:id])
     @script =Script.find(@puzzle.script_id)
@@ -129,7 +129,7 @@ class PuzzlesController < ApplicationController
   
   
   def tumbler_encrypts_values
-    # Fig. 2, step 4
+    # Fig. 3, step 4
     @puzzle = Puzzle.find(params[:id])
     @script =Script.find(@puzzle.script_id)
     
@@ -232,7 +232,7 @@ class PuzzlesController < ApplicationController
   
   
   def tumbler_checks_ro_values
-    # Fig. 2, step 6
+    # Fig. 3, step 6
     @puzzle = Puzzle.find(params[:id])
     @script =Script.find(@puzzle.script_id)
     string = OpenSSL::Digest::SHA256.new.digest(@puzzle.id.to_s).unpack('H*').first[0..5]
@@ -307,7 +307,7 @@ class PuzzlesController < ApplicationController
   
   
   def sender_checks_k_values
-    # Fig 2, step 7
+    # Fig 3, step 7
     # Alice verifies now that h = H(k), computes s = Dec(k,c) and verifies also that s^^pk = beta
     
     @puzzle = Puzzle.find(params[:id])

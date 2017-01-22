@@ -32,6 +32,7 @@ Rails.application.routes.draw do
     resources :public_keys
       member do
         get 'create_spending_tx'
+        get 'create_puzzle_z'
         patch 'sign_tx'
         patch 'broadcast'
       end

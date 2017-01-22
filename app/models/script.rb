@@ -122,7 +122,11 @@ class Script < ActiveRecord::Base
         
     when "tumblebit_escrow_contract"
         self.bob_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Bob").last.compressed
-        self.oracle_1_pub_key = PublicKey.where(:script_id => self.id, :name => "Tumbler").last.compressed
+        unless self.tumbler_key.blank?
+        key = BTC::Key.new(wif: self.tumbler_key)
+        self.oracle_1_pub_key = key.compressed_public_key.to_hex
+        puts "Tumbler public key: #{self.oracle_1_pub_key}"
+        # self.oracle_1_pub_key = PublicKey.where(:script_id => self.id, :name => "Tumbler").last.compressed
         @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(self.oracle_1_pub_key))
         @user_key=BTC::Key.new(public_key:BTC.from_hex(self.bob_pub_key_1))
         @expire_at = Time.at(self.expiry_date.to_time.to_i)
@@ -140,6 +144,7 @@ class Script < ActiveRecord::Base
         @funding_script<<@tumbler_key.compressed_public_key
         @funding_script<<BTC::Script::OP_CHECKSIG
         @funding_script<<BTC::Script::OP_ENDIF
+      end
         
     end # of case statement
     return @funding_script
@@ -168,10 +173,11 @@ class Script < ActiveRecord::Base
           if PublicKey.where(:script_id => self.id, :name => "Bob").last
             self.bob_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Bob").last.compressed
           end
-          if PublicKey.where(:script_id => self.id, :name => "Tumbler").last
-            self.oracle_1_pub_key = PublicKey.where(:script_id => self.id, :name => "Tumbler").last.compressed
+          if self.tumbler_key
+            key = BTC::Key.new(wif: self.tumbler_key)
+            self.oracle_1_pub_key = key.compressed_public_key.to_hex
           end
-          if (self.bob_pub_key_1.blank? or self.oracle_1_pub_key.blank? )
+          if (self.bob_pub_key_1.blank? or self.tumbler_key.blank? )
             return nil # Script to Hash Address requires 2 keys.
           else
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
