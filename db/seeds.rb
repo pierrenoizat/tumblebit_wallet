@@ -13,7 +13,7 @@ Post.create(
   title: "About",
   published_at: Time.now,
   body: 
-  %Q{### About tumble.band
+  %Q{### About tumblebit.network
 
     A standard Bitcoin address works like a digital vault. There are one or more keys that allow key holders to release the coins by opening the vault.
     In addition to standard addresses, a certain type of Bitcoin addresses, known as Pay-to-Script-Hash or P2SH, require the knowledge of a redeem script.

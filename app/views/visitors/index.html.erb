@@ -21,18 +21,14 @@
             <div class="col-xs-12">
 
               <!-- Hero heading -->
-              <h1 class="heading hero__heading animated fadeInUp">Tumblebit Server Demo</h1>
+              <h1 class="heading hero__heading animated fadeInUp">Tumblebit Client Demo</h1>
 
               <!-- Hero subheading -->
               
                 <p class="heading__sub hero-heading__sub animated fadeInUp delay_1"><%= Client.count %> users: <strong><%= link_to "#{Puzzle.count} puzzle(s)", scripts_path %></strong></p>
 
               <!-- Hero buttons -->
-			<% if current_client or current_user %>
-			<a href="<%= new_script_path %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Create your Puzzle</a>
-			<% else %>
-			<a href="<%= new_client_registration_path %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Create your Puzzle</a>
-			<% end %>
+			<a href="<%= new_puzzle_path %>" class="hero__btn btn btn-lg btn-primary animated fadeInUp delay_2">Create your Puzzle</a>
 
             </div>
           </div> <!-- / .row -->
@@ -47,9 +43,9 @@
         <div class="container">
           <div class="row">
             <div class="col-xs-12">
-              <h4 class="heading">About tumble.band</h4>
+              <h4 class="heading">About tumblebit.network</h4>
               <p class="heading__sub">
-                tumble.band is a classic Bitcoin tumbler, mixing together the transfer of one bitcoin from each of n distinct payers (Alice) to n distinct payees (Bob). TumbleBit is run with the payment phase shrunk to 30 seconds, so the protocol runs in epochs that require two blocks added to the blockchain. tumble.band provides k-anonymity within an epoch: no one, not even the Tumbler, can link one of the k transfers that were successfully completed during the epoch to a specific pair of payer and payee (Alice, Bob).
+                tumblebit.network is a Tumblebit-compatible hosted wallet, mixing together the transfer of one bitcoin from each of n distinct payers (Alice) to n distinct payees (Bob). TumbleBit is run with the payment phase shrunk to 30 seconds, so the protocol runs in epochs that require two blocks added to the blockchain. tumble.band provides k-anonymity within an epoch: no one, not even the Tumbler, can link one of the k transfers that were successfully completed during the epoch to a specific pair of payer and payee (Alice, Bob).
               </p>
             </div>
           </div> <!-- / .row -->

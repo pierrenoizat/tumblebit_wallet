@@ -8,7 +8,7 @@ class ProductsController < ApplicationController
 
   private
   def identify_product
-    valid_characters = "^[0-9a-zA-Z]*$".freeze
+    valid_characters = "^[0-9a-zA-Z]*_$".freeze
     unless params[:id].blank?
       @product_id = params[:id]
       @product_id = @product_id.tr("^#{valid_characters}", '')

@@ -1,9 +1,9 @@
-tumble.band
+tumblebit.network
 ================
 
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
-This application allows users to create and send unlinkable Bitcoin transactions using the Tumblebit protocol.
+This Bitcoin wallet application allows users to create and send unlinkable Bitcoin transactions to and from a Tumblebit server.
 
 Problems? Issues?
 -----------

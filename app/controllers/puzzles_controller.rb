@@ -1,15 +1,169 @@
 class PuzzlesController < ApplicationController
 
   include Crypto # module in /lib
+  require 'csv'
 
   def index
     @puzzles = Puzzle.page(params[:page]).order(created_at: :asc) 
   end
   
+  def new
+    @puzzle = Puzzle.new
+  end
+  
   def show
     @puzzle = Puzzle.find(params[:id])
-    @script =Script.find(@puzzle.script_id)
-    @puzzle.generate_epsilon_values # TODO: remove, this is for testing purposes only, testing puzzle model
+    # @puzzle.generate_epsilon_values # TODO: remove, this is for testing purposes only, testing puzzle model
+    BTC::Network.default= BTC::Network.mainnet
+    @funding_script = BTC::Script.new
+    @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(@puzzle.tumbler_public_key))
+    @user_key=BTC::Key.new(public_key:BTC.from_hex("039DD14C371FBB1BCA9860942D14ED32897CF4ABF8312A6446EBF716774769441B")) # Public key previously shared with Tumbler
+    @expire_at = Time.at(@puzzle.expiry_date.to_time.to_i)
+    
+    @funding_script<<BTC::Script::OP_IF
+    @funding_script<<BTC::Script::OP_2
+    @funding_script<<@tumbler_key.compressed_public_key
+    @funding_script<<@user_key.compressed_public_key
+    @funding_script<<BTC::Script::OP_2
+    @funding_script<<BTC::Script::OP_CHECKMULTISIG
+    @funding_script<<BTC::Script::OP_ELSE
+    @funding_script<<BTC::WireFormat.encode_int32le(@expire_at.to_i)
+    @funding_script<<BTC::Script::OP_CHECKLOCKTIMEVERIFY
+    @funding_script<<BTC::Script::OP_DROP
+    @funding_script<<@tumbler_key.compressed_public_key
+    @funding_script<<BTC::Script::OP_CHECKSIG
+    @funding_script<<BTC::Script::OP_ENDIF
+    
+    @funded_address=BTC::ScriptHashAddress.new(redeem_script:@funding_script, network:BTC::Network.default)
+  end
+  
+  def create
+    @puzzle = Puzzle.new(puzzle_params)
+    # In Step 2, Bob generates 42 “real” payout addresses (keeps them secret for now) and prepares 42 distinct “real” transactions.
+
+    if @puzzle.real_indices.blank?
+      real_indices = []
+      prng = Random.new
+      while real_indices.count < 42
+        j = prng.rand(0..83)
+        unless real_indices.include? j
+          real_indices << j
+        end
+      end
+      @puzzle.real_indices = real_indices
+      @puzzle.save # save indices of real values to @puzzle.real_indices
+    end
+    puts "Real indices: #{@puzzle.real_indices}"
+    
+    keychain = BTC::Keychain.new(xprv:Figaro.env.tumbler_btc_msk)
+    salt = Figaro.env.tumblebit_salt
+    beta = []
+    real_indices.each do |i|
+      index = (salt.to_i + @puzzle.id.to_i + i) % 0x80000000
+      key = keychain.derived_keychain("8/#{index}").key
+      puts key.address # compressed address
+      @previous_id = @puzzle.escrow_txid
+      @previous_index = 0
+      
+      string = "https://api.blockcypher.com/v1/btc/main/txs/" + @previous_id 
+      @agent = Mechanize.new
+
+      begin
+        page = @agent.get string
+      rescue Exception => e
+        page = e.page
+      end
+
+      data = page.body
+      result = JSON.parse(data)
+      
+      @value = result["total"]
+      tx = BTC::Transaction.new
+      tx.lock_time = 1471199999 # some time in the past (2016-08-14)
+      tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id, # UTXO is "escrow" P2SH funded by Tumbler
+                                              previous_index: @previous_index,
+                                              sequence: 0))
+      tx.add_output(BTC::TransactionOutput.new(value: @value, script: key.address.script))
+
+      hashtype = BTC::SIGHASH_ALL
+      
+      BTC::Network.default= BTC::Network.mainnet
+      @funding_script = BTC::Script.new
+
+      puts "Tumbler public key: #{@puzzle.tumbler_public_key}"
+      # self.oracle_1_pub_key = PublicKey.where(:script_id => self.id, :name => "Tumbler").last.compressed
+      @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(@puzzle.tumbler_public_key))
+      @user_key=BTC::Key.new(public_key:BTC.from_hex("039DD14C371FBB1BCA9860942D14ED32897CF4ABF8312A6446EBF716774769441B")) # Public key previously shared with Tumbler
+      @expire_at = Time.at(@puzzle.expiry_date.to_time.to_i)
+      
+      @funding_script<<BTC::Script::OP_IF
+      @funding_script<<BTC::Script::OP_2
+      @funding_script<<@tumbler_key.compressed_public_key
+      @funding_script<<@user_key.compressed_public_key
+      @funding_script<<BTC::Script::OP_2
+      @funding_script<<BTC::Script::OP_CHECKMULTISIG
+      @funding_script<<BTC::Script::OP_ELSE
+      @funding_script<<BTC::WireFormat.encode_int32le(@expire_at.to_i)
+      @funding_script<<BTC::Script::OP_CHECKLOCKTIMEVERIFY
+      @funding_script<<BTC::Script::OP_DROP
+      @funding_script<<@tumbler_key.compressed_public_key
+      @funding_script<<BTC::Script::OP_CHECKSIG
+      @funding_script<<BTC::Script::OP_ENDIF
+      
+      @funded_address=BTC::ScriptHashAddress.new(redeem_script:@funding_script, network:BTC::Network.default)
+      puts @funded_address
+      
+      sighash = tx.signature_hash(input_index: 0,
+                                  output_script: @funding_script,
+                                  hash_type: hashtype)
+      beta[i] = sighash.unpack('H*')[0]
+    end
+    
+    # In Step 3, Bob picks a random secret 256-bit blinding factor r and prepares 42 “fake” transactions.
+    r = Random.new.bytes(32).unpack('H*')[0].to_i(16) # 256-bit random integer
+    @puzzle.r = r
+    
+    puts @tumbler_key.address # Tumbler compressed address
+    
+    # Fake transaction i pays Tumbler  compressed Bitcoin address 1 BTC in output 0 
+    # with an OP_RETURN output (output 1) bearing r || i. 
+    # No network fee is implied in the fake transaction.
+
+    for i in 0..83
+      unless @puzzle.real_indices.include? i.to_s
+        index = r+i
+        @op_return_script = BTC::Script.new(op_return: index.to_s)
+        tx = BTC::Transaction.new
+        tx.lock_time = 1471199999 # some time in the past (2016-08-14)
+        tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id, # UTXO is "escrow" P2SH funded by Tumbler
+                                              previous_index: @previous_index,
+                                              sequence: 0))
+        tx.add_output(BTC::TransactionOutput.new(value: @value, script: @tumbler_key.address.script))
+        tx.add_output(BTC::TransactionOutput.new(value: 0, script: @op_return_script))
+
+        hashtype = BTC::SIGHASH_ALL
+        sighash = tx.signature_hash(input_index: 0,
+                                    output_script: @funding_script,
+                                    hash_type: hashtype)
+        beta[i] = sighash.unpack('H*')[0]
+      end
+    end
+    puts beta.count
+    @puzzle.beta_values = beta
+    @puzzle.save
+    puts beta
+    
+    if File.exists?("app/views/products/beta_values_#{@funded_address}.csv")
+      File.delete("app/views/products/beta_values_#{@funded_address}.csv") # delete any previous version of file
+    end
+    
+    CSV.open("app/views/products/beta_values_#{@funded_address}.csv", "ab") do |csv|
+      beta.each do |b|
+        csv << [b]
+        end
+      end # of CSV.open (writing to beta_values_#{@funded_address}.csv)
+    
+    redirect_to @puzzle, notice: 'Puzzle was successfully created.'
   end
   
   def create_blinding_factors
@@ -417,7 +571,7 @@ class PuzzlesController < ApplicationController
   private
  
      def puzzle_params
-       params.require(:puzzle).permit(:script_id, :y, :encrypted_signature)
+       params.require(:puzzle).permit(:script_id, :y, :encrypted_signature, :escrow_txid, :tumbler_public_key, :expiry_date)
      end
 
 end

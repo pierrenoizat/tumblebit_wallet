@@ -1,0 +1,32 @@
+<div class="container">
+  <div class="row">
+	<h1>Create Puzzle</h1>
+	<%= form_for(@puzzle, multipart: true) do |f| %>
+	
+	<div class="field">
+    <p><%= f.label 'Expiry' %></p>
+	<p>Present Time: <%= Time.now.strftime("%Y-%b-%d - %H:%M") %></p>
+    <p><%= f.datetime_select(:expiry_date, {:start_year => Date.today.year, :end_year => 2024, :default => @puzzle.expiry_date, :use_two_digit_numbers => true, :prompt => {:day => "day", :month => "month", :year => "year", :hour => "hour", :minute => "minute"}}, {:style => "width: 80px;"}) %></p>
+  </div>
+	
+	<div class="field">
+		<p><%= f.label 'Escrow Transaction Id' %></br>
+		<%= f.text_field :escrow_txid, :style => "width:540px;", :placeholder => "ea03867e533c4a4af9d766e650d6b27320ad851d17bc495832116bdd5a4acfcc" %></p>
+	</div>
+	
+	<div class="field">
+		<p><%= f.label 'Tumbler (Compressed) Public Key' %></br>
+		<%= f.text_field :tumbler_public_key, :style => "width:540px;", :placeholder => "026964dcab435d3e3d2cb046e28caf8566ada35233a68b65a9769ee229a4f99003" %></p>
+	</div>
+	
+	<%= f.submit 'Create Puzzle', :class => "btn btn-primary" %>
+
+	<% end %>
+</br>
+   </div>
+</div>
+
+<% if user_admin? %>
+<td><%= link_to "Edit", edit_puzzle_path(puzzle), :class => 'btn btn-xs btn-success' %></td>
+<td><%= link_to "Delete", puzzle_path(puzzle), :data => { :confirm => "Are you sure?" }, :method => :delete, :class => 'btn btn-xs btn-danger' %></td>
+<% end %>

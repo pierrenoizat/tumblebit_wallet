@@ -23,7 +23,7 @@ class Puzzle < ActiveRecord::Base
     end
     
     def generate_bitcoin_key_pair
-      require 'btcruby/extensions'
+      # require 'btcruby/extensions'
       keychain = BTC::Keychain.new(xprv:Figaro.env.tumbler_btc_msk)
       key = keychain.derived_keychain("#{self.script_id}/#{self.id}").key
       puts key.address # compressed address

@@ -1,8 +1,6 @@
-<% script = Script.find(puzzle.script_id) %>
-<td><%= link_to script.title, puzzle_path(puzzle) %></td>
-<td><%= script.refund_address %></td>
-<td><%= script.hash_address %></td>
+<td><%= puzzle.escrow_txid %></td>
+
 <% if user_admin? %>
-<td><%= link_to "Edit", edit_script_path(script), :class => 'btn btn-xs btn-success' %></td>
-<td><%= link_to "Delete", script_path(script), :data => { :confirm => "Are you sure?" }, :method => :delete, :class => 'btn btn-xs btn-danger' %></td>
+<td><%= link_to "Edit", edit_puzzle_path(puzzle), :class => 'btn btn-xs btn-success' %></td>
+<td><%= link_to "Delete", puzzle_path(puzzle), :data => { :confirm => "Are you sure?" }, :method => :delete, :class => 'btn btn-xs btn-danger' %></td>
 <% end %>
