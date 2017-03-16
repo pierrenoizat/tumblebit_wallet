@@ -5,7 +5,8 @@ class ScriptsController < ApplicationController
   require 'btcruby/extensions'
 
   def index
-    @scripts = Script.page(params[:page]).order(created_at: :asc) 
+    @scripts = Script.page(params[:page]).order(created_at: :asc)
+    @puzzle = Puzzle.new
   end
   
   def new

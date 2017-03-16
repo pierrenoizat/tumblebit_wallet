@@ -2,6 +2,37 @@
   <div class="row">
     <h3>Contracts</h3>
     <div class="column">
+	
+		<p><h4>Search for your puzzle with its access code y: </h4>
+
+		<%= form_tag(puzzles_path, :method => "get", id: "search-form") do %>
+		  <%= text_field_tag :search, params[:search], placeholder: "b2aeac0d6d50bf63b01522936b9bcf58ef7dd196cefff6ba80d470d125e4f24501cc2305dca1a34e344b59ae1a8251e47a1c2da52fd7630303856cbf729ec0ffe2b27365b3cd49f2e4bbedd2a4b7b4563181a1073e6b099fffb1a9beb5f5710c1afeff06ee38b4250bd069dfc4bcddc47495837272a35268e794e6c5919dc136", style: "width:300px;" %>
+		  <%= submit_tag "Search", :name => nil, :class => 'btn btn-default btn-xs' %>
+		<% end %></p>
+		
+		<p><h4>or create your puzzle with its y code</h4>
+		<%= form_for(@puzzle, multipart: true) do |f| %>
+
+		<div class="field">
+			<p><%= f.label 'Access code y received from Bob' %></br>
+			<%= f.text_field :y, :style => "width:540px;", :placeholder => "b2aeac0d6d50bf63b01522936b9bcf58ef7dd196cefff6ba80d470d125e4f24501cc2305dca1a34e344b59ae1a8251e47a1c2da52fd7630303856cbf729ec0ffe2b27365b3cd49f2e4bbedd2a4b7b4563181a1073e6b099fffb1a9beb5f5710c1afeff06ee38b4250bd069dfc4bcddc47495837272a35268e794e6c5919dc136" %></p>
+		</div>
+
+		<div class="field">
+	    <p><%= f.label 'Expiry' %></p>
+		<p>Present Time: <%= Time.now.strftime("%Y-%b-%d - %H:%M") %></p>
+	    <p><%= f.datetime_select(:expiry_date, {:start_year => Date.today.year, :end_year => 2024, :default => @puzzle.expiry_date, :use_two_digit_numbers => true, :prompt => {:day => "day", :month => "month", :year => "year", :hour => "hour", :minute => "minute"}}, {:style => "width: 80px;"}) %></p>
+	  </div>
+
+		<div class="field">
+			<p><%= f.label 'Tumbler (Compressed) Public Key' %></br>
+			<%= f.text_field :tumbler_public_key, :style => "width:540px;", :placeholder => "026964dcab435d3e3d2cb046e28caf8566ada35233a68b65a9769ee229a4f99003" %></p>
+		</div>
+
+		<%= f.submit 'Create Puzzle', :class => "btn btn-primary" %>
+
+		<% end %></p>
+	
       <table class="table">
         <tbody>
           <% @scripts.each do |script| %>

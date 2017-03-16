@@ -1,7 +1,11 @@
 <div class="container">
   <div class="row">
-    <h3> Confirmed Puzzles</h3>
+    <h3> Puzzles In Progress</h3>
     <div class="column">
+		<%= form_tag(posts_path, :method => "get", id: "search-form") do %>
+		<%= text_field_tag :search, params[:search], placeholder: "Search Puzzle by y" %>
+		<%= submit_tag "Search" %>
+		<% end %>
       <table class="table">
         <tbody>
           <% @puzzles.each do |puzzle| %>

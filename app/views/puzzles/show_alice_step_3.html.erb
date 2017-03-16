@@ -1,7 +1,7 @@
 <div class="container">
   <div class="row">
 	<h3>Tumblebit Puzzle # <%= @puzzle.id if @puzzle %>: <%= @script.title if @script %></h3>
-	<p>P2SH Address: <strong><%= @funded_address %></strong></p>
+	<p>P2SH Address: <strong><%= @puzzle.funded_address %></strong></p>
 	<p>P2SH Tx ID: <strong><%= @puzzle.escrow_txid if @puzzle %></strong></p>
 
 	<p>Expiry: <strong><%= Time.at(@puzzle.expiry_date.to_time.to_i).utc %></strong></br>
@@ -13,7 +13,7 @@
 	
 	<p>Tumbler RSA Public Key:</p><pre style="width:600px"><code><%= $TUMBLER_RSA_PUBLIC_KEY.to_s(16) %></code></pre>
 	
-		<p><a href="<%= products_path("beta_values_#{@puzzle.funded_address}.csv") %>" class="btn btn-lg btn-primary heading__btn wow fadeInUp" >Download File with 84 beta values for Tumbler </a> | <%=link_to "Bob Checks Tumbler Fake Epsilon", bob_step_8_puzzle_path(@puzzle), :class => "btn btn-primary" %> | <%=link_to "Bob Checks Tumbler RSA Quotients", bob_step_10_puzzle_path(@puzzle), :class => "btn btn-primary" %> | <%=link_to "Alice checks Tumbler's k values", alice_step_7_puzzle_path(@puzzle), :class => "btn btn-primary" %></p>
+		<p><a href="<%= products_path(@beta_filename) %>" class="btn btn-lg btn-primary heading__btn wow fadeInUp" >Download File with 300 beta values for Tumbler </a></p>
 	
 	</div>
 </div>

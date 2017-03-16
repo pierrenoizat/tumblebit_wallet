@@ -21,9 +21,12 @@ Rails.application.routes.draw do
   resources :clients
   resources :puzzles do
     member do
+      get 'bob_step_2'
+      get 'bob_step_8'
+      get 'bob_step_10'
       get 'tumbler_encrypts_values'
       get 'tumbler_checks_ro_values'
-      get 'sender_checks_k_values'
+      get 'alice_step_7'
     end
   end
   

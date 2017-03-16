@@ -3,12 +3,30 @@ class ApplicationController < ActionController::Base
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
 
+  include ActionView::Helpers::TextHelper
+
   helper_method :current_user
   helper_method :user_signed_in?
   helper_method :correct_user?
   helper_method :user_admin?
   helper_method :script_user?
   helper_method :valid_pubkey?
+  helper_method :truncated
+  
+  
+  def truncated(string)
+    if string and string.size >25
+      end_string = string[-4,4] # keeps only last 4 caracters
+      truncated_string = truncate(string, length: 8, omission: '...') + end_string # keeps only first 5 caracters, with 3 dots (total length 8)
+    else
+      if string 
+        truncated_string = string
+      else
+        truncated_string = ''
+      end
+    end
+  end
+  
 
   private
   
