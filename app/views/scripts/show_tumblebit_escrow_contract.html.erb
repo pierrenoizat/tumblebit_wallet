@@ -1,15 +1,15 @@
 <div class="container">
   <div class="row">
-	<h3>Tumblebit Escrow Contract # <%= @script.id if @script %>: <%= @script.title if @script.title %></h3>
+	<h3>Payment Request # <%= @script.id if @script %>: <%= @script.title if @script.title %></h3>
 	<p>Script:</p><pre style="width:600px"><code><%= @script.description if @script %></code></pre>
 
 	<!--<p>Expiry: <%= @script.expiry_date if @script %></p>-->
 	<p>Expiry: <strong><%= Time.at(@script.expiry_date.to_time.to_i).utc %></strong></br>
 	Expiry in seconds since epoch time (1/1/1970): <%= @script.expiry_date.to_time.to_i %></p>
 
-	<p>Tumbler (Compressed) Public Key: <strong><%= @xpub %></strong></p>
+	<p>Tumbler (Compressed) Public Key: <strong><%= @script.tumbler_key %></strong></p>
 
-	<p>Bob (Compressed) Public Key: <strong><%= @script.bob_pub_key_1 %></strong></p>
+	<p>Bob (Compressed) Public Key: <strong><%= @script.bob_public_key %></strong></p>
 
 	<p>P2SH Address: 
 		<% if @script.funded? %>
@@ -22,7 +22,7 @@
 		<% end %></p>
 	
 	<% if @script.funded? %>
-		<p><%= link_to("Create Puzzle", { controller: "scripts", action: "create_spending_tx" }, :class => "btn btn-primary") %></p>
+		<p><%= link_to("Create 84 beta values for Tumbler", { controller: "scripts", action: "bob_step_2" }, :class => "btn btn-primary") %></p>
 	<% else %>
 		<% if @script.hash_address %>
 			<p>No UTXO is available to create a spending transaction: contract is not funded yet or its previous funding has been spent.</p>

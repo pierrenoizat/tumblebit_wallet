@@ -1,9 +1,9 @@
 <%# add navigation links to this file %>
-  <li><a href="<%= puzzles_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Confirmed Puzzles</a></li>
-  <li><a href="<%= puzzles_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Puzzles In Progress</a></li>
+  <li><a href="<%= puzzles_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Payments</a></li>
+  <li><a href="<%= scripts_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Payment Requests</a></li>
   <li><a href="<%= page_path('about') %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >About</a></li>
-  <li><a href="<%= new_script_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >New Contract</a></li>
-<li><a href="<%= scripts_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Contracts</a></li>
+  <li><a href="<%= new_script_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Request</a></li>
+  <li><a href="<%= new_puzzle_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Send</a></li>
 
 <% if client_signed_in? %>
   <li><a href="<%= destroy_client_session_path %>" data-method="delete" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Log out</a></li>

@@ -3,6 +3,7 @@ class Puzzle < ActiveRecord::Base
     require 'btcruby/extensions'
     include Crypto # module in /lib
     
+    attr_accessor :solution
     
     def self.search(query)
       where("y like ?", "%#{query}%") 
@@ -108,7 +109,7 @@ class Puzzle < ActiveRecord::Base
       key = keychain.derived_keychain("8/#{index}").key
       @previous_id = self.escrow_txid
       @previous_index = 0
-      @value = self.escrow_amount
+      @value = self.escrow_amount - $NETWORK_FEE # in satoshis
       tx = BTC::Transaction.new
       tx.lock_time = 1471199999 # some time in the past (2016-08-14)
       tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id, # UTXO is "escrow" P2SH funded by Tumbler

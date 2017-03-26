@@ -21,19 +21,19 @@ Rails.application.routes.draw do
   resources :clients
   resources :puzzles do
     member do
-      get 'bob_step_2'
       get 'bob_step_8'
       get 'bob_step_10'
       get 'tumbler_encrypts_values'
       get 'tumbler_checks_ro_values'
       get 'alice_step_7'
+      get 'bob_gets_sigma'
     end
   end
   
   resources :scripts do
     resources :public_keys
       member do
-        get 'create_spending_tx'
+        get 'bob_step_2'
         get 'create_puzzle_z'
         patch 'sign_tx'
         patch 'broadcast'

@@ -27,6 +27,61 @@ class Script < ActiveRecord::Base
   
   self.per_page = 10
   
+  
+  def real_btc_tx_sighash(i)
+    @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(self.tumbler_key))
+    keychain = BTC::Keychain.new(xprv:Figaro.env.tumbler_btc_mpk)  # TODO: replace with Bob's mpk
+    salt = Figaro.env.tumblebit_salt
+    index = (salt.to_i + self.id.to_i + i.to_i) % 0x80000000
+    key = keychain.derived_keychain("8/#{index}").key
+    @previous_id = self.escrow_txid
+    @previous_index = 0
+    @value = self.escrow_amount - $NETWORK_FEE # in satoshis
+    tx = BTC::Transaction.new
+    tx.lock_time = 1471199999 # some time in the past (2016-08-14)
+    tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id, # UTXO is "escrow" P2SH funded by Tumbler
+                                            previous_index: @previous_index,
+                                            sequence: 0))
+    tx.add_output(BTC::TransactionOutput.new(value: @value, script: key.address.script))
+    hashtype = BTC::SIGHASH_ALL
+    sighash = tx.signature_hash(input_index: 0,
+                                output_script: self.funding_script,
+                                hash_type: hashtype)
+    beta = sighash.unpack('H*')[0]
+  end
+  
+  
+  def fake_btc_tx_sighash(i)
+    @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(self.tumbler_key))
+    if self.r
+      r = self.r.to_i
+    else
+      r = Random.new.bytes(32).unpack('H*')[0].to_i(16) # 256-bit random integer
+      self.r = r
+      self.save
+    end
+    index = r+i
+    @previous_id = self.escrow_txid
+    @previous_index = 0
+    @value = self.escrow_amount # in satoshis
+    hashtype = BTC::SIGHASH_ALL
+    @op_return_script = BTC::Script.new(op_return: index.to_s)
+    tx = BTC::Transaction.new
+    tx.lock_time = 1471199999 # some time in the past (2016-08-14)
+    tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id, # UTXO is "escrow" P2SH funded by Tumbler
+                                          previous_index: @previous_index,
+                                          sequence: 0))
+    tx.add_output(BTC::TransactionOutput.new(value: @value, script: @tumbler_key.address.script))
+    tx.add_output(BTC::TransactionOutput.new(value: 0, script: @op_return_script))
+
+    hashtype = BTC::SIGHASH_ALL
+    sighash = tx.signature_hash(input_index: 0,
+                                output_script: self.funding_script,
+                                hash_type: hashtype)
+    beta = sighash.unpack('H*')[0]
+  end
+  
+  
   def description
     case self.category
         
@@ -121,14 +176,9 @@ class Script < ActiveRecord::Base
         
         
     when "tumblebit_escrow_contract"
-        self.bob_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Bob").last.compressed
-        unless self.tumbler_key.blank?
-        key = BTC::Key.new(wif: self.tumbler_key)
-        self.oracle_1_pub_key = key.compressed_public_key.to_hex
-        puts "Tumbler public key: #{self.oracle_1_pub_key}"
-        # self.oracle_1_pub_key = PublicKey.where(:script_id => self.id, :name => "Tumbler").last.compressed
-        @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(self.oracle_1_pub_key))
-        @user_key=BTC::Key.new(public_key:BTC.from_hex(self.bob_pub_key_1))
+
+        @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(self.tumbler_key))
+        @user_key=BTC::Key.new(public_key:BTC.from_hex(self.bob_public_key))
         @expire_at = Time.at(self.expiry_date.to_time.to_i)
         
         @funding_script<<BTC::Script::OP_IF
@@ -144,7 +194,6 @@ class Script < ActiveRecord::Base
         @funding_script<<@tumbler_key.compressed_public_key
         @funding_script<<BTC::Script::OP_CHECKSIG
         @funding_script<<BTC::Script::OP_ENDIF
-      end
         
     end # of case statement
     return @funding_script
@@ -171,13 +220,12 @@ class Script < ActiveRecord::Base
           
         when "tumblebit_escrow_contract"
           if PublicKey.where(:script_id => self.id, :name => "Bob").last
-            self.bob_pub_key_1 = PublicKey.where(:script_id => self.id, :name => "Bob").last.compressed
+            self.bob_public_key = PublicKey.where(:script_id => self.id, :name => "Bob").last.compressed
           end
           if self.tumbler_key
-            key = BTC::Key.new(wif: self.tumbler_key)
-            self.oracle_1_pub_key = key.compressed_public_key.to_hex
+            self.oracle_1_pub_key = self.tumbler_key
           end
-          if (self.bob_pub_key_1.blank? or self.tumbler_key.blank? )
+          if (self.bob_public_key.blank? or self.tumbler_key.blank? )
             return nil # Script to Hash Address requires 2 keys.
           else
             funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
@@ -246,7 +294,7 @@ class Script < ActiveRecord::Base
 
       virgin = (result['data']['nb_txs'] == 0)
       puts "Number of transactions= #{result['data']['nb_txs']}"
-      string = $BLOCKR_ADDRESS_UNSPENT_URL + self.hash_address.to_s + + "?unconfirmed=1"
+      string = $BLOCKR_ADDRESS_UNSPENT_URL + self.hash_address.to_s + "?unconfirmed=1"
       @agent = Mechanize.new
 
       begin
@@ -265,6 +313,7 @@ class Script < ActiveRecord::Base
     end
     return virgin
   end
+  
   
   def expired?
     if (self.expiry_date and (["tumblebit_puzzle", "tumblebit_escrow_contract"].include? self.category))
@@ -291,7 +340,7 @@ class Script < ActiveRecord::Base
     if !result['data']['unspent'].blank?
       self.tx_hash = result['data']['unspent'][0]['tx']
       self.index = result['data']['unspent'][0]['n']
-      self.amount = result['data']['unspent'][0]['amount']
+      self.amount = result['data']['unspent'][0]['amount'] # amount in BTC
       self.confirmations = result['data']['unspent'][0]['confirmations']
       puts "Tx hash: #{self.tx_hash}"
       return true

@@ -2,10 +2,12 @@ class ScriptsController < ApplicationController
   before_filter :authenticate_user!, :except => [:index]
   before_filter :script_user?, :except => [:index, :new, :create, :puzzle_list]
   
+  include Crypto # module in /lib
+  require 'csv'
   require 'btcruby/extensions'
 
   def index
-    @scripts = Script.page(params[:page]).order(created_at: :asc)
+    @scripts = Script.where(:category => "tumblebit_escrow_contract").page(params[:page]).order(created_at: :asc)
     @puzzle = Puzzle.new
   end
   
@@ -24,19 +26,34 @@ class ScriptsController < ApplicationController
           redirect_to new_script_path, alert: "Contract could not be created: please sign in first."
         end
       end
+      
+      real_indices = []
+      if @script.real_indices.blank?
+        prng = Random.new
+        while real_indices.count < 42
+          j = prng.rand(0..83)
+          unless real_indices.include? j
+            real_indices << j
+          end
+        end
+        @script.real_indices = real_indices
+      end
+      real_indices = @script.real_indices
+      puts "Real indices: #{real_indices}"
+      
       if @script.save
         # generate Tumbler ephemeral ECDSA key in Fig 4 step 1 (setup)
         @puzzle = Puzzle.create(:script_id => @script.id)
         # if @script.tumbler_key.blank?
-          key = @puzzle.generate_bitcoin_key_pair # path : @puzzle.script_id/id
+          # key = @puzzle.generate_bitcoin_key_pair # path : @puzzle.script_id/id
           # @script.tumbler_key = BTC::Key.new(wif:key.to_wif)
-          @script.tumbler_key = key.to_wif # TODO encrypt using Tumbler RSA public key before saving.
-          @script.save
+          # @script.tumbler_key = key.to_wif # TODO encrypt using Tumbler RSA public key before saving.
+          # @script.save
         # end
 
         # get corresponding public key
-        key = BTC::Key.new(wif:@script.tumbler_key)
-        @xpub = key.compressed_public_key.to_hex
+        # key = BTC::Key.new(wif:@script.tumbler_key)
+        # @xpub = key.compressed_public_key.to_hex
         
         redirect_to edit_script_path(@script), notice: 'Contract was successfully created.'
        else
@@ -47,7 +64,7 @@ class ScriptsController < ApplicationController
         end
         redirect_to new_script_path, alert: alert_string
       end
-  end
+  end  # of create
   
 
   def edit
@@ -113,7 +130,7 @@ class ScriptsController < ApplicationController
         render :template => 'scripts/edit_tumblebit_escrow_contract' 
         
     end
-  end
+  end # of edit
   
 
   def update
@@ -193,22 +210,21 @@ class ScriptsController < ApplicationController
           end
         
       when "tumblebit_escrow_contract"
-        if valid_pubkey?(@script.bob_pub_key_1)
-          @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.bob_pub_key_1, :name => "Bob")
+        if valid_pubkey?(@script.bob_public_key)
+          @public_key = PublicKey.new(:script_id => @script.id, :compressed => @script.bob_public_key, :name => "Bob")
           @public_key.save
         else
           @notice << "Invalid User Public Key. "
         end
 
         if PublicKey.where(:script_id => @script.id, :name => "Bob").last
-          @script.bob_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Bob").last.compressed
+          @script.bob_public_key = PublicKey.where(:script_id => @script.id, :name => "Bob").last.compressed
         else
-          @script.bob_pub_key_1 = ""
+          @script.bob_public_key = ""
         end
         
         if @script.tumbler_key
-          key = BTC::Key.new(wif: @script.tumbler_key)
-          @script.oracle_1_pub_key = key.compressed_public_key.to_hex
+          @script.oracle_1_pub_key = @script.tumbler_key
         else
           @script.oracle_1_pub_key = ""
         end
@@ -252,8 +268,7 @@ class ScriptsController < ApplicationController
         end
        
        unless @script.tumbler_key.blank?
-         key = BTC::Key.new(wif:@script.tumbler_key)
-         @xpub = key.compressed_public_key.to_hex
+         @xpub = @script.tumbler_key
          puts @script.tumbler_key
        end
         render 'show_tumblebit_escrow_contract'
@@ -277,42 +292,54 @@ class ScriptsController < ApplicationController
   end
   
   
-  def create_spending_tx
+  def bob_step_2
+    # Steps 2 and 3 in Tumbler-Bob interactions, performed by Bob
+    # Bob generates 42 “real” payout addresses (keeps them secret for now) and prepares 42 distinct “real” transactions.
     @script = Script.find(params[:id])
+    @puzzle = @script.puzzles.last
     
-    case @script.category
-      
-      when "tumblebit_puzzle"
-        if PublicKey.where(:script_id => @script.id, :name => "Alice").last
-          @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last.compressed
-        else
-          @script.alice_pub_key_1 = ""
-        end
-        if PublicKey.where(:script_id => @script.id, :name => "Tumbler").last
-          @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
-        else
-          @script.oracle_1_pub_key = ""
-        end
-        
-      when "tumblebit_escrow_contract"
-        if PublicKey.where(:script_id => @script.id, :name => "Bob").last
-          @script.bob_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Bob").last.compressed
-        else
-          @script.bob_pub_key_1 = ""
-        end
-        if PublicKey.where(:script_id => @script.id, :name => "Tumbler").last
-          @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
-        else
-          @script.oracle_1_pub_key = ""
-        end  
-    end
-    
-    if @script.funded?
-      @script.first_unspent_tx
+    if File.exists?("app/views/products/beta_values_#{@script.hash_address}.csv")
+      redirect_to @script, alert: 'Beta values file already exists.'
     else
-      redirect_to @script, alert: 'Contract not funded or already spent: no UTXO available.'
+      real = []
+      @script.real_indices.each do |ri|
+        real << ri.strip # avoid problems with extra leading or trailing space caracters
+      end
+      puts "Real indices: #{real}"
+      @script.first_unspent_tx
+      @script.escrow_amount = ( @script.amount.to_f*BTC::COIN ).to_i # amount in satoshis
+      @script.escrow_txid = @script.tx_hash
+      beta = []
+      real.each do |i|
+        beta[i.to_i] = @script.real_btc_tx_sighash(i.to_i)
+      end
+    
+      # In Step 3, Bob picks a random secret 256-bit blinding factor r and prepares 42 “fake” transactions.
+    
+      # Fake transaction i pays Tumbler compressed Bitcoin address 1 BTC in output 0 
+      # with an OP_RETURN output (output 1) bearing r || i. 
+      # No network fee is implied in the fake transaction.
+
+      for i in 0..83
+        unless real.include? i.to_s
+          beta[i] = @script.fake_btc_tx_sighash(i)
+        end
+      end
+
+      @script.save
+      puts beta
+      # dump 84 beta values to csv file for Tumbler
+    
+      CSV.open("app/views/products/beta_values_#{@script.hash_address}.csv", "ab") do |csv|
+        beta.each do |b|
+          csv << [b]
+        end
+      end # of CSV.open (writing to beta_values_#{@script.hash_address}.csv)
+    
+      redirect_to @script, notice: 'Transactions were successfully created by Bob.'
     end
-  end
+    
+  end # of bob_step_2
   
   
   def create_puzzle_z
@@ -450,7 +477,7 @@ class ScriptsController < ApplicationController
     @script.index = params[:script][:index]
     @script.tx_hash = params[:script][:tx_hash]
     @script.amount = params[:script][:amount]
-    fee = 0.00015 # approx. 10 cts when 1 BTC = 700 EUR
+    fee = 0.00225 # 2 € when 1 BTC = 1000 €
     @previous_index = @script.index.to_i
     @previous_id = @script.tx_hash
     # @refund_address = BTC::Address.parse("16zQaNAg77jco2EDVSsU4bEAq5DgfZPZP4") # my electrum wallet
@@ -711,7 +738,7 @@ class ScriptsController < ApplicationController
   private
  
      def script_params
-       params.require(:script).permit(:signed_tx, :refund_address, :alice_pub_key_1, :alice_pub_key_2, :bob_pub_key_1, :bob_pub_key_2,:oracle_1_pub_key,:oracle_2_pub_key, :contract, :title, :text, :expiry_date, :category, :user_id, public_keys_attributes: [:name, :compressed, :script_id])
+       params.require(:script).permit(:escrow_amount, :escrow_txid, :amount, :tx_hash, :signed_tx, :refund_address, :alice_pub_key_1, :alice_pub_key_2, :bob_public_key,:tumbler_key,:oracle_1_pub_key, :contract, :title, :text, :expiry_date, :category, :user_id, public_keys_attributes: [:name, :compressed, :script_id])
      end
 
 end

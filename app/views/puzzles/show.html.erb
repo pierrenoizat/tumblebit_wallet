@@ -14,6 +14,18 @@
 	<p>Tumbler RSA Public Key:</p><pre style="width:600px"><code><%= $TUMBLER_RSA_PUBLIC_KEY.to_s(16) %></code></pre>
 	
 		<p><a href="<%= products_path("beta_values_#{@puzzle.funded_address}.csv") %>" class="btn btn-lg btn-primary heading__btn wow fadeInUp" >Download File with 84 beta values for Tumbler </a> | <%=link_to "Bob Checks Tumbler Fake Epsilon", bob_step_8_puzzle_path(@puzzle), :class => "btn btn-primary" %> | <%=link_to "Bob Checks Tumbler RSA Quotients", bob_step_10_puzzle_path(@puzzle), :class => "btn btn-primary" %> | <%=link_to "Alice checks Tumbler's k values", alice_step_7_puzzle_path(@puzzle), :class => "btn btn-primary" %></p>
+		
+		<%= form_for(@puzzle, multipart: true) do |f| %>
+
+		<div class="field">
+			<p><%= f.label 'Puzzle Solution received from Alice' %></br>
+			<%= f.text_field :solution, :style => "width:540px;", :placeholder => "3eadd5c01df6a2c9a1357427aa96faacc997128064e8b4e21328af8fd0c1d4cb81297fe69a6b6bb214a0f81cfc6ba58632254e7d8c9d1f8c1eb9360b05d3d8b6" %></p>
+		</div>
+
+		<%= f.submit 'Compute Sigma', :class => "btn btn-primary" %> |<%= link_to "Cancel", @puzzle %>
+
+		<% end %>
+	</br>
 	
 	</div>
 </div>

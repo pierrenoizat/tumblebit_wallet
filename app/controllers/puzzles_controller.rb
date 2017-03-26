@@ -97,17 +97,23 @@ class PuzzlesController < ApplicationController
   
   def update
     @puzzle = Puzzle.find(params[:id])
-    @puzzle.update_attributes(puzzle_params)
-    if @puzzle.alice_public_key
-      string = @puzzle.funded_address.to_s
-      puts string
-      unless File.exists?("app/views/products/beta_values_#{string}.csv")
-        alice_step_3
-      end
-      @beta_filename = "beta_values_" + @puzzle.funded_address.to_s + ".csv"
-      render :show_alice_step_3
+    if params[:puzzle][:solution]
+      # @solution = params[:puzzle][:solution]
+      bob_gets_sigma(params[:puzzle][:solution])
+      render :bob_gets_sigma
     else
-      render :show_alice_step_2
+      @puzzle.update_attributes(puzzle_params)
+      if @puzzle.alice_public_key
+        string = @puzzle.funded_address.to_s
+        puts string
+        unless File.exists?("app/views/products/beta_values_#{string}.csv")
+          alice_step_3
+        end
+        @beta_filename = "beta_values_" + @puzzle.funded_address.to_s + ".csv"
+        render :show_alice_step_3
+      else
+        render :show_alice_step_2
+      end
     end
   end
   
@@ -640,8 +646,10 @@ class PuzzlesController < ApplicationController
     data = open("app/views/products/c_h_values_#{string}.csv").read
     @c_values = []
     @h_values = []
+    @real_c_values = []
     @real_h_values = []
-    # require 'csv'
+    @real_k_values = []
+    @real_beta_values = []
     i = 0
     j = 0
     m = 0
@@ -657,6 +665,7 @@ class PuzzlesController < ApplicationController
         ch_array << c
       end
       if real.include? i.to_s
+        @real_c_values[m] = row[0]
         @real_h_values[m] = row[1]
         @contract += @real_h_values[m]
         m += 1
@@ -725,7 +734,9 @@ class PuzzlesController < ApplicationController
       @beta_values = []
       CSV.parse(data) do |row|
         row.each do |beta|
-          unless real.include? i.to_s
+          if real.include? i.to_s
+            @real_beta_values << beta.to_i(16)
+          else
             @beta_values << beta.to_i(16)
           end
         end
@@ -744,19 +755,80 @@ class PuzzlesController < ApplicationController
         # Alice posts Tpuzzle offering 1 bitcoin within timewindow tw1
         # under condition: the fulfilling transaction is signed by T and has preimages of (real) h_values
         # then Alice sends y and real r values to Tumbler
+        if @puzzle.script_id
+          @script = @puzzle.script
+          @alice_pub_key = PublicKey.where({ name: "Alice", script_id: @script.id }).last
+          @tumbler_pub_key = PublicKey.where({ name: "Tumbler", script_id: @script.id }).last
+        else
+          @script = Script.create(title: "puzzle_#{string}",
+                              tumbler_key: @puzzle.tumbler_public_key,
+                              expiry_date: @puzzle.expiry_date,
+                              contract: @contract,
+                              category: "tumblebit_puzzle")
+
+          @alice_pub_key = PublicKey.create(name: "Alice",
+                              script_id: @script.id,
+                              compressed: @puzzle.alice_public_key)
+          @tumbler_pub_key = PublicKey.create(name: "Tumbler",
+                              script_id: @script.id,
+                              compressed: @puzzle.tumbler_public_key)
+          @puzzle.script_id = @script.id
+          @puzzle.save
+        end
         
-        @script = Script.create(title: "puzzle_#{string}",
-                            tumbler_key: @puzzle.tumbler_public_key,
-                            expiry_date: @puzzle.expiry_date,
-                            contract: @contract,
-                            category: "tumblebit_puzzle")
+        if @puzzle.escrow_txid.blank?
+          unless @script.virgin? or @script.funded?
+            url_string = $BLOCKR_ADDRESS_TXS_URL + @script.hash_address.to_s
+            @agent = Mechanize.new
+            puts "#{@script.hash_address}"
+            begin
+              page = @agent.get url_string
+            rescue Exception => e
+              page = e.page
+            end
+
+            data = page.body
+            result = JSON.parse(data)
+            puts "Number of transactions= #{result['data']['nb_txs']}"
+            tx_hash = result['data']['txs'].first # in blockr API, first is most recent tx
+            @puzzle.escrow_txid = tx_hash['tx']
+            @puzzle.save
+            puts "#{tx_hash['tx']}"
+          end
+        end
         
-        @alice_pub_key = PublicKey.create(name: "Alice",
-                            script_id: @script.id,
-                            compressed: @puzzle.alice_public_key)
-        @tumbler_pub_key = PublicKey.create(name: "Tumbler",
-                            script_id: @script.id,
-                            compressed: @puzzle.tumbler_public_key)
+        unless @puzzle.escrow_txid.blank? # Learn kj from Tsolve
+          url_string = $BLOCKR_RAW_TX_URL + @puzzle.escrow_txid
+          @agent = Mechanize.new
+          begin
+            page = @agent.get url_string
+          rescue Exception => e
+            page = e.page
+          end
+          data = page.body
+          result = JSON.parse(data)
+          @transaction = BTC::Transaction.new(hex: result['data']['tx']['hex'])
+          # puts "#{result['data']['tx']['hex']}" # raw_tx in hex
+          # puts @transaction.dictionary['in'][0]['scriptSig']['asm']
+          @words = @transaction.dictionary['in'][0]['scriptSig']['asm'].split(/\W+/) # array of real k values revealed by Tumbler
+          for i in 1..15
+      			@real_k_values[i-1] = @words[16-i].from_hex
+      		end
+          # Decrypt cj to sj = Hprg(kj) ⊕ cj
+          i = 0
+          data = open("app/views/products/r_values_#{string}.csv").read
+          @r_values = []
+          CSV.parse(data) do |row|
+            row.each do |r|
+              if real.include? i.to_s
+                @r_values << r.to_i(16)
+              end
+            end
+            i +=1
+          end # do |row| (read input file)
+          puts "Number of r values in file: " + i.to_s
+          alice_step_11
+        end
                             
       else
         redirect_to @puzzle, alert: "Mismatch between s and beta values."
@@ -765,6 +837,141 @@ class PuzzlesController < ApplicationController
     end
     
   end # of alice_step_7
+  
+  
+  def alice_step_11
+    # Learned kj from Tsolve in alice_step_7
+    # Decrypt 15 real cj to sj = Hprg(kj) ⊕ cj 
+    @real_s_values = []
+    # Tumbler picked 15 real random symetric encryption key k (128 bits) and computed 
+    # c = Enc(k, s) and h = H(k)
+    true_count = 0
+    e = $TUMBLER_RSA_PUBLIC_EXPONENT
+    n = $TUMBLER_RSA_PUBLIC_KEY
+    for i in 0..14
+      decipher = OpenSSL::Cipher::AES.new(128, :CBC)
+      decipher.decrypt
+      
+      key_hex = @real_k_values[i].to_s[0..31]
+      iv_hex = @real_k_values[i].to_s[32..63]
+      key = key_hex.from_hex
+      iv = iv_hex.from_hex
+      decipher.key = key
+      decipher.iv = iv
+      encrypted = @real_c_values[i].from_hex
+      @real_s_values[i] = decipher.update(encrypted) + decipher.final # plain
+      if (@real_beta_values[i] == mod_pow(@real_s_values[i].to_i(16),e,n))  # verify s**e = beta mod n
+        true_count += 1
+      end
+    end
+    
+    # Obtain solution sj/rj mod n
+    @solution = ((@real_s_values[0].to_i(16)/@r_values[0]) % n).to_s(16)
+    puts "Real s values"
+    puts @real_s_values
+    puts @solution
+    puts true_count
+    
+    # Obtain solution sj/rj mod N 
+    # which is y**d mod N.
+    render "alice_step_7"
+    
+  end # of alice_step_11
+  
+  
+  def bob_gets_sigma(solution)
+    # get first real index value c from c_z_values_ file
+    i = 0
+    j = 0
+    fake = []
+    @puzzle.fake_indices.each do |ri|
+      fake << ri.strip # avoid problems with extra leading or trailing space caracters
+    end
+    while fake.sort.include? i.to_s
+      i += 1
+    end
+    
+    data = open("app/views/products/c_z_values_33J92v6eddniyzq49CVMGmufp5AHxkb8Gj.csv").read
+    @c_values = []
+    
+    CSV.parse(data) do |row|
+      cz_array = []
+      row.each do |c|
+        cz_array << c
+      end
+      @c_values[j] = row[0]
+      j += 1
+    end # do |row| (read input file)
+    c = @c_values[i]
+
+    r = 39148868723064938442606470813898721572068782984532666654439715815924433438097
+    epsilon = (solution.to_i(16)/r).to_s(16)
+    decipher = OpenSSL::Cipher::AES.new(128, :CBC)
+    decipher.decrypt
+
+    key_hex = epsilon.to_s[0..31]
+    iv_hex = epsilon.to_s[32..63]
+    key = key_hex.htb
+    iv = iv_hex.htb
+    decipher.key = key
+    decipher.iv = iv
+    encrypted = c.htb
+    sigma = decipher.update(encrypted) + decipher.final
+    @sigma = sigma.unpack("H*").first
+    # @sigma = "3044022019fcaa67c30105dd2427dbcd2d4e0132f452b4240dd46703b255c3bd7360b38e0220487a34da5c1af41610899bf06eed371e363c89de6e2c2da600575cd3a02955ce"
+    
+    string = $BLOCKR_ADDRESS_UNSPENT_URL + @puzzle.funded_address.to_s + "?unconfirmed=1" # P2SH address funded by Tumbler with_unconfirmed utxo
+    @agent = Mechanize.new
+    begin
+    page = @agent.get string
+    rescue Exception => e
+    page = e.page
+    end
+    data = page.body
+    result = JSON.parse(data)
+    puts result
+    if result['data']['unspent'].blank?
+      puts "No utxo avalaible for #{@puzzle.funded_address}"
+    end
+    @tumbler_private_key = BTC::WIF.new(string:"L2dSPKfm998jApkYyF1CoM5zR6rYAassuSbgagMkyB8vxfpiEzFU")
+    @tumbler_key=BTC::Key.new(wif:@tumbler_private_key.to_s)
+    @bob_private_key = BTC::WIF.new(string:"L4wSWiYW3bEkvGQ5RvkYkPmdEah58mrBLSgNFEPqKjaVKKCJ4cxG")
+    @bob_key=BTC::Key.new(wif:@tumbler_private_key.to_s)
+    keychain = BTC::Keychain.new(xprv:Figaro.env.tumbler_btc_msk)
+    salt = Figaro.env.tumblebit_salt
+    index = (salt.to_i + @puzzle.id.to_i) % 0x80000000
+    key = keychain.derived_keychain("8/#{index}").key
+    @previous_id = result['data']['unspent'][0]['tx']
+    @previous_index = 0
+    @value = (result['data']['unspent'][0]['amount'].to_f)* BTC::COIN - $NETWORK_FEE
+
+    tx = BTC::Transaction.new
+    tx.lock_time = 1471199999 # some time in the past (2016-08-14), if before expiry
+    # tx.lock_time = @puzzle.expiry_date.to_i # We are after expiry: require Tumbler key only
+    tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id, # UTXO is "escrow" P2SH funded by Tumbler
+                                                  previous_index: @previous_index,
+                                                  sequence: 0))
+    tx.add_output(BTC::TransactionOutput.new(value: @value , script: key.address.script))
+    hashtype = BTC::SIGHASH_ALL
+    sighash = tx.signature_hash(input_index: 0,
+                                output_script: @puzzle.funding_script,
+                                hash_type: hashtype)
+    diff = (@tumbler_key.ecdsa_signature(sighash) == @sigma.htb)
+    puts "Is sigma equal to T signature ? #{diff}"
+    beta = "6337b0ddfa5f17c57936f9e656869abe7f704b7e8cb041c7e16228a23bfc101a"
+    good = @tumbler_key.verify_ecdsa_signature(sigma, beta.htb)
+    puts "Is sigma a valid Tumbler signature ? #{good}"
+    tx.inputs[0].signature_script = BTC::Script.new
+    # tx.inputs[0].signature_script << BTC::Script::OP_0
+    # tx.inputs[0].signature_script << (@sigma.htb + BTC::WireFormat.encode_uint8(hashtype))  # Tumbler signature
+    tx.inputs[0].signature_script << (@tumbler_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))  # Tumbler signature
+    # tx.inputs[0].signature_script << (@bob_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))  # Bob signature
+    # tx.inputs[0].signature_script << BTC::Script::OP_TRUE   
+    tx.inputs[0].signature_script << BTC::Script::OP_FALSE         
+    tx.inputs[0].signature_script << @puzzle.funding_script.data
+    puts tx
+    
+  end
   
   
   def sender_checks_k_values
@@ -878,7 +1085,7 @@ class PuzzlesController < ApplicationController
   private
  
      def puzzle_params
-       params.require(:puzzle).permit(:script_id, :y, :r, :real_indices, :fake_indices, :encrypted_signature, :escrow_txid, :alice_public_key, :bob_public_key, :tumbler_public_key, :expiry_date)
+       params.require(:puzzle).permit(:script_id, :y, :r, :real_indices, :fake_indices, :encrypted_signature, :escrow_txid, :alice_public_key, :bob_public_key, :tumbler_public_key, :expiry_date, :solution)
      end
 
 end

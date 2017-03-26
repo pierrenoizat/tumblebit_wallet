@@ -1,17 +1,18 @@
 <div class="container">
   <div class="row">
 	<h3>Tumblebit Puzzle # <%= @puzzle.id %></h3>
-	<p>P2SH Address: <strong><%= @puzzle.funded_address %></strong></p>
-
-	<p>Expiry: <strong><%= Time.at(@puzzle.expiry_date.to_time.to_i).utc %></strong></br>
-	Expiry in seconds since epoch time (1/1/1970): <%= @puzzle.expiry_date.to_time.to_i %></p>
-	<p>Puzzle y:</p><pre style="width:600px"><code><%=  @puzzle.y %></code></pre>
 	
 	<p>P2SH Address funded by Alice for Tumbler : <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#exampleModal" ><strong><%= @script.hash_address if @script %></strong></button></p>
 	
-	<p>Redeem Script of P2SH Address for Tumbler :</p><pre style="width:600px"><code><%=  @script.funding_script.to_s %></code></pre>
+	<% if @puzzle.escrow_txid %>
+	<p>Congratulations ! Tumbler has posted his/her Tsolve tx, revealing the real k values so you (Alice) could compute below the solution to this puzzle and send it to Bob:</p>
+			<p>Solution = <strong><%= @solution %></strong></p>
+
+	<% else %>
+		<p>Redeem Script of P2SH Address for Tumbler :</p><pre style="width:600px"><code><%=  @script.funding_script.to_s %></code></pre>
 	
 	<p>Success ! k values sent by Tumbler have been checked successfully: you (Alice) can post the puzzle transaction for Tumbler and share with Tumbler your access code y and the r_values file.</p>
+	<% end %>
 	
 	<!-- Modal -->
 	<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
