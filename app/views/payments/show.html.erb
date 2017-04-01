@@ -1,0 +1,29 @@
+<div class="container">
+  <div class="row">
+	<h3>Payment # <%= @payment.id %>: <%= @payment.title %></h3>
+	<p>P2SH Address: <strong><%= @payment.funded_address if @puzzle %></strong></p>
+	<p>Tumbler's Public Key: <strong><%= @payment.tumbler_public_key %></strong></p>
+	<p>Alice Public Key: <strong><%= @payment.alice_public_key if @puzzle %></strong></p>
+
+	<p>Expiry: <strong><%= Time.at(@payment.expiry_date.to_time.to_i).utc %></strong></br>
+	Expiry in seconds since epoch time (1/1/1970): <%= @payment.expiry_date.to_time.to_i %></p>
+	</br>
+	<% if @payment.alice_public_key.blank? %>
+		<%= form_for(@payment, multipart: true) do |f| %>
+
+		<div class="field">
+			<p><%= f.label 'Alice (compressed) Public Key' %></br>
+			<%= f.text_field :alice_public_key, :style => "width:540px;", :placeholder => "02BE332AE534CC30FB84BA64817A748DBC9A9C9021463A645F5B3CF2AB4AEB0284" %></p>
+		</div>
+
+		<%= f.submit 'Update Payment with parameters', :class => "btn btn-primary" %>
+
+		<% end %>
+	<% end %>
+	
+	
+	<p><%=link_to 'Submit 300 Beta Values', alice_step_4_payment_path(@payment), :class => "btn btn-primary" %><% if @puzzle.real_indices %> | <%=link_to 'Get 285 fake k Values for Alice', alice_step_6_payment_path(@payment), :class => "btn btn-primary" %><% end %></p>
+	</br>
+	
+	</div>
+</div>

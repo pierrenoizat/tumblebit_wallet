@@ -1,0 +1,26 @@
+<div class="container">
+  <div class="row">
+	<h3>Tumblebit (Alice) Puzzle # <%= @payment.id %></h3>
+	<p>P2SH Address: <strong><%= @payment.funded_address %></strong></p>
+
+	<p>Expiry: <strong><%= Time.at(@payment.expiry_date.to_time.to_i).utc %></strong></br>
+	Expiry in seconds since epoch time (1/1/1970): <%= @payment.expiry_date.to_time.to_i %></p>
+	
+		<p><a href="<%= products_path("fake_k_values_#{@payment.funded_address}.csv") %>" class="btn btn-lg btn-primary heading__btn wow fadeInUp" >Download File with Tumbler 285 fake k Values </a></p>
+		
+		
+		<%= form_for(@payment, multipart: true) do |f| %>
+
+		<div class="field">
+		    <p><%= f.label 'Alice Puzzle Access Code y' %></p>
+		    <p><%= f.text_field :y, :style => "width:540px;", :placeholder => "b2aeac0d6d50bf63b01522936b9bcf58ef7dd196cefff6ba80d470d125e4f24501cc2305dca1a34e344b59ae1a8251e47a1c2da52fd7630303856cbf729ec0ffe2b27365b3cd49f2e4bbedd2a4b7b4563181a1073e6b099fffb1a9beb5f5710c1afeff06ee38b4250bd069dfc4bcddc47495837272a35268e794e6c5919dc136" %></p>
+		  </div>
+
+				<%= f.submit 'Post Tx Solve spending Alice Tx Puzzle', :class => "btn btn-primary" %>
+
+
+		<% end %>
+		</br>
+	
+	</div>
+</div>

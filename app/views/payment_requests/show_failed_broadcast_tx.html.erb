@@ -1,0 +1,8 @@
+<div class="container">
+  <div class="row">
+	<% if @payment_request.signed_tx %>
+	<p>Copy the signed transaction below then paste it to <a href="https://coinb.in/#broadcast" target="blank">coinb.in</a> or use Bitcoin Core sendrawtransaction command.</p>
+		<p>Raw Signed Transaction:<pre style="width:600px"><code><%= @payment_request.signed_tx %></code></pre></p>
+	<% end %>
+	</div>
+</div>

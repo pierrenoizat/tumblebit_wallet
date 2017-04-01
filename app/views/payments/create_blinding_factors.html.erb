@@ -1,0 +1,15 @@
+<div class="container">
+  <div class="row">
+	<h3>Payment # <%= @payment.id if @script %>: <%= @script.title if @script %></h3>
+	<p>P2SH Address: <strong><%= @payment.hash_address if @script %></strong></p>
+	<p>Bob's Address (?): <strong><%= @payment.refund_address if @script %></strong></p>
+
+	<p>Expiry: <strong><%= Time.at(@payment.expiry_date.to_time.to_i).utc %></strong></br>
+	Expiry in seconds since epoch time (1/1/1970): <%= @payment.expiry_date.to_time.to_i %></p>
+	
+	<p><%=link_to "Tumbler encrypts values", alice_step_4_payment_path, :class => "btn btn-primary" %></p>
+	
+	
+	
+	</div>
+</div>

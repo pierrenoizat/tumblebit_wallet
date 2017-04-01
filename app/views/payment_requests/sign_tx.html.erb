@@ -1,0 +1,23 @@
+<div class="container">
+  <div class="row">
+	<h3>Payout Transaction for <%= @payment_request.title if @payment_request.title %></h3>
+	<p>Script:</br><pre style="width:600px"><code> <%= @payment_request.description if @script %></code></pre></p>
+
+	<p>Expiry: <%= Time.at(@payment_request.expiry_date.to_time.to_i).utc %></p>
+
+		<p>Bob (Compressed) Public Key: <%= @payment_request.bob_public_key %></p>
+		<p>Tumbler (Compressed) Public Key: <%= @payment_request.tumbler_public_key %></p>
+		<p><strong>Tumbler Encrypted Signature</strong>: <pre style="width:600px"><code></code></pre></p>
+		<p><strong>Puzzle y</strong>:<pre style="width:600px"><code></code></pre></p>
+		<p><strong>Tumbler RSA Public Key</strong>:<pre style="width:600px"><code><%= $TUMBLER_RSA_PUBLIC_KEY %></code></pre></p>
+	
+	<p>P2SH Address: <strong><%= @payment_request.hash_address if @payment_request %></strong></p>
+	<p>Unspent Output (Tx_id:index):  <%= @payment_request.tx_hash if @payment_request %> : <%= @payment_request.index if @payment_request %></br>
+	<p>Amount: <%= @payment_request.amount if @payment_request %></br>
+	<p>Tumbler's Refund Address: <%= @payment_request.refund_address if @payment_request %></p>
+
+	<p>Redeem Script:<pre style="width:600px"><code><%= @redeem_script %></code></pre></p>
+
+   </div>
+</div>
+</br>

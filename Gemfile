@@ -37,6 +37,8 @@ gem 'mechanize'
 gem 'validates_timeliness', '~> 4.0'
 gem 'rails-i18n'
 gem 'devise'
+gem 'aasm'
+gem 'rb-readline'
 
 group :development do
   gem 'better_errors'

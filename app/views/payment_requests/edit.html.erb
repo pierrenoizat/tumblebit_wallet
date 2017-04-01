@@ -1,0 +1,25 @@
+<div class="container">
+  <div class="row">
+	<h1>Edit Payment Request # <%= @payment_request.id if @payment_request %>: <%= @payment_request.title if @payment_request %></h1>
+	<div><pre style="width:600px"><code><%= @payment_request.description %></code></pre></div>
+	<%= form_for(@payment_request, multipart: true) do |f| %>
+	
+	<div class="field">
+		<p><%= f.label 'Bob (compressed) Public Key' %></br>
+		<%= f.text_field :bob_public_key, :style => "width:540px;", :placeholder => "02BE332AE534CC30FB84BA64817A748DBC9A9C9021463A645F5B3CF2AB4AEB0284" %></p>
+	</div>
+	
+	<p>Tumbler (compressed) Public Key: <%= @payment_request.tumbler_public_key %></p>
+	
+	<div class="field">
+    <p><%= f.label 'Expiry' %></p>
+	<p>Present Time: <%= Time.now.strftime("%Y-%b-%d - %H:%M") %></p>
+    <p><%= f.datetime_select(:expiry_date, {:start_year => Date.today.year, :end_year => 2024, :default => @payment_request.expiry_date, :use_two_digit_numbers => true, :prompt => {:day => "day", :month => "month", :year => "year", :hour => "hour", :minute => "minute"}}, {:style => "width: 80px;"}) %></p>
+  </div>
+	
+	<%= f.submit 'Update Payment Request with parameters', :class => "btn btn-primary" %> |<%= link_to "Cancel", @payment_request %>
+
+	<% end %>
+</br>
+   </div>
+</div>

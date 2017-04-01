@@ -1,0 +1,19 @@
+<div class="container">
+  <div class="row">
+    <h3>Payment Requests</h3>
+    <div class="column">
+      <table class="table">
+        <tbody>
+          <% @payment_requests.each do |payment_request| %>
+            <tr>
+              <%= render payment_request %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+	  <div class="apple_pagination">
+		<%= will_paginate @payment_requests %>
+	  </div>
+    </div>
+  </div>
+</div>

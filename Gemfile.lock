@@ -8,6 +8,8 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
+    aasm (4.12.0)
+      concurrent-ruby (~> 1.0)
     actionmailer (4.2.1)
       actionpack (= 4.2.1)
       actionview (= 4.2.1)
@@ -243,6 +245,7 @@ GEM
       rake (>= 0.8.7)
       thor (>= 0.18.1, < 2.0)
     rake (12.0.0)
+    rb-readline (0.5.4)
     redcarpet (3.0.0)
     ref (2.0.0)
     responders (2.3.0)
@@ -329,6 +332,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  aasm
   better_errors
   bitcoin-ruby!
   bootstrap-sass
@@ -365,6 +369,7 @@ DEPENDENCIES
   rails_12factor
   rails_layout
   rake
+  rb-readline
   redcarpet (~> 3.0.0)
   rspec-rails
   sass-rails
@@ -381,7 +386,7 @@ DEPENDENCIES
   will_paginate (~> 3.1.0)
 
 RUBY VERSION
-   ruby 2.3.0p0
+   ruby 2.4.0p0
 
 BUNDLED WITH
-   1.13.0
+   1.14.6

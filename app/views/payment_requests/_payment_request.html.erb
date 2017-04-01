@@ -1,0 +1,5 @@
+<td><%= link_to payment_request.title, payment_request %></td>
+<td><%= payment_request.hash_address %></td>
+<td><%= payment_request.aasm_state %></td>
+<td><%= link_to "Edit", edit_payment_request_path(payment_request), :class => 'btn btn-xs btn-success' %></td>
+<td><%= link_to "Delete", payment_request_path(payment_request), :data => { :confirm => "Are you sure?" }, :method => :delete, :class => 'btn btn-xs btn-danger' %></td>
