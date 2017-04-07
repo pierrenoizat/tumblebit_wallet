@@ -32,6 +32,7 @@ gem 'pg'
 gem 'btcruby', '~> 1.5'
 
 gem 'bitcoin-ruby', git: 'https://github.com/lian/bitcoin-ruby', branch: 'master', require: 'bitcoin'
+gem 'money-tree'
 
 gem 'mechanize'
 gem 'validates_timeliness', '~> 4.0'

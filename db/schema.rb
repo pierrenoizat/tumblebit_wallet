@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170326151703) do
+ActiveRecord::Schema.define(version: 20170404105343) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -33,6 +33,39 @@ ActiveRecord::Schema.define(version: 20170326151703) do
 
   add_index "clients", ["email"], name: "index_clients_on_email", unique: true, using: :btree
   add_index "clients", ["reset_password_token"], name: "index_clients_on_reset_password_token", unique: true, using: :btree
+
+  create_table "payment_requests", force: :cascade do |t|
+    t.string   "title"
+    t.string   "tumbler_public_key"
+    t.datetime "expiry_date"
+    t.string   "r"
+    t.datetime "created_at",                      null: false
+    t.datetime "updated_at",                      null: false
+    t.string   "aasm_state"
+    t.integer  "real_indices",       default: [],              array: true
+    t.text     "beta_values",        default: [],              array: true
+    t.text     "c_values",           default: [],              array: true
+    t.text     "epsilon_values",     default: [],              array: true
+    t.string   "key_path"
+  end
+
+  create_table "payments", force: :cascade do |t|
+    t.string   "title"
+    t.string   "tumbler_public_key"
+    t.datetime "expiry_date"
+    t.string   "y"
+    t.string   "r"
+    t.datetime "created_at",                      null: false
+    t.datetime "updated_at",                      null: false
+    t.text     "real_indices",       default: [],              array: true
+    t.text     "beta_values",        default: [],              array: true
+    t.text     "ro_values",          default: [],              array: true
+    t.text     "k_values",           default: [],              array: true
+    t.text     "c_values",           default: [],              array: true
+    t.text     "h_values",           default: [],              array: true
+    t.string   "aasm_state"
+    t.string   "key_path"
+  end
 
   create_table "posts", force: :cascade do |t|
     t.string   "title"

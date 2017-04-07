@@ -7,20 +7,33 @@ class PaymentRequestsController < ApplicationController
   require 'btcruby/extensions'
 
   def index
-    @payment_requests = PaymentRequest.where.not(:bob_public_key => nil).page(params[:page]).order(created_at: :asc) 
+    @payment_requests = PaymentRequest.where.not(:key_path => nil).page(params[:page]).order(created_at: :asc) 
   end
+  
   
   def new
     @payment_request = PaymentRequest.new
   end
   
+  
   def create
     @payment_request = PaymentRequest.new(payment_request_params)
+    @payment_request.expiry_date  ||= Time.now.utc  # will set the default value only if it's nil
+    real_indices = []
+    prng = Random.new
+    while real_indices.count < 42
+      j = prng.rand(0..83)
+      unless real_indices.include? j
+        real_indices << j
+      end
+    end
+    @payment_request.real_indices ||= real_indices.sort
+
+    salt = Figaro.env.tumblebit_salt
+    index = (salt.to_i + prng.rand(0..99999)) % 0x80000000
+    @payment_request.key_path = "1/#{index}"
 
     if @payment_request.save
-      # generate Tumbler ephemeral ECDSA key in Fig 4 step 1 (setup) with path : "6/@payment_request.id"
-      @payment_request.tumbler_public_key = BTC::Key.new(wif:@payment_request.tumbler_private_key).compressed_public_key.to_hex
-      @payment_request.save
       redirect_to edit_payment_request_path(@payment_request), notice: 'Payment request was successfully created.'
     else
       alert_string = ""
@@ -43,8 +56,8 @@ class PaymentRequestsController < ApplicationController
     @payment_request.update_attributes(payment_request_params)
     @notice = ""
     
-    unless valid_pubkey?(@payment_request.bob_public_key)
-      @notice << "Invalid User Public Key. "
+    unless valid_pubkey?(@payment_request.tumbler_public_key)
+      @notice << "Invalid Tumbler Public Key. "
     end
         
     if @notice.blank?
@@ -71,135 +84,56 @@ class PaymentRequestsController < ApplicationController
   end
   
   
-  def create_spending_tx
-    @payment_request = PaymentRequest.find(params[:id]) 
-    
-    if @payment_request.funded?
-      @payment_request.first_unspent_tx
-    else
-      redirect_to @payment_request, alert: 'Payment request not funded or already spent: no UTXO available.'
-    end
-  end
-  
-  
-  def compute_c_z_values
-    # Step 5 of interactions with Bob
-    
+  def bob_step_2
+    # Steps 2 and 3 in Tumbler-Bob interactions, performed by Bob
+    # Bob generates 42 “real” payout addresses (keeps them secret for now) and prepares 42 distinct “real” transactions.
     @payment_request = PaymentRequest.find(params[:id])
-    
-    @funding_script = @payment_request.funding_script
     @funded_address = @payment_request.hash_address
-    
-    if File.exists?("app/views/products/beta_values_#{@funded_address}.csv")
-      
-    # Tumbler reads the 84 beta values from Bob's CSV file
-    # then, Tumbler ECDSA signs each of the 84 beta values to obtain 84 ECDSA signatures sigma
-    row_count = 0
-    data = open("app/views/products/beta_values_#{@funded_address}.csv").read
-    @sigma_values = []
-
-    # key = BTC::Key.new(wif:@payment_request.tumbler_key)  # ECDSA key
-    @tumbler_key = BTC::Key.new(wif:"L2dSPKfm998jApkYyF1CoM5zR6rYAassuSbgagMkyB8vxfpiEzFU")
-    require 'csv'
-    CSV.parse(data) do |row|
-      row.each do |beta|
-        @sigma_values << @tumbler_key.ecdsa_signature(beta.htb).unpack('H*')[0]
-      end
-      row_count+=1
-    end # do |row| (read input file)
-    puts "Number of lines in beta values file: " + row_count.to_s
-      
-      
-    # dump the 84 sigma values to a new csv file for testing
-    if File.exists?("app/views/products/sigma_values_#{@funded_address}.csv")
-      File.delete("app/views/products/sigma_values_#{@funded_address}.csv") # delete any previous version of file
-    end
-    
-    CSV.open("app/views/products/sigma_values_#{@funded_address}.csv", "ab") do |csv|
-      for i in 0..83
-        csv << [@sigma_values[i]]
-        end
-      end # of CSV.open (writing to sigma_values_#{@funded_address}.csv)
-      
-    # Tumbler then picks 84 random symetric encryption key epsilon (128 bits) and computes 
-    # c = AES128(epsilon, sigma) and z = epsilon^^pk where pk is Tumbler RSA public key
-    
-    e = $TUMBLER_RSA_PUBLIC_EXPONENT
-    n = $TUMBLER_RSA_PUBLIC_KEY
-    
-    @epsilon_values = []
-    @c_values = []
-    @z_values = []
-    for i in 0..83
-      data = @sigma_values[i].htb
-      # TODO check whether data = @sigma_values[i] works as well
-      cipher = OpenSSL::Cipher::AES.new(128, :CBC)
-      cipher.encrypt # put cipher in encrypt mode
-      key = cipher.random_key  # generate random AES encryption key
-      key_hex = key.to_hex
-      
-      iv = cipher.random_iv # generate random AES initialization vector
-      iv_hex = iv.to_hex
-      
-      k = key_hex + iv_hex  # random symetric encryption key
-      while k.size < 64
-        k = "0" + k
-      end
-      key_hex = k.to_s[0..31]
-      iv_hex = k.to_s[32..63]
-      key = key_hex.htb
-      iv = iv_hex.htb
-      
-      cipher.key = key
-      cipher.iv = iv
-      encrypted = cipher.update(data) + cipher.final # computes c = encrypts sigma with epsilon
-
-      decipher = OpenSSL::Cipher::AES.new(128, :CBC)
-      decipher.decrypt
-      
-      decipher.key = key
-      decipher.iv = iv
-
-      plain = decipher.update(encrypted) + decipher.final
-      if data == plain
-        @epsilon_values[i] = k
-        @c_values[i] = BTC::Data.hex_from_data(encrypted)
-        @z_values[i] = mod_pow(k.to_i(16),e,n).to_s(16) # computes z = encrypts epsilon with e, Tumbler's RSA public key (pk)
-      else
-        redirect_to @puzzle, alert: "Problem with signature encryption: computation of (c,z) pairs aborted."
-      end
-    end
-    
-    # dump the 84 (c, z) couples to a new csv file for Bob
-    if File.exists?("app/views/products/c_z_values_#{@funded_address}.csv")
-      File.delete("app/views/products/c_z_values_#{@funded_address}.csv") # delete any previous version of file
-    end
-    
-    CSV.open("app/views/products/c_z_values_#{@funded_address}.csv", "ab") do |csv|
-      for i in 0..83
-        csv << [@c_values[i],@z_values[i]]
-        end
-      end # of CSV.open (writing to c_z_values_#{@funded_address}.csv)
-      
-      
-      # dump the 84 epsilon values to a new csv file (Tumbler keeps them secret for now)
-      if File.exists?("app/views/products/epsilon_values_#{@funded_address}.csv")
-        File.delete("app/views/products/epsilon_values_#{@funded_address}.csv") # delete any previous version of file
+    @notice = ""
+    unless @payment_request.beta_values.blank?
+      @notice = 'Beta values already exists.'
+      # dump the 84 beta values to a new csv file for testing
+      if File.exists?("app/views/products/beta_values_#{@funded_address}.csv")
+        File.delete("app/views/products/beta_values_#{@funded_address}.csv") # delete any previous version of file
       end
 
-      CSV.open("app/views/products/epsilon_values_#{@funded_address}.csv", "ab") do |csv|
+      CSV.open("app/views/products/beta_values_#{@funded_address}.csv", "ab") do |csv|
         for i in 0..83
-          csv << [@epsilon_values[i]]
+          csv << [@payment_request.beta_values[i]]
           end
-        end # of CSV.open (writing to c_z_values_#{@funded_address}.csv)
+        end # of CSV.open (writing to sigma_values_#{@funded_address}.csv)
+    else
       
-    redirect_to @puzzle, info: "Computation of (c,z) pairs completed successfully."
+      @payment_request.amount = 240800 # amount in satoshis
+
+      beta = []
+      @payment_request.real_indices.each do |i|
+        beta[i] = @payment_request.real_btc_tx_sighash(i)
+      end
     
-  else
-    redirect_to @payment_request, alert: "Tumbler is missing 84 beta values from Bob."
+      # In Step 3, Bob picks a random secret 256-bit blinding factor r and prepares 42 “fake” transactions.
+    
+      # Fake transaction i pays Tumbler compressed Bitcoin address 1 BTC in output 0 
+      # with an OP_RETURN output (output 1) bearing r || i. 
+      # No network fee is implied in the fake transaction.
+
+      for i in 0..83
+        unless @payment_request.real_indices.include? i
+          beta[i] = @payment_request.fake_btc_tx_sighash(i)
+        end
+      end
+      # save 84 beta values for Tumbler
+      @payment_request.beta_values = beta
+    end
+    if @notice.blank?
+      @payment_request.escrow_tx_received # transition in state machine
+      @payment_request.beta_values_sent
+      @payment_request.save
+      redirect_to @payment_request, notice: 'Transactions were successfully created by Bob.'
+    else
+      redirect_to root_url, notice: @notice
+    end
   end
-    
-  end # of Step 5 of interactions with Bob: compute_c_z_values method
   
   
   def create_puzzle_z
@@ -299,6 +233,18 @@ class PaymentRequestsController < ApplicationController
         @puzzle = @payment_request.puzzles.last
       end
   end
+  
+  
+  def create_spending_tx
+    @payment_request = PaymentRequest.find(params[:id]) 
+    
+    if @payment_request.funded?
+      @payment_request.first_unspent_tx
+    else
+      redirect_to @payment_request, alert: 'Payment request not funded or already spent: no UTXO available.'
+    end
+  end
+  
 
   def sign_tx
     
@@ -472,7 +418,7 @@ class PaymentRequestsController < ApplicationController
   private
  
      def payment_request_params
-       params.require(:payment_request).permit(:r, :bob_public_key, :tumbler_public_key,:tumbler_private_key, :title, :expiry_date, :tx_hash,:signed_tx, :index, :amount, :confirmations, :real_indices,:beta_values, :c_values, :epsilon_values, :aasm_state )
+       params.require(:payment_request).permit(:r, :key_path, :tumbler_public_key, :title, :expiry_date, :tx_hash,:signed_tx, :index, :amount, :confirmations, :real_indices,:beta_values, :c_values, :epsilon_values, :aasm_state )
      end
 
 end

@@ -17,7 +17,8 @@
 	<% else %>
 		<%= f.submit 'Start Request Creation', :class => "btn btn-primary" %>
 	<% end %>
-
+	 | <%= link_to t('.cancel', :default => t("helpers.links.cancel")),
+        payment_requests_path, :class => 'btn' %>
 <% end %>
 </br>
 <script>

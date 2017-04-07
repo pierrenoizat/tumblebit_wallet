@@ -12,8 +12,8 @@
 		<%= form_for(@payment, multipart: true) do |f| %>
 
 		<div class="field">
-			<p><%= f.label 'Alice (compressed) Public Key' %></br>
-			<%= f.text_field :alice_public_key, :style => "width:540px;", :placeholder => "02BE332AE534CC30FB84BA64817A748DBC9A9C9021463A645F5B3CF2AB4AEB0284" %></p>
+			<p><%= f.label 'Alice Key Path' %></br>
+			<%= f.text_field :key_path, :style => "width:540px;", :placeholder => "1/4512" %></p>
 		</div>
 
 		<%= f.submit 'Update Payment with parameters', :class => "btn btn-primary" %>
@@ -22,7 +22,8 @@
 	<% end %>
 	
 	
-	<p><%=link_to 'Submit 300 Beta Values', alice_step_4_payment_path(@payment), :class => "btn btn-primary" %><% if @puzzle.real_indices %> | <%=link_to 'Get 285 fake k Values for Alice', alice_step_6_payment_path(@payment), :class => "btn btn-primary" %><% end %></p>
+	<p><%=link_to 'Submit 300 Beta Values', alice_step_4_payment_path(@payment), :class => "btn btn-primary" %><% if @puzzle.real_indices %> | <%=link_to 'Get 285 fake k Values for Alice', alice_step_6_payment_path(@payment), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")),
+        payments_path, :class => 'btn' %><% end %></p>
 	</br>
 	
 	</div>

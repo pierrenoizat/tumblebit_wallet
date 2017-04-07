@@ -39,6 +39,26 @@ Rails.application.routes.draw do
         patch 'broadcast'
       end
     end
+    
+  resources :payments do
+    member do
+      get 'bob_step_8'
+      get 'bob_step_10'
+      get 'tumbler_encrypts_values'
+      get 'tumbler_checks_ro_values'
+      get 'alice_step_7'
+      get 'bob_gets_sigma'
+    end
+  end
+    
+  resources :payment_requests do
+    member do
+      get 'bob_step_2'
+      get 'create_puzzle_z'
+      patch 'sign_tx'
+      patch 'broadcast'
+    end
+  end
   
   root to: 'visitors#index'
   

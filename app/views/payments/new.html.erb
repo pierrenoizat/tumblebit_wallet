@@ -2,10 +2,10 @@
   <div class="row">
 <h3> Send a New Payment</h3>
 <%= form_for(@payment, multipart: true) do |f| %>
-
+<p>Alice Public Key: <%= @payment.alice_public_key %></p>
 <div class="field">
-	<p><%= f.label 'Alice (compressed) Public Key' %></br>
-	<%= f.text_field :alice_public_key, :style => "width:540px;", :placeholder => "02BE332AE534CC30FB84BA64817A748DBC9A9C9021463A645F5B3CF2AB4AEB0284" %></p>
+	<p><%= f.label 'Tumbler (compressed) Public Key' %></br>
+	<%= f.text_field :tumbler_public_key, :style => "width:540px;", :placeholder => "02BE332AE534CC30FB84BA64817A748DBC9A9C9021463A645F5B3CF2AB4AEB0284" %></p>
 </div>
 
 	<div class="field">
@@ -19,7 +19,8 @@
 	<% else %>
 		<%= f.submit 'Start Payment Process', :class => "btn btn-primary" %>
 	<% end %>
-
+	 | <%= link_to t('.cancel', :default => t("helpers.links.cancel")),
+        payments_path, :class => 'btn' %>
 <% end %>
 </br>
 	</div>

@@ -7,7 +7,7 @@ class PaymentsController < ApplicationController
   require 'digest'
   
   def index
-    @payments = Payment.where.not(:alice_public_key => nil).page(params[:page]).order(created_at: :asc)
+    @payments = Payment.where.not(:key_path => nil).page(params[:page]).order(created_at: :asc)
   end
   
   
@@ -18,9 +18,22 @@ class PaymentsController < ApplicationController
   
   def create
     @payment = Payment.new(payment_params)
-    @payment.tumbler_public_key = "026964dcab435d3e3d2cb046e28caf8566ada35233a68b65a9769ee229a4f99003"
+    @payment.expiry_date  ||= Time.now.utc  # will set the default value only if it's nil
+    real_indices = []
+    prng = Random.new
+    while real_indices.count < 15
+      j = prng.rand(0..299)
+      unless real_indices.include? j
+        real_indices << j
+      end
+    end
+    @payment.real_indices ||= real_indices.sort
+    
+    salt = Figaro.env.tumblebit_salt
+    index = (salt.to_i + prng.rand(0..99999)) % 0x80000000
+    @payment.key_path = "1/#{index}"
     @payment.save
-    render "show_alice", notice: 'Payment was successfully created.'
+    render "show", notice: 'Payment was successfully created.'
   end
   
   
@@ -30,27 +43,10 @@ class PaymentsController < ApplicationController
   
   def show
     @payment = Payment.find(params[:id])
-    @script =Script.find(@payment.script_id)
-    
-    if PublicKey.where(:script_id => @script.id, :name => "Bob").last
-       @script.bob_public_key = PublicKey.where(:script_id => @script.id, :name => "Bob").last.compressed
-    else
-       @script.bob_public_key = ""
-    end
-    
-    unless @script.tumbler_key.blank?
-       key = BTC::Key.new(wif:@script.tumbler_key)
-       @xpub = key.compressed_public_key.to_hex
-     end
      
-     @funding_script = @script.funding_script
-     @funded_address = @script.hash_address
+     @funding_script = @payment.funding_script
+     @funded_address = @payment.hash_address
      @epsilon = []
-     if @payment.alice_public_key.blank?
-       render "show_payment_request"
-     else
-       render "show_alice"
-     end
   end
   
   def update
@@ -832,8 +828,8 @@ class PaymentsController < ApplicationController
   private
  
      def payment_params
-       params.require(:payment).permit(:y, :r_values, :beta_values, :ro_values, :k_values,:real_indices, :fake_indices)
-       params.require(:payment).permit(:alice_public_key, :tumbler_public_key, :expiry_date, :aasm_state)
+       params.require(:payment).permit(:y, :r, :beta_values, :ro_values, :k_values,:real_indices,
+       :c_values, :h_values,:key_path, :tumbler_public_key, :expiry_date, :aasm_state)
      end
 
 end
