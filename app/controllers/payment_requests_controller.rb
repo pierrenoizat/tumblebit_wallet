@@ -133,7 +133,169 @@ class PaymentRequestsController < ApplicationController
     else
       redirect_to root_url, notice: @notice
     end
-  end
+  end # of bob_step_2
+  
+  
+  def bob_step_8
+    # For all fake epsilon values provided by Tumbler, Bob checks that sigmai = Dec(epsiloni, ci) 
+    # and ECDSA-verifies the signature against PKT and betai = sighashi.
+    # Bob aborts the protocol if any check fails.
+    @payment_request = PaymentRequest.find(params[:id])
+    @funded_address = @payment_request.hash_address
+    data = open("app/views/products/fake_epsilon_values_#{@funded_address}.csv").read
+    @fake_epsilon_values = []
+    j = 0
+    CSV.parse(data) do |row|
+      fake_epsilon_array = []
+      row.each do |f|
+        fake_epsilon_array << f
+        @fake_epsilon_values[j] = fake_epsilon_array[0]
+      end
+      j+=1
+    end # do |row| (read input file)
+    puts "Number of fake epsilon values in file: " + j.to_s
+    
+    data = open("app/views/products/c_z_values_#{@funded_address}.csv").read
+    @c_values = []
+    @z_values = []
+    j = 0
+    CSV.parse(data) do |row|
+      c_z_array = []
+      row.each do |f|
+        c_z_array << f
+        @c_values[j] = c_z_array[0]
+        @z_values[j] = c_z_array[1]
+      end
+      j+=1
+    end # do |row| (read input file)
+    puts "Number of c values in file: " + j.to_s
+    # Bob computes sigmai = Dec(epsiloni, ci) for the 42 fake epsilon values
+    @sigma = []
+    @beta = []
+    j = 0
+    # @r = @payment_request.r.to_i
+
+    @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(@payment_request.tumbler_public_key))
+    puts @tumbler_key.address
+    @result = false
+    
+    for i in 0..83
+      unless @payment_request.real_indices.include? i
+        k = @fake_epsilon_values[j]
+        while k.size < 64
+          k = "0" + k # padding with leading zeroes in case of low epsilon value
+        end
+        puts "fake epsilon: #{k}"
+        key_hex = k[0..31]
+        iv_hex = k[32..63]
+        key = key_hex.from_hex
+        iv = iv_hex.from_hex
+        decipher = OpenSSL::Cipher::AES.new(128, :CBC)
+        decipher.decrypt
+        decipher.key = key
+        decipher.iv = iv
+        @sigma[j] = decipher.update(@c_values[i].from_hex) + decipher.final
+        puts "fake sigma value = #{@sigma[j].unpack('H*')[0]}"
+        puts "c value = #{@c_values[i]}"
+        
+        # Bob checks that sigmai is a valid ECDSA signature against PKT and betai
+        @beta[j] = @payment_request.fake_btc_tx_sighash(i)
+        puts "beta = #{@beta[j]}"
+        @result = @tumbler_key.verify_ecdsa_signature(@sigma[j], @beta[j].htb)  # result must equal true
+        if @result
+          j += 1
+        else
+          puts j
+          redirect_to @payment_request, alert: 'There is a problem with Tumblers fake epsilons: Bob should abort protocol.'
+          return
+        end
+      end
+    end
+    if j == 42
+      redirect_to @payment_request, notice: 'Tumblers fake epsilons were successfully checked by Bob.'
+    end
+  
+  end # of bob_step_8
+  
+  
+  def bob_step_10
+    # In step 10, Bob computes zj1*(q2)pk = (epsilonj2)pk and checks that zj2 = zj1*(q2)pk
+    # If any check fails, Bob aborts the protocol.
+    # If no fail, Tumbler is very likely to have sent validly formed zi values.
+    @payment_request = PaymentRequest.find(params[:id])
+    e = $TUMBLER_RSA_PUBLIC_EXPONENT
+    n = $TUMBLER_RSA_PUBLIC_KEY
+    data = open("app/views/products/quotient_values_#{@payment_request.hash_address}.csv").read
+    @quotient = []
+    @num = []
+    @denum = []
+    j = 0
+    CSV.parse(data) do |row|
+      quotient_array = []
+      row.each do |f|
+        quotient_array << f
+        @quotient[j] = quotient_array[0].to_i
+      end
+      j+=1
+    end # do |row| (read input file)
+    puts "Number of quotient values in file: " + j.to_s
+    
+    data = open("app/views/products/c_z_values_#{@payment_request.hash_address}.csv").read
+    @z_values = []
+    j = 0
+
+    CSV.parse(data) do |row|
+      c_z_array = []
+      row.each do |zeta|
+        c_z_array << zeta
+      end
+      # @z_values[j] = c_z_array[1].to_i(16)
+      @z_values[j] = c_z_array[1]
+      j+=1
+    end # do |row| (read input file)
+    puts "Number of z values in file: " + j.to_s
+    
+    @real_z_values = []
+    for i in 0..83
+      if @payment_request.real_indices.include? i
+        @real_z_values << @z_values[i]
+      end
+    end
+    puts "Number of real z values : " + @real_z_values.count.to_s
+
+    puts "check that z2 = z1*(q2)^pk mod n"
+    # check that z2 = z1*(q2)^pk mod n :
+
+    j = 0
+    for i in 0..40
+      z2 = @real_z_values[i+1].to_i(16)
+      z1 = @real_z_values[i].to_i(16)
+      q2 = @quotient[i]
+      puts z2.to_s(16)
+      puts z1.to_s(16)
+      puts q2
+      if (z2 == (z1*mod_pow(q2, e, n) % n))
+        j += 1
+      else
+        puts "Failed test, should be zero:" + ((z2 - z1*mod_pow(q2, e, n)) % n).to_s
+      end
+      puts j
+    end
+    
+    if j == 41
+      # TODO: Bob step 12
+      # Bob picks random R and keeps it secret
+      # Bob sets z= zj1 = (epsilonj1)**e = @real_z_values[0] and sends y = z*(R**e)  to Alice
+       y = @real_z_values[0].to_i(16)*mod_pow(@payment_request.r.to_i, e, n) % n
+       @payment_request.y  = y.to_s(16)
+       @payment_request.save
+      redirect_to @payment_request, notice: 'Tumblers RSA quotients were successfully checked by Bob.'
+    else
+      puts j
+      redirect_to @payment_request, alert: 'There is a problem with Tumblers RSA quotients: Bob should abort protocol.'
+    end
+    
+  end # of bob_step_10
   
   
   def create_puzzle_z

@@ -37,8 +37,19 @@
 		Expiry in seconds since epoch time (1/1/1970): <%= @payment_request.expiry_date.to_time.to_i %></p>
 		<p>Tumbler (Compressed) Public Key: <strong><%= @payment_request.tumbler_public_key %></strong></p>
 		<p>P2SH Address: <strong><%= @payment_request.hash_address if @payment_request %></strong></p>
-		<p><%= link_to("Create 84 beta values for Tumbler", { controller: "payment_requests", action: "bob_step_2" }, :class => "btn btn-primary") %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")),
-            payment_requests_path, :class => 'btn' %></p>
+		<% if @payment_request.aasm_state == "step2" %>
+			<p><%= link_to("Create 84 beta values for Tumbler", { controller: "payment_requests", action: "bob_step_2" }, :class => "btn btn-primary") %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payment_requests_path, :class => 'btn' %></p>
+		<% end %>
+		<% if @payment_request.aasm_state == "step4" %>
+			<p>Bob Real Indices: <pre style="width:600px"><code><%= @payment_request.real_indices if @payment_request %></code></pre></p>
+		<% end %>
+		<% if @payment_request.aasm_state == "step8" %>
+			<p><%=link_to "Bob Checks Tumbler Fake Epsilon", bob_step_8_payment_request_path(@payment_request), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payment_requests_path, :class => 'btn' %></p>
+		<% end %>
+		
+		<% if @payment_request.aasm_state == "step10" %>
+			<p><%=link_to "Bob Checks RSA Quotients", bob_step_10_payment_request_path(@payment_request), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payment_requests_path, :class => 'btn' %></p>
+		<% end %>
 		
 	<% end %>
 

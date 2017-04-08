@@ -97,7 +97,7 @@ class PaymentRequest < ActiveRecord::Base
       self.save
     end
     index = r+i
-    @previous_id = "d569e96b0d88b3774de1e4fe1a7e9ce8e07d362af8afa4d960ca0514b51fb4f9"
+    @previous_id = "d569e96b0d88b3774de1e4fe1a7e9ce8e07d362af8afa4d960ca0514b51fb4f9" # TODO make it a variable
     @previous_index = 0
     @value = 265800 - $NETWORK_FEE# in satoshis
     hashtype = BTC::SIGHASH_ALL
