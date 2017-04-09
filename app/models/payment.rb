@@ -105,8 +105,8 @@ class Payment < ActiveRecord::Base
   end
   
   
-  def funded_address
-    unless (self.tumbler_public_key.blank? or self.alice_public_key.blank?)
+  def hash_address
+    unless self.tumbler_public_key.blank?
       @funded_address=BTC::ScriptHashAddress.new(redeem_script:self.funding_script, network:BTC::Network.default)
     else
       @funded_address = nil

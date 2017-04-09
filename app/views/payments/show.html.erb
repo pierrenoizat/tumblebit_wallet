@@ -1,19 +1,19 @@
 <div class="container">
   <div class="row">
 	<h3>Payment # <%= @payment.id %>: <%= @payment.title %></h3>
-	<p>P2SH Address: <strong><%= @payment.funded_address if @puzzle %></strong></p>
+	<p>P2SH Address: <strong><%= @payment.hash_address %></strong></p>
 	<p>Tumbler's Public Key: <strong><%= @payment.tumbler_public_key %></strong></p>
-	<p>Alice Public Key: <strong><%= @payment.alice_public_key if @puzzle %></strong></p>
+	<p>Alice Public Key: <strong><%= @payment.alice_public_key %></strong></p>
 
 	<p>Expiry: <strong><%= Time.at(@payment.expiry_date.to_time.to_i).utc %></strong></br>
 	Expiry in seconds since epoch time (1/1/1970): <%= @payment.expiry_date.to_time.to_i %></p>
 	</br>
-	<% if @payment.alice_public_key.blank? %>
+	<% if @payment.tumbler_public_key.blank? %>
 		<%= form_for(@payment, multipart: true) do |f| %>
 
 		<div class="field">
-			<p><%= f.label 'Alice Key Path' %></br>
-			<%= f.text_field :key_path, :style => "width:540px;", :placeholder => "1/4512" %></p>
+			<p><%= f.label 'Tumbler Public Key' %></br>
+			<%= f.text_field :tumbler_public_key, :style => "width:540px;", :placeholder => "02893204e76671e558ce40d9784422d5b3a1990c3975ffa288fc98c987a590a0f9" %></p>
 		</div>
 
 		<%= f.submit 'Update Payment with parameters', :class => "btn btn-primary" %>
@@ -21,10 +21,15 @@
 		<% end %>
 	<% end %>
 	
-	
-	<p><%=link_to 'Submit 300 Beta Values', alice_step_4_payment_path(@payment), :class => "btn btn-primary" %><% if @puzzle.real_indices %> | <%=link_to 'Get 285 fake k Values for Alice', alice_step_6_payment_path(@payment), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")),
-        payments_path, :class => 'btn' %><% end %></p>
+	<% if @payment.aasm_state == "initiated"%>
+		<p><%=link_to 'Generate 300 Beta Values', alice_step_3_payment_path(@payment), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payments_path, :class => 'btn' %></p>
+	<% end %>
 	</br>
+	<% if @payment.aasm_state == "step1"%>
+		<p><%=link_to 'Submit 300 Beta Values', alice_step_4_payment_path(@payment), :class => "btn btn-primary" %> | <%=link_to 'Get 285 fake k Values for Alice', alice_step_6_payment_path(@payment), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payments_path, :class => 'btn' %></p>
+	<% end %>
+	</br>
+	
 	
 	</div>
 </div>

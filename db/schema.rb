@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170408205804) do
+ActiveRecord::Schema.define(version: 20170409123231) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -58,7 +58,6 @@ ActiveRecord::Schema.define(version: 20170408205804) do
     t.string   "r"
     t.datetime "created_at",                      null: false
     t.datetime "updated_at",                      null: false
-    t.text     "real_indices",       default: [],              array: true
     t.text     "beta_values",        default: [],              array: true
     t.text     "ro_values",          default: [],              array: true
     t.text     "k_values",           default: [],              array: true
@@ -66,6 +65,7 @@ ActiveRecord::Schema.define(version: 20170408205804) do
     t.text     "h_values",           default: [],              array: true
     t.string   "aasm_state"
     t.string   "key_path"
+    t.integer  "real_indices",       default: [],              array: true
   end
 
   create_table "posts", force: :cascade do |t|

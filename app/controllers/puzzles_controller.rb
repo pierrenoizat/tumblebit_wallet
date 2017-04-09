@@ -243,7 +243,7 @@ class PuzzlesController < ApplicationController
         end
       end # of CSV.open (writing to "app/views/products/beta_values_#{string}.csv")
     
-  end
+  end # of Alice step 3
   
   def bob_step_2
     # Steps 2 and 3 in Tumbler-Bob interactions, performed by Bob

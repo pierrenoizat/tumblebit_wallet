@@ -13,12 +13,7 @@ class PaymentsController < ApplicationController
   
   def new
     @payment = Payment.new
-  end
-  
-  
-  def create
-    @payment = Payment.new(payment_params)
-    @payment.expiry_date  ||= Time.now.utc  # will set the default value only if it's nil
+    @payment.expiry_date ||= Time.now.utc  # will set the default value only if it's nil
     real_indices = []
     prng = Random.new
     while real_indices.count < 15
@@ -27,29 +22,151 @@ class PaymentsController < ApplicationController
         real_indices << j
       end
     end
-    @payment.real_indices ||= real_indices.sort
+    @payment.real_indices = real_indices.sort
     
     salt = Figaro.env.tumblebit_salt
     index = (salt.to_i + prng.rand(0..99999)) % 0x80000000
     @payment.key_path = "1/#{index}"
+  end
+  
+  
+  def create
+    @payment = Payment.new(payment_params)
+    
     @payment.save
     render "show", notice: 'Payment was successfully created.'
   end
   
   
-  def show_alice
-    @payment = Payment.find(params[:id])
-  end
-  
   def show
     @payment = Payment.find(params[:id])
-     
-     @funding_script = @payment.funding_script
-     @funded_address = @payment.hash_address
-     @epsilon = []
   end
   
+  
+  def edit
+    @payment = Payment.find(params[:id])
+  end
+  
+  
   def update
+    @payment = Payment.find(params[:id])
+    if @payment.update_attributes(payment_params)
+      flash[:notice] = "Payment successfully updated."
+      render "show"
+    else
+      flash[:notice] = "There was a problem with this payment update."
+      redirect_to payments_url
+    end
+  end
+  
+  
+  def destroy
+    @payment = Payment.find_by_id(params[:id])
+    @payment.destroy
+    redirect_to payments_path, notice: 'Payment was successfully deleted.'
+  end
+  
+  
+  def alice_step_3
+    # Fig. 3, steps 1,2,3
+    # Alice creates 300 values for Tumbler, mixing 15 real values with 285 fake values
+    @payment = Payment.find(params[:id])
+    string = @payment.hash_address
+    
+    if @payment.real_indices.blank?
+      real_indices = []
+      prng = Random.new
+      while real_indices.count < 15
+        j = prng.rand(0..299)
+        unless real_indices.include? j
+          real_indices << j
+        end
+      end
+      @payment.real_indices = real_indices.sort
+      @payment.save # save indices of real values to @payment.real_indices
+    end
+    puts "Real indices: #{@payment.real_indices}"
+    
+    # Exponent (part of the public key)
+    e = $TUMBLER_RSA_PUBLIC_EXPONENT
+    # The modulus (aka the public key, although this is also used in the private key computations as well)
+    n = $TUMBLER_RSA_PUBLIC_KEY
+    
+    salt=Random.new.bytes(32).unpack('H*')[0] # 256-bit random integer
+    puts "Salt: #{salt}"
+    r=[]
+    
+    for i in 0..299  # create 300 blinding factors
+      # 285 ro values created by Alice
+      # 15 r values created by Bob. Alice knows only d = y*r^^pk
+      if @payment.real_indices.include? i
+        r[i]=Random.new.bytes(10).unpack('H*')[0] # "8f0722a18b63d49e8d9a", size = 20 hex char, 80 bits, 10 bytes
+      else
+        r[i]=(Random.new.bytes(10).unpack('H*')[0].to_i(16)*salt.to_i(16) % n).to_s(16) # salt is same size as epsilon, otherwise Tumbler can easily tell real values from fake values based on the size of s
+      end
+    end
+    
+    # dump the 285 ro values to a new csv file for Tumbler
+    @ro_values = []
+    require 'csv'
+    file_name = "app/views/products/ro_values_#{string}.csv"
+    if File.exists?(file_name)
+      File.delete(file_name) # delete any previous version of file
+    end
+    
+    CSV.open(file_name, "ab") do |csv|
+      for i in 0..299
+        unless @payment.real_indices.include? i
+          @ro_values[i] = r[i]
+        end
+      end
+      @ro_values.each do |ro|
+        csv << [ro]
+        end
+      end # of CSV.open (writing to ro_values_123456.csv)
+    
+    @beta_values = []
+    # first, compute 15 real beta values
+    if @payment.y
+      @payment.y_received
+      p = @payment.y.to_i(16) # y = epsilon^^pk,received from Bob
+      puts "y: #{@payment.y}"
+    
+      for i in 0..299
+        m = r[i].to_i(16)
+        if @payment.real_indices.include? i
+          b = mod_pow(m,e,n)
+          beta_value = (p*b) % n
+        else
+          beta_value = mod_pow(m,e,n)
+        end
+        @beta_values[i] = beta_value.to_s(16)
+      end
+    
+      # Alice sends the 300 values to Tumbler in a CSV file
+      # dump the 300 values to a new csv file for Tumbler
+      file_name = "app/views/products/beta_values_#{string}.csv"
+      if File.exists?(file_name)
+        File.delete(file_name) # delete any previous version of file
+      end
+    
+      CSV.open(file_name, "ab") do |csv|
+        @beta_values.each do |beta|
+          csv << [beta]
+        end
+      end # of CSV.open (writing to betavalues123456.csv)
+      @payment.beta_values = @beta_values
+      @payment.ro_values = @ro_values
+      @payment.beta_values_sent
+      @payment.save
+      render "show"
+    else
+      redirect_to payments_url, alert: "Before computing beta values, Alice must get y from Bob."
+    end
+  end
+  
+  
+  def old_update
     # Step 6: Bob sends fake indices and r to Tumbler
     @payment = Payment.find(params[:id])
     e = $TUMBLER_RSA_PUBLIC_EXPONENT
@@ -314,7 +431,7 @@ class PaymentsController < ApplicationController
     end
   end
     
-  end # of update method
+  end # of old_update method, TODO remove method !
   
   
   def bob_step_9
@@ -828,8 +945,7 @@ class PaymentsController < ApplicationController
   private
  
      def payment_params
-       params.require(:payment).permit(:y, :r, :beta_values, :ro_values, :k_values,:real_indices,
-       :c_values, :h_values,:key_path, :tumbler_public_key, :expiry_date, :aasm_state)
+       params.require(:payment).permit(:title, :y, :r, :beta_values, :ro_values, :k_values,:real_indices,:c_values, :h_values,:key_path, :tumbler_public_key, :expiry_date, :aasm_state)
      end
 
 end

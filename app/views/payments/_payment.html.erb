@@ -1,9 +1,5 @@
-
-<td><%= link_to payment.title, payment_path(payment) %></td>
-<td><%= payment.refund_address %></td>
 <td><%= payment.hash_address %></td>
-<td><%= link_to payment.alice_public_key, show_alice_payment_path(payment) if payment.alice_public_key %></td>
-<% if user_admin? %>
+<td><%= payment.aasm_state %></td>
+<td><%= link_to payment.alice_public_key, payment %></td>
 <td><%= link_to "Edit", edit_payment_path(payment), :class => 'btn btn-xs btn-success' %></td>
 <td><%= link_to "Delete", payment_path(payment), :data => { :confirm => "Are you sure?" }, :method => :delete, :class => 'btn btn-xs btn-danger' %></td>
-<% end %>

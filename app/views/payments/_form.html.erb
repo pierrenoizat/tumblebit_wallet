@@ -1,15 +1,16 @@
 <%= form_for(@payment, multipart: true) do |f| %>
-  <% unless @payment.title %>
   <div class="field">
     <p><%= f.label 'Title' %></p>
     <p><%= f.text_field :title %></p>
   </div>
-  <% end %>
 
-	<div><pre style="width:600px"><code id="contrat"><%= @payment.description %></code></pre></div>
 </br>
-	<div id="subFormLine1">A transaction spending from this address cannot be included in a block until the set date and time has passed.</div>
-	<div id="subFormLine2">We can be reasonably certain that any block in the chain was created within approximately two hours of the block’s timestamp.</div>
+<% unless @payment.y %>
+  <div class="field">
+    <p><%= f.label 'Puzzle y received from Bob' %></p>
+    <p><%= f.text_field :y, :style => "width:840px;", :placeholder => "9868b5efb067748dfbbdaa279f1c47789f2e7ba685f9808675f8916827c4320eee9ad99870636ad8e4d656c3bdcd07a438ac6b1f18a2f0eb1639beb1f83ca21bd929b8551cd28694d4eab2be258d356d8c585c4a594264894d60bf99b66fb0ea1029cc51b56205d2ee150ae1235869e5bb041b4cbf74e831ce4ad27a68707d0" %></p>
+  </div>
+  <% end %>
 </br>
 	
 	<% if @payment.id %>

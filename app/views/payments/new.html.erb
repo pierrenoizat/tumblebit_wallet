@@ -3,11 +3,9 @@
 <h3> Send a New Payment</h3>
 <%= form_for(@payment, multipart: true) do |f| %>
 <p>Alice Public Key: <%= @payment.alice_public_key %></p>
-<div class="field">
-	<p><%= f.label 'Tumbler (compressed) Public Key' %></br>
-	<%= f.text_field :tumbler_public_key, :style => "width:540px;", :placeholder => "02BE332AE534CC30FB84BA64817A748DBC9A9C9021463A645F5B3CF2AB4AEB0284" %></p>
-</div>
-
+<%= f.hidden_field :expiry_date , :value => @payment.expiry_date %>
+<%= f.hidden_field :real_indices , :value => @payment.real_indices %>
+<%= f.hidden_field :key_path , :value => @payment.key_path %>
 	<div class="field">
   <p><%= f.label 'Expiry' %></p>
 	<p>Present Time: <%= Time.now.strftime("%Y-%b-%d - %H:%M") %></p>
