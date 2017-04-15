@@ -44,6 +44,7 @@ Rails.application.routes.draw do
     member do
       get 'alice_step_3'
       get 'alice_step_4'
+      get 'alice_step_5'
       get 'alice_step_6'
       get 'bob_step_8'
       get 'bob_step_10'

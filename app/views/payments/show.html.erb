@@ -26,7 +26,13 @@
 	<% end %>
 	</br>
 	<% if @payment.aasm_state == "step1"%>
-		<p><%=link_to 'Submit 300 Beta Values', alice_step_4_payment_path(@payment), :class => "btn btn-primary" %> | <%=link_to 'Get 285 fake k Values for Alice', alice_step_6_payment_path(@payment), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payments_path, :class => 'btn' %></p>
+		<p><%=link_to 'Submit 300 Beta Values', alice_step_4_payment_path(@payment), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payments_path, :class => 'btn' %></p>
+	<% end %>
+	<% if @payment.aasm_state == "step4"%>
+		<p><%=link_to 'Process 300 (c,h) couples', alice_step_4_payment_path(@payment), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payments_path, :class => 'btn' %></p>
+	<% end %>
+	<% if @payment.aasm_state == "step5"%>
+		<p><%=link_to 'Submit ro values to Tumbler', alice_step_5_payment_path(@payment), :class => "btn btn-primary" %> | <%=link_to 'Get 285 fake k Values for Alice', alice_step_6_payment_path(@payment), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payments_path, :class => 'btn' %></p>
 	<% end %>
 	</br>
 	

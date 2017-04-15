@@ -157,11 +157,24 @@ class PaymentsController < ApplicationController
       end # of CSV.open (writing to betavalues123456.csv)
       @payment.beta_values = @beta_values
       @payment.ro_values = @ro_values
-      @payment.beta_values_sent
+      # @payment.beta_values_sent # update state to step4
+      @payment.c_h_values_received # update state to step5
       @payment.save
       render "show"
     else
       redirect_to payments_url, alert: "Before computing beta values, Alice must get y from Bob."
+    end
+  end
+  
+  
+  def alice_step_5
+    # send real_indices and ro values to Tumbler
+    @payment = Payment.find(params[:id])
+    string = @payment.hash_address
+    file_name = "app/views/products/ro_values_#{string}.csv"
+    if File.exists?(file_name) and @payment.aasm_state == "step5"
+      @payment.ro_values_sent # update state to step6
+      @payment.save
     end
   end
   
@@ -636,7 +649,7 @@ class PaymentsController < ApplicationController
     # Tumbler reads the 300 values from Alice's CSV file
     # then, Tumbler computes beta^^sk = s for each of the 300 beta values
     row_count = 0
-    string = @payment.funded_address
+    string = @payment.hash_address
     data = open("app/views/products/beta_values_#{string}.csv").read
     @s_values = []
 
@@ -706,6 +719,12 @@ class PaymentsController < ApplicationController
         redirect_to @payment, alert: "Problem with signature encryption."
       end
     end
+    
+    @payment.k_values = @k_values
+    @payment.c_values = @c_values
+    @payment.h_values = @h_values
+    @payment.c_h_values_received # update state to step5
+    @payment.save
     
     # dump the 300 (c, h) couples to a new csv file for Alice
     file_name = "app/views/products/c_h_values_#{string}.csv"
@@ -939,7 +958,7 @@ class PaymentsController < ApplicationController
       
     end
     
-  end
+  end # of method sender_checks_k_values
 
 
   private
