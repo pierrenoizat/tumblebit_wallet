@@ -4,7 +4,7 @@ class Payment < ActiveRecord::Base
 
   aasm do # default column: aasm_state
     state :initiated, :initial => true
-    state :step1,:step4, :step5,:step6,:step8, :step9
+    state :step1,:step5,:step7,:step8
     state :completed
 
     event :y_received do
@@ -12,27 +12,19 @@ class Payment < ActiveRecord::Base
     end
 
     event :beta_values_sent do
-      transitions :from => :step1, :to => :step4
+      transitions :from => :step1, :to => :step5
     end
     
     event :c_h_values_received do
-      transitions :from => :step4, :to => :step5
+      transitions :from => :step5, :to => :step7
     end
     
-    event :ro_values_sent do
-      transitions :from => :step5, :to => :step6
-    end
-    
-    event :k_values_received do
-      transitions :from => :step6, :to => :step8
-    end
-    
-    event :y_sent do
-      transitions :from => :step8, :to => :step9
+    event :fake_k_values_received do
+      transitions :from => :step7, :to => :step8
     end
     
     event :solve_tx_broadcasted do
-      transitions :from => :step9, :to => :completed
+      transitions :from => :step8, :to => :completed
     end
   end
   

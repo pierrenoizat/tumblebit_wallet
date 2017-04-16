@@ -42,15 +42,13 @@ Rails.application.routes.draw do
     
   resources :payments do
     member do
-      get 'alice_step_3'
-      get 'alice_step_4'
+      get 'alice_step_1'
       get 'alice_step_5'
-      get 'alice_step_6'
+      get 'alice_step_7'
       get 'bob_step_8'
       get 'bob_step_10'
       get 'tumbler_encrypts_values'
       get 'tumbler_checks_ro_values'
-      get 'alice_step_7'
       get 'bob_gets_sigma'
     end
   end

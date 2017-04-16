@@ -1,7 +1,7 @@
 <div class="container">
   <div class="row">
 	<h3>Tumblebit (Alice) Puzzle # <%= @payment.id %></h3>
-	<p>P2SH Address: <strong><%= @payment.funded_address %></strong></p>
+	<p>P2SH Address: <strong><%= @payment.hash_address %></strong></p>
 
 	<p>Expiry: <strong><%= Time.at(@payment.expiry_date.to_time.to_i).utc %></strong></br>
 	Expiry in seconds since epoch time (1/1/1970): <%= @payment.expiry_date.to_time.to_i %></p>

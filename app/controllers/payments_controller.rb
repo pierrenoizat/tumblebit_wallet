@@ -67,7 +67,7 @@ class PaymentsController < ApplicationController
   end
   
   
-  def alice_step_3
+  def alice_step_1
     # Fig. 3, steps 1,2,3
     # Alice creates 300 values for Tumbler, mixing 15 real values with 285 fake values
     @payment = Payment.find(params[:id])
@@ -157,294 +157,125 @@ class PaymentsController < ApplicationController
       end # of CSV.open (writing to betavalues123456.csv)
       @payment.beta_values = @beta_values
       @payment.ro_values = @ro_values
-      # @payment.beta_values_sent # update state to step4
-      @payment.c_h_values_received # update state to step5
+      @payment.beta_values_sent # update state to step5
       @payment.save
       render "show"
     else
       redirect_to payments_url, alert: "Before computing beta values, Alice must get y from Bob."
     end
-  end
+  end # of alice_step_1
   
   
   def alice_step_5
     # send real_indices and ro values to Tumbler
     @payment = Payment.find(params[:id])
     string = @payment.hash_address
+    
+    data = open("app/views/products/c_h_values_#{string}.csv").read
+    @c_values = []
+    @h_values = []
+    j = 0
+    CSV.parse(data) do |row|
+      c_h_array = []
+      row.each do |f|
+        c_h_array << f
+        @c_values[j] = c_h_array[0]
+        @h_values[j] = c_h_array[1]
+      end
+      j+=1
+    end # do |row| (read input file)
+    
+    
     file_name = "app/views/products/ro_values_#{string}.csv"
     if File.exists?(file_name) and @payment.aasm_state == "step5"
-      @payment.ro_values_sent # update state to step6
+      @payment.c_values = @c_values
+      @payment.h_values = @h_values
+      @payment.c_h_values_received # update state to step7
       @payment.save
     end
-  end
+  end # of alice_step_5
   
   
-  def old_update
-    # Step 6: Bob sends fake indices and r to Tumbler
-    @payment = Payment.find(params[:id])
-    e = $TUMBLER_RSA_PUBLIC_EXPONENT
-    n = $TUMBLER_RSA_PUBLIC_KEY
-    if @payment.script_id and @payment.alice_public_key.blank? # update Bob puzzle
-      
-    @script =Script.find(@payment.script_id)
-    @funded_address = @script.hash_address
-    if @payment.update_attributes(payment_params) # Step 7 checks are performed by Tumbler in puzzle before_update callback
-      flash[:notice] = "Payment successfully updated."
-      # TODO :
-      # Next,  Bob needs to check that the 42  fake” (ci , zi ) pairs are correctly formed by Tumbler (Step 8). 
-      # After Tumbler has checked that the “fake” sighash values match the “fake” betai values),
-      # Tumbler provides the “fake” epsiloni values to Bob: epsiloni = zi^^sk
-      data = open("app/views/products/c_z_values_#{@funded_address}.csv").read
-      @z_values = []
-      j = 0
-      # The secret exponent (aka the private key)
-      d = Figaro.env.tumbler_rsa_private_key.to_i(16)
-      CSV.parse(data) do |row|
-        c_z_array = []
-        row.each do |zeta|
-          c_z_array << zeta
-          @z_values[j] = c_z_array[1]
-        end
-        j+=1
-      end # do |row| (read input file)
-      puts "Number of z values in file: " + j.to_s
-      @epsilon=[]
-      fake = []
-      @payment.fake_indices.each do |ri|
-        fake << ri.strip # avoid problems with extra leading or trailing space caracters
-      end
-      
-      for i in 0..83
-        if fake.include? i.to_s
-          @epsilon[i] = mod_pow(@z_values[i].to_i(16),d,n).to_s(16)
-          while @epsilon[i].size < 64
-            @epsilon[i] = "0" + @epsilon[i] # # padding with leading zeroes in case of low epsilon value
-          end
-        else
-          @epsilon[i] = "0"
-        end
-      end
-      puts @epsilon
-      # dump the 42 fake epsilon values to a new csv file for Bob
-      file_name = "app/views/products/fake_epsilon_values_#{@funded_address}.csv"
-      if File.exists?(file_name)
-        File.delete(file_name) # delete any previous version of file
-      end
-
-      CSV.open(file_name, "ab") do |csv|
-        @epsilon.each do |f|
-          unless (f == "0" or f.nil?)
-            csv << [f]
-          end
-        end
-      end # of CSV.open (writing to csv file)
-      # to remove annoying last (empty) line from file:
-      File.truncate(file_name, File.size(file_name) - 1)
-      bob_step_9 # to compute RSA-quotients and dump them to a csv file
-      render 'show'
-    else
-      flash[:alert] = "There was a problem with real indices supplied by Bob."
-      redirect_to root_path
-    end
-  else # update Alice puzzle
-    if @payment.update_attributes(payment_params) # Step 7 checks are performed by Tumbler in puzzle before_update callback
-      flash[:notice] = "Payment successfully updated."
-      # TODO :
-      # Tumbler gets y and r_values file from Alice
-      # Tumbler verifies real beta_values = y·(r)^^e mod n for real r values
-      # If not, abort.
-      # if all real beta values unblind to y, Tumbler post transaction Tsolve containing 15 real k values
-      file_name = "app/views/products/r_values_#{@payment.funded_address}.csv"
-      data = open(file_name).read
-      @r_values = []
-      j = 0
-      CSV.parse(data) do |row|
-        r_array = []
-        row.each do |r|
-          r_array << r
-          if r_array[0]
-            @r_values[j] = r_array[0]
-            j+=1
-          end
-        end
-        # j+=1
-      end # do |row| (read input file)
-      puts "Number of real r values in file: " + j.to_s
-      
-      @real_beta=[]
-      real = []
-      @payment.real_indices.each do |ri|
-        real << ri.strip # avoid problems with extra leading or trailing space caracters
-      end
-      file_name = "app/views/products/beta_values_#{@payment.funded_address}.csv"
-      data = open(file_name).read
-      
-      i = 0
-      j = 0
-      true_count = 0
-      CSV.parse(data) do |row|
-        if real.include? i.to_s
-          beta_array = []
-          row.each do |r|
-            beta_array << r
-            @real_beta[j] = beta_array[0]
-            # beta = y·(r)^^e mod n  ?
-            if @real_beta[j] == ((@payment.y.to_i(16)*mod_pow(@r_values[j].to_i(16),e,n) % n)).to_s(16)
-              true_count += 1
-            end
-            j += 1
-          end
-          # j+=1
-        end
-        i += 1
-      end # do |row| (read input file)
-      puts "Number of real beta values in file: " + j.to_s
-      puts @real_beta
-      puts true_count
-      
-      if true_count == 15
-        # TODO : post transaction Tsolve containing 15 real k values
-        file_name = "app/views/products/k_values_#{@payment.funded_address}.csv"
-        data = open(file_name).read
-        @real_k = []
-        i = 0
-        j = 0
-        CSV.parse(data) do |row|
-          if real.include? i.to_s
-            k_array = []
-            row.each do |k|
-              k_array << k
-              @real_k[j] = k_array[0]
-              j += 1
-            end
-          end
-          i += 1
-        end # do |row| (read input file)
-        puts "Number of real k values in file: " + j.to_s
-        puts @real_k
-      end
-      
-      @real_h_values = []
-      i = 0
-      m = 0
-      @contract = ""
-      string = @payment.funded_address
-      data = open("app/views/products/c_h_values_#{string}.csv").read
-      CSV.parse(data) do |row|
-        ch_array = []
-        row.each do |c|
-          ch_array << c
-        end
-        if real.include? i.to_s
-          @real_h_values[m] = row[1]
-          @contract += @real_h_values[m]
-          m += 1
-        end
-        i += 1
-      end # do |row| (read input file)
-      puts "Number of real h values: " + @real_h_values.count.to_s
-      puts "Contract: " + @contract
-      
-      @tumbler_key = BTC::Key.new(wif:"L2dSPKfm998jApkYyF1CoM5zR6rYAassuSbgagMkyB8vxfpiEzFU")
-      if @payment.script_id
-        @script = @payment.script
-        @alice_pub_key = PublicKey.where("script_id = ? AND name = ?", @script.id, "Alice").last
-        @tumbler_pub_key = PublicKey.where("script_id = ? AND name = ?", @script.id, "Tumbler").last
-        
-      else
-        @script = Script.create(title: "puzzle_#{string}",
-                          tumbler_key: "L2dSPKfm998jApkYyF1CoM5zR6rYAassuSbgagMkyB8vxfpiEzFU",
-                          expiry_date: @payment.expiry_date,
-                          contract: @contract,
-                          refund_address: BTC::PublicKeyAddress.new(key: @tumbler_key).to_s,
-                          category: "tumblebit_puzzle")
-      
-        @alice_pub_key = PublicKey.create(name: "Alice",
-                          script_id: @script.id,
-                          compressed: @payment.alice_public_key)
-        @tumbler_pub_key = PublicKey.create(name: "Tumbler",
-                          script_id: @script.id,
-                          compressed: @payment.tumbler_public_key)
-        @payment.script_id = @script.id
-        @payment.save
-      end
-      
-      if @script.funded?
-        puts @script.first_unspent_tx
-        puts @script.refund_address
-      else
-        puts "Script not funded yet by Alice"
-      end
-      
-      @notice = "Contract spending transaction was successfully signed."
-      @public_keys = @script.public_keys
-
-      fee = 0.00225 # 2 € when 1 BTC = 1000 €
-      @previous_index = @script.index.to_i
-      @previous_id = @script.tx_hash
-
-      begin  
-        @refund_address = BTC::Address.parse(@script.refund_address)
-      rescue Exception => era
-        redirect_to @script, alert: "Invalid refund destination address."
-        return
-      end
-
-      @value = (@script.amount.to_f - fee) * BTC::COIN # @value is expressed in satoshis
-      @funding_script = @script.funding_script
-      
-      @script.alice_pub_key_1 = PublicKey.where(:script_id => @script.id, :name => "Alice").last.compressed
-      @script.oracle_1_pub_key = PublicKey.where(:script_id => @script.id, :name => "Tumbler").last.compressed
-                                    
-      tx = BTC::Transaction.new
-
-      tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
-                                                previous_index: @previous_index,
-                                                sequence: 0))
-      tx.add_output(BTC::TransactionOutput.new(value: @value, script: @refund_address.script))
-      hashtype = BTC::SIGHASH_ALL
-      sighash = tx.signature_hash(input_index: 0,
-                                  output_script: @funding_script,
-                                  hash_type: hashtype)
-      tx.inputs[0].signature_script = BTC::Script.new
-        
-      puts "Tumbler signature appended"
-      tx.inputs[0].signature_script << (@tumbler_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
-  
-      
-      
-  
-      k = Array.new
-      string = ""
-      for i in 0..14
-        k[i] = BTC::Data.hex_from_data(@real_k[i])
-      end
-      for i in 0..14
-        string += @real_k[i].ripemd160.to_hex
-        puts "Hash of real k value: " + @real_k[i].ripemd160.to_hex
-        puts "Real h value :" + BTC::Data.data_from_hex(@real_h_values[i]).to_hex
-        
-        tx.inputs[0].signature_script.append_pushdata(@real_k[14-i])
-      end
-      if string != @script.contract
-        puts "Invalid puzzle value(s)."
-      end
-      s = tx.inputs[0].signature_script.to_hex
-      @decoded_script_sig = BTC::Script.new(hex:s)
-      @words = @decoded_script_sig.to_s.split(/\W+/)
-      puts "k15 = " + @words[1].from_hex # k15 as in k_values_ file (hex)
-      puts "k1 = " +  @words[15].from_hex # k1
-
-      tx.inputs[0].signature_script << BTC::Script::OP_TRUE # force script execution into checking puzzle solution and Tumbler's signature
-      tx.inputs[0].signature_script << @funding_script.data
-      @script.signed_tx = tx.to_s
-      puts @script.signed_tx
-      
-      render "alice_step_9"
-    end
-  end
+  def alice_step_7
+    # Fig 3, step 7
+    # For 285 fake indices, Alice verifies now that h = H(k), computes s = Dec(k,c) and verifies also that s = ro
     
-  end # of old_update method, TODO remove method !
+    @payment = Payment.find(params[:id])
+    string = @payment.hash_address
+    # Alice reads the 285 fake k values from Tumbler's CSV file and verifies that h = H(k)
+
+    data = open("app/views/products/fake_k_values_#{string}.csv").read
+    @fake_k_values = []
+    j = 0
+    CSV.parse(data) do |row|
+      fake_k_array = []
+      row.each do |f|
+        fake_k_array << f
+        @fake_k_values[j] = fake_k_array[0]
+      end
+      j+=1
+    end # do |row| (read input file)
+    puts "Number of fake k values loaded: " + j.to_s
+    
+    true_count = 0
+    j = 0
+    for i in 0..299
+      unless @payment.real_indices.include? i
+        if @payment.h_values[i] == @fake_k_values[j].ripemd160.to_hex
+          true_count += 1
+        else
+          puts "h: " + h
+          puts "k: " + k
+        end
+        j += 1
+      end
+    end
+    puts "Number of k values checked successfully: " + true_count.to_s
+    
+    unless true_count == 285
+      redirect_to @payment, alert: "Mismatch between h and H(k) values."
+    else
+      # Alice now computes s = Dec(k,c) and verifies that s^^pk = beta
+      e = $TUMBLER_RSA_PUBLIC_EXPONENT
+      n = $TUMBLER_RSA_PUBLIC_KEY
+
+      @s_values = []
+      j = 0
+      for i in 0..299
+        unless @payment.real_indices.include? i
+          k = @fake_k_values[j]
+          c = @payment.c_values[i]
+          decipher = OpenSSL::Cipher::AES.new(128, :CBC)
+          decipher.decrypt
+          key_hex = k[0..31]
+          iv_hex = k[32..63]
+          key = key_hex.from_hex
+          iv = iv_hex.from_hex
+          decipher.key = key
+          decipher.iv = iv
+          @s_values[i] =  decipher.update(BTC::Data.data_from_hex(c)) + decipher.final
+          j += 1
+        end
+      end
+      
+      true_count = 0
+      for i in 0..299
+        unless @payment.real_indices.include? i
+          if (@payment.ro_values[i] == @s_values[i])  # verify s = ro (fake values)
+            true_count += 1
+          end
+        end
+      end
+      puts "Number of s values checked successfully: " + true_count.to_s
+      unless true_count == 285
+        redirect_to @payment, alert: "Mismatch between fake s and ro values."
+      end
+      @payment.fake_k_values_received # update state to step8
+      @payment.save
+      
+    end
+    
+  end # of alice_step_7
   
   
   def bob_step_9
@@ -640,8 +471,6 @@ class PaymentsController < ApplicationController
   
   
   def alice_step_4
-    # WARNING: before running this method, be sure to copy beta_values_ file from tumblebit to tumbler directory app/views/products
-    # TODO: upload mechanism for Alice beta_values_ file
     # Fig. 3, step 4: tumbler_encrypts_values
     @payment = Payment.find(params[:id])
     # @script =Script.find(@payment.script_id)
@@ -851,114 +680,6 @@ class PaymentsController < ApplicationController
     # If not, abort.
     # if all real beta values unblind to y, Tumbler post transaction Tsolve containing 15 real k values
   end
-  
-  def sender_checks_k_values
-    # Fig 3, step 7
-    # Alice verifies now that h = H(k), computes s = Dec(k,c) and verifies also that s^^pk = beta
-    
-    @payment = Payment.find(params[:id])
-    # @script =Script.find(@payment.script_id)
-    
-    # Alice reads the 285 "fake" (c,h) values from Tumbler's CSV file
-    row_count = 0
-    # string = OpenSSL::Digest::SHA256.new.digest(@payment.id.to_s).unpack('H*').first[0..5]
-    string = @payment.funded_address
-    data = open("app/views/products/c_h_values_#{string}.csv").read
-    @c_values = []
-    @h_values = []
-    require 'csv'
-    i = 0
-    j = 0
-    CSV.parse(data) do |row|
-      ch_array = []
-      row.each do |c|
-        ch_array << c
-      end
-      unless @payment.real_indices.include? i.to_s
-        @c_values[j] = row[0]
-        @h_values[j] = row[1]
-        j += 1
-      end
-      i += 1
-      row_count+=1
-    end # do |row| (read input file)
-    puts "Number of (c,h) lines in file: " + row_count.to_s
-    puts "Number of fake c values: " + @c_values.count.to_s
-    
-    # Alice reads the 285 k values from Tumbler's CSV file and verifies that h = H(k)
-    row_count = 0
-    true_count = 0
-    data = open("app/views/products/fake_k_values_#{string}.csv").read
-    @fk_values = []
-    require 'csv'
-    i = 0
-    CSV.parse(data) do |row|
-      row.each do |k|
-        @fk_values[i] = k
-        h = @h_values.shift
-        if h == k.ripemd160.to_hex
-          true_count += 1
-        else
-          puts "h: " + h
-          puts "k: " + k
-        end
-      end
-      i += 1
-      row_count+=1
-    end # do |row| (read input file)
-    puts "Number of k values checked successfully: " + true_count.to_s
-    
-    unless true_count == 285
-      redirect_to @payment, alert: "Mismatch between h and H(k) values."
-    else
-      # Alice now computes s = Dec(k,c) and verifies that s^^pk = beta
-      e = $TUMBLER_RSA_PUBLIC_EXPONENT
-      n = $TUMBLER_RSA_PUBLIC_KEY
-
-      true_count = 0
-      @s_values = []
-
-      for i in 0..284
-        k = @fk_values[i]
-        c = @c_values[i]
-        decipher = OpenSSL::Cipher::AES.new(128, :CBC)
-        decipher.decrypt
-        key_hex = k[0..31]
-        iv_hex = k[32..63]
-        key = key_hex.from_hex
-        iv = iv_hex.from_hex
-        decipher.key = key
-        decipher.iv = iv
-        @s_values[i] =  decipher.update(BTC::Data.data_from_hex(c)) + decipher.final
-      end
-      
-      i = 0
-      data = open("app/views/products/beta_values_#{string}.csv").read
-      @beta_values = []
-      CSV.parse(data) do |row|
-        row.each do |beta|
-          unless @payment.real_indices.include? i.to_s
-            @beta_values << beta.to_i(16)
-          end
-        end
-        i +=1
-      end # do |row| (read input file)
-      puts "Number of beta values in file: " + i.to_s
-      
-      true_count = 0
-      for i in 0..284
-        if (@beta_values[i] == mod_pow(@s_values[i].to_i(16),e,n))  # verify s^^pk = beta (real values)
-          true_count += 1
-        end
-      end
-      puts "Number of s values checked successfully: " + true_count.to_s
-      unless true_count == 285
-        redirect_to @payment, alert: "Mismatch between s and beta values."
-      end
-      
-    end
-    
-  end # of method sender_checks_k_values
 
 
   private
