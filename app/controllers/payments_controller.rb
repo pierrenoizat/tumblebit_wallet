@@ -92,7 +92,7 @@ class PaymentsController < ApplicationController
     # The modulus (aka the public key, although this is also used in the private key computations as well)
     n = $TUMBLER_RSA_PUBLIC_KEY
     
-    salt=Random.new.bytes(32).unpack('H*')[0] # 256-bit random integer
+    salt=Random.new.bytes(128).unpack('H*')[0] # 1024-bit random integer
     puts "Salt: #{salt}"
     r=[]
     
@@ -102,7 +102,7 @@ class PaymentsController < ApplicationController
       if @payment.real_indices.include? i
         r[i]=Random.new.bytes(10).unpack('H*')[0] # "8f0722a18b63d49e8d9a", size = 20 hex char, 80 bits, 10 bytes
       else
-        r[i]=(Random.new.bytes(10).unpack('H*')[0].to_i(16)*salt.to_i(16) % n).to_s(16) # salt is same size as epsilon, otherwise Tumbler can easily tell real values from fake values based on the size of s
+        r[i]=(Random.new.bytes(10).unpack('H*')[0].to_i(16)*salt.to_i(16) % n).to_s(16) # salt is same size as y, otherwise Tumbler can easily tell real values from fake values based on the size of s
       end
     end
     
@@ -126,6 +126,7 @@ class PaymentsController < ApplicationController
       end # of CSV.open (writing to ro_values_123456.csv)
     
     @beta_values = []
+    @r_values = []
     # first, compute 15 real beta values
     if @payment.y
       @payment.y_received
@@ -135,6 +136,7 @@ class PaymentsController < ApplicationController
       for i in 0..299
         m = r[i].to_i(16)
         if @payment.real_indices.include? i
+          @r_values << r[i]
           b = mod_pow(m,e,n)
           beta_value = (p*b) % n
         else
@@ -157,6 +159,7 @@ class PaymentsController < ApplicationController
       end # of CSV.open (writing to betavalues123456.csv)
       @payment.beta_values = @beta_values
       @payment.ro_values = @ro_values
+      @payment.r_values = @r_values # 15 real r values to be revealed to Tumbler after step 8
       @payment.beta_values_sent # update state to step5
       @payment.save
       render "show"
@@ -276,6 +279,67 @@ class PaymentsController < ApplicationController
     end
     
   end # of alice_step_7
+  
+  
+  def alice_step_11
+    # TODO: Learn kj from Tsolve spending Tpuzzle funded by Alice in alice_step_7
+    data = open("app/views/products/k_values_#{@payment.hash_address}.csv").read
+    @real_k_values = []
+    j = 0
+    CSV.parse(data) do |row|
+      if @payment.real_indices.include? j
+        k_array = []
+        row.each do |f|
+          k_array << f
+          @real_k_values << k_array[0]
+        end
+      end
+      j+=1
+    end # do |row| (read input file)
+    puts "Number of real k values in file: " + j.to_s
+    
+    # Decrypt 15 real cj to sj = Hprg(kj) ⊕ cj 
+    @real_s_values = []
+    # Tumbler picked 15 real random symetric encryption key k (128 bits) and computed 
+    # c = Enc(k, s) and h = H(k)
+    true_count = 0
+    e = $TUMBLER_RSA_PUBLIC_EXPONENT
+    n = $TUMBLER_RSA_PUBLIC_KEY
+    for i in 0..14
+      decipher = OpenSSL::Cipher::AES.new(128, :CBC)
+      decipher.decrypt
+      
+      key_hex = @real_k_values[i].to_s[0..31] # TODO handle case when k starts with 0 (padding)
+      iv_hex = @real_k_values[i].to_s[32..63]
+      key = key_hex.from_hex
+      iv = iv_hex.from_hex
+      decipher.key = key
+      decipher.iv = iv
+      encrypted = @real_c_values[i].from_hex
+      @real_s_values[i] = decipher.update(encrypted) + decipher.final # plain
+      if (@real_beta_values[i] == mod_pow(@real_s_values[i].to_i(16),e,n))  # verify s**e = beta mod n
+        true_count += 1
+      end
+    end
+    
+    # Obtain solution sj/rj mod n
+    @solution = ((@real_s_values[0].to_i(16)/@payment.r_values[0]) % n).to_s(16)
+    puts "Real s values"
+    puts @real_s_values
+    puts @solution
+    puts true_count
+    
+    # Obtain solution sj/rj mod N 
+    # which is y**d mod N.
+    if true_count == 15
+      @payment.solve_tx_broadcasted # update state to completed
+      @payment.save
+      render "show"
+    else
+      redirect_to @payment, alert: "Mismatch between real s and beta values."
+    end
+    
+  end # of alice_step_11
   
   
   def bob_step_9

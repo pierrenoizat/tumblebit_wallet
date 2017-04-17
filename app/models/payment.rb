@@ -105,45 +105,58 @@ class Payment < ActiveRecord::Base
     end
   end
   
-  def generate_epsilon_values
-    # Tumbler picks 300 128-bit epsilon values with epsilon < n, RSA public key modulus of Tumbler.
-    epsilon = []
-    n = $TUMBLER_RSA_PUBLIC_KEY.to_i
-    k = 0
-    300.times do
-      value = n
-      while (value >= n)
-        value = Random.new.bytes(16).unpack('H*')[0].to_i(16) # 128-bit random integer
-        k += 1
+  
+  def puzzle_transaction_script
+    @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(self.tumbler_public_key))
+    @alice_key=BTC::Key.new(public_key:BTC.from_hex(self.alice_public_key))
+    
+    
+    @expire_at = Time.at(self.expiry_date.to_time.to_i)
+    h = Array.new
+    BTC::Network.default= BTC::Network.mainnet
+    @funding_script = BTC::Script.new
+    
+    unless self.h_values.blank?
+      for i in 0..299
+        if self.real_indices.include? i
+          h << self.h_values[i]
+        end
       end
-      epsilon << value.to_s(16)
+      @funding_script<<BTC::Script::OP_IF
+      j=0
+      for i in 0..14
+        # self.update(contract: h[i])
+        @funding_script<<BTC::Script::OP_RIPEMD160
+        @funding_script.append_pushdata(BTC::Data.data_from_hex(h[i]))
+        puts "#{h[i]}"
+        @funding_script<<BTC::Script::OP_EQUALVERIFY
+        j+=1
+      end
+      puts "Compteur: #{j}"
+      @funding_script<<@tumbler_key.compressed_public_key
+      @funding_script<<BTC::Script::OP_CHECKSIG
+    
+      @funding_script<<BTC::Script::OP_ELSE
+    
+      @funding_script<<BTC::WireFormat.encode_int32le(@expire_at.to_i)
+      @funding_script<<BTC::Script::OP_CHECKLOCKTIMEVERIFY
+      @funding_script<<BTC::Script::OP_DROP
+      @funding_script<<@alice_key.compressed_public_key
+      @funding_script<<BTC::Script::OP_CHECKSIG
+    
+      @funding_script<<BTC::Script::OP_ENDIF
+    else
+      return nil
     end
-    epsilon # returns array of 300 values (hex strings)
-    puts "Epsilon: #{epsilon[0]}"
-    z = generate_z(epsilon[0])
-    generate_blinded_puzzle(z)
   end
   
   
-  def generate_z(epsilon)
-    # returns puzzle z = (epsilon)**pk where pk is Tumbler RSA public key
-    # Exponent (part of the public key)
-    e = $TUMBLER_RSA_PUBLIC_EXPONENT
-    # The modulus (aka the public key, although this is also used in the private key computations as well)
-    n = $TUMBLER_RSA_PUBLIC_KEY
-    z = mod_pow(epsilon.to_i(16),e,n) # epsilon^pk mod n
-    puts "z: #{z.to_s(16)}"
-    z
-  end
-  
-  def generate_blinded_puzzle(z)
-    e = $TUMBLER_RSA_PUBLIC_EXPONENT
-    n = $TUMBLER_RSA_PUBLIC_KEY.to_i
-    r = Random.new.bytes(16).unpack('H*')[0].to_i(16) # 128-bit random integer, Bob keeps it secret
-    big_r = mod_pow(r,e,n) # r^pk mod n
-    puts "R: #{r.to_s(16)}"
-    blinded_puzzle = big_r*z % n
-    puts "Blinded puzzle: #{blinded_puzzle.to_s(16)}" 
+  def puzzle_transaction_address
+    unless self.puzzle_transaction_script.blank?
+      BTC::ScriptHashAddress.new(redeem_script:self.puzzle_transaction_script, network:BTC::Network.default)
+    else
+      return nil
+    end
   end
   
   
@@ -199,5 +212,10 @@ class Payment < ActiveRecord::Base
                                 hash_type: hashtype)
     beta = sighash.unpack('H*')[0]
   end 
+  
+  
+  def expired?
+      return (Time.now.to_i > self.expiry_date.to_i)
+  end
   
 end

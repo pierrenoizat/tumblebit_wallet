@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170409123231) do
+ActiveRecord::Schema.define(version: 20170417093124) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -55,7 +55,6 @@ ActiveRecord::Schema.define(version: 20170409123231) do
     t.string   "tumbler_public_key"
     t.datetime "expiry_date"
     t.string   "y"
-    t.string   "r"
     t.datetime "created_at",                      null: false
     t.datetime "updated_at",                      null: false
     t.text     "beta_values",        default: [],              array: true
@@ -66,6 +65,7 @@ ActiveRecord::Schema.define(version: 20170409123231) do
     t.string   "aasm_state"
     t.string   "key_path"
     t.integer  "real_indices",       default: [],              array: true
+    t.text     "r_values",           default: [],              array: true
   end
 
   create_table "posts", force: :cascade do |t|

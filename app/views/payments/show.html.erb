@@ -31,6 +31,17 @@
 	<% if @payment.aasm_state == "step7"%>
 		<p><%=link_to 'Check 285 fake k values sent by Tumbler', alice_step_7_payment_path(@payment), :class => "btn btn-primary" %>  | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payments_path, :class => 'btn' %></p>
 	<% end %>
+	<% if @payment.aasm_state == "step8"%>
+	<p>Puzzle y: <pre style="width:600px"><code><%= @payment.y %></code></pre></p>
+	<p>Real blinding factors r: <pre style="width:600px"><code><%= @payment.r_values %></code></pre></p>
+	<p>Puzzle Transaction Address funded by Alice: <pre style="width:600px"><code><%= @payment.puzzle_transaction_address %></code></pre></p>
+	<p>Puzzle Transaction Script: <pre style="width:600px"><code><%= @payment.puzzle_transaction_script %></code></pre></p>
+	<p><%=link_to 'Get puzzle solution', alice_step_11_payment_path(@payment), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payments_path, :class => 'btn' %></p>
+	<% end %>
+	<% if @payment.aasm_state == "completed"%>
+	<p>Puzzle y: <pre style="width:600px"><code><%= @payment.y %></code></pre></p>
+	<p>Puzzle solution y**d: <pre style="width:600px"><code><%= @solution %></code></pre></p>
+	<% end %>
 	</br>
 	
 	
