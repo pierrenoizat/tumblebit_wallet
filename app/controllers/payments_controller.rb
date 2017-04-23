@@ -51,6 +51,10 @@ class PaymentsController < ApplicationController
   def update
     @payment = Payment.find(params[:id])
     if @payment.update_attributes(payment_params)
+      if @payment.y and @payment.aasm_state == "initiated"
+        @payment.y_received
+        @payment.save
+      end
       flash[:notice] = "Payment successfully updated."
       render "show"
     else
@@ -97,8 +101,7 @@ class PaymentsController < ApplicationController
     r=[]
     
     for i in 0..299  # create 300 blinding factors
-      # 285 ro values created by Alice
-      # 15 r values created by Bob. Alice knows only d = y*r^^pk
+
       if @payment.real_indices.include? i
         r[i]=Random.new.bytes(10).unpack('H*')[0] # "8f0722a18b63d49e8d9a", size = 20 hex char, 80 bits, 10 bytes
       else
@@ -129,7 +132,6 @@ class PaymentsController < ApplicationController
     @r_values = []
     # first, compute 15 real beta values
     if @payment.y
-      @payment.y_received
       p = @payment.y.to_i(16) # y = epsilon^^pk,received from Bob
       puts "y: #{@payment.y}"
     

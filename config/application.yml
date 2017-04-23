@@ -13,7 +13,7 @@ default: &default
 
 development:
   <<: *default
-  secret_key_base: ca67d0cbaf24f4cebd1cbd67fc06da43053ac2896ac0304f6cf673a900b80d855d2ca0381c9487fae44b49e25ccf09362d56ce9430571507a8ff0c376a10e554
+  secret_key_base: 'ca67d0cbaf24f4cebd1cbd67fc06da43053ac2896ac0304f6cf673a900b80d855d2ca0381c9487fae44b49e25ccf09362d56ce9430571507a8ff0c376a10e554'
   access_key_id: <%= ENV["AWS_ACCESS_KEY_ID"] %>
   secret_access_key: <%= ENV["AWS_SECRET_ACCESS_KEY"] %>
   omniauth_provider_key: <%= ENV["TWITTER_OMNIAUTH_KEY"] %>
@@ -21,11 +21,11 @@ development:
   mail_password: <%= ENV["MAIL_PASSWORD"] %>
   mailchimp_api_key: <%= ENV["MAILCHIMP_API_KEY"] %>
   mailchimp_list_id: <%= ENV["MAILCHIMP_LIST_ID"] %>
-  tumbler_admin_uid: <%= ENV["TUMBLER_ADMIN_UID"] %>
+  tumbler_admin_uid: '<%= ENV["TUMBLER_ADMIN_UID"] %>'
   tumbler_rsa_private_key: <%= ENV["TUMBLER_RSA_PRIVATE_KEY"] %>
   tumbler_btc_mpk: <%= ENV["TBB_MPK"] %>
   tumbler_btc_msk: <%= ENV["TBB_MSK"] %>
-  tumblebit_salt: <%= ENV["TUMBLEBIT_SALT"] %>
+  tumblebit_salt: '<%= ENV["TUMBLEBIT_SALT"] %>'
   alice_mpk: <%= ENV["TBB_ALICE_MPK"] %>
   alice_msk: <%= ENV["TBB_ALICE_MSK"] %>
   bob_mpk: <%= ENV["TBB_BOB_MPK"] %>

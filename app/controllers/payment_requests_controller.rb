@@ -27,7 +27,7 @@ class PaymentRequestsController < ApplicationController
         real_indices << j
       end
     end
-    @payment_request.real_indices ||= real_indices.sort
+    @payment_request.real_indices = real_indices.sort
 
     salt = Figaro.env.tumblebit_salt
     index = (salt.to_i + prng.rand(0..99999)) % 0x80000000
@@ -126,8 +126,9 @@ class PaymentRequestsController < ApplicationController
       @payment_request.beta_values = beta
     end
     if @notice.blank?
-      @payment_request.escrow_tx_received # transition in state machine
-      @payment_request.beta_values_sent
+      @payment_request.request_created # update state to step1
+      @payment_request.escrow_tx_received # transition in state machine to step 2
+      @payment_request.beta_values_sent # update state to step4
       @payment_request.save
       redirect_to @payment_request, notice: 'Transactions were successfully created by Bob.'
     else

@@ -37,6 +37,9 @@
 		Expiry in seconds since epoch time (1/1/1970): <%= @payment_request.expiry_date.to_time.to_i %></p>
 		<p>Tumbler (Compressed) Public Key: <strong><%= @payment_request.tumbler_public_key %></strong></p>
 		<p>P2SH Address: <strong><%= @payment_request.hash_address if @payment_request %></strong></p>
+		<% if @payment_request.aasm_state == "started" %>
+			<p><%= link_to("Create 84 beta values for Tumbler", { controller: "payment_requests", action: "bob_step_2" }, :class => "btn btn-primary") %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payment_requests_path, :class => 'btn' %></p>
+		<% end %>
 		<% if @payment_request.aasm_state == "step2" %>
 			<p><%= link_to("Create 84 beta values for Tumbler", { controller: "payment_requests", action: "bob_step_2" }, :class => "btn btn-primary") %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payment_requests_path, :class => 'btn' %></p>
 		<% end %>

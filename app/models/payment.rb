@@ -78,22 +78,35 @@ class Payment < ActiveRecord::Base
     @funding_script = BTC::Script.new
     @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(self.tumbler_public_key))
     @user_key=BTC::Key.new(public_key:BTC.from_hex(self.alice_public_key))
-
+    
     @expire_at = Time.at(self.expiry_date.to_time.to_i)
+    @real_h = Array.new
+    for i in 0..299
+      if self.real_indices.include? i
+        @real_h << self.h_values[i]
+      end
+    end
+    
     @funding_script<<BTC::Script::OP_IF
-    @funding_script<<BTC::Script::OP_2
+    for i in 0..14
+      @funding_script<<BTC::Script::OP_RIPEMD160
+      @funding_script.append_pushdata(BTC::Data.data_from_hex(@real_h[i]))
+      puts "#{@real_h[i]}"
+      @funding_script<<BTC::Script::OP_EQUALVERIFY
+    end
+
     @funding_script<<@tumbler_key.compressed_public_key
-    @funding_script<<@user_key.compressed_public_key
-    @funding_script<<BTC::Script::OP_2
-    @funding_script<<BTC::Script::OP_CHECKMULTISIG
+    @funding_script<<BTC::Script::OP_CHECKSIG
+    
     @funding_script<<BTC::Script::OP_ELSE
+    
     @funding_script<<BTC::WireFormat.encode_int32le(@expire_at.to_i)
     @funding_script<<BTC::Script::OP_CHECKLOCKTIMEVERIFY
     @funding_script<<BTC::Script::OP_DROP
-    @funding_script<<@tumbler_key.compressed_public_key
+    @funding_script<<@user_key.compressed_public_key
     @funding_script<<BTC::Script::OP_CHECKSIG
+    
     @funding_script<<BTC::Script::OP_ENDIF
-
   end
   
   
