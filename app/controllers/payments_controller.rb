@@ -75,7 +75,8 @@ class PaymentsController < ApplicationController
     # Fig. 3, steps 1,2,3
     # Alice creates 300 values for Tumbler, mixing 15 real values with 285 fake values
     @payment = Payment.find(params[:id])
-    string = @payment.hash_address
+    string = @payment.alice_public_key[-32..-1] || @payment.alice_public_key
+    
     
     if @payment.real_indices.blank?
       real_indices = []
@@ -174,7 +175,7 @@ class PaymentsController < ApplicationController
   def alice_step_5
     # send real_indices and ro values to Tumbler
     @payment = Payment.find(params[:id])
-    string = @payment.hash_address
+    string = @payment.alice_public_key[-32..-1] || @payment.alice_public_key
     
     data = open("app/views/products/c_h_values_#{string}.csv").read
     @c_values = []
@@ -189,12 +190,12 @@ class PaymentsController < ApplicationController
       end
       j+=1
     end # do |row| (read input file)
-    
+    @payment.c_values = @c_values
+    @payment.h_values = @h_values
+    @payment.save
     
     file_name = "app/views/products/ro_values_#{string}.csv"
     if File.exists?(file_name) and @payment.aasm_state == "step5"
-      @payment.c_values = @c_values
-      @payment.h_values = @h_values
       @payment.c_h_values_received # update state to step7
       @payment.save
     end
@@ -206,7 +207,7 @@ class PaymentsController < ApplicationController
     # For 285 fake indices, Alice verifies now that h = H(k), computes s = Dec(k,c) and verifies also that s = ro
     
     @payment = Payment.find(params[:id])
-    string = @payment.hash_address
+    string = @payment.alice_public_key[-32..-1] || @payment.alice_public_key
     # Alice reads the 285 fake k values from Tumbler's CSV file and verifies that h = H(k)
 
     data = open("app/views/products/fake_k_values_#{string}.csv").read
@@ -229,8 +230,8 @@ class PaymentsController < ApplicationController
         if @payment.h_values[i] == @fake_k_values[j].ripemd160.to_hex
           true_count += 1
         else
-          puts "h: " + h
-          puts "k: " + k
+          puts "h: " + @payment.h_values[i]
+          puts "k: " + @fake_k_values[j].ripemd160.to_hex
         end
         j += 1
       end
@@ -285,23 +286,33 @@ class PaymentsController < ApplicationController
   
   def alice_step_11
     # TODO: Learn kj from Tsolve spending Tpuzzle funded by Alice in alice_step_7
-    data = open("app/views/products/k_values_#{@payment.hash_address}.csv").read
+    @payment = Payment.find(params[:id])
+
+    url_string = $BLOCKR_RAW_TX_URL + @payment.first_spending_tx_hash_unconfirmed
+    puts url_string
+    @agent = Mechanize.new
+    begin
+      page = @agent.get url_string
+    rescue Exception => e
+      page = e.page
+    end
+    data = page.body
+    result = JSON.parse(data)
+    @transaction = BTC::Transaction.new(hex: result['data']['tx']['hex'])
+    puts "#{result['data']['tx']['hex']}" # raw_tx in hex
+    puts @transaction.dictionary['in'][0]['scriptSig']['asm']
+    @words = @transaction.dictionary['in'][0]['scriptSig']['asm'].split(/\W+/) # array of real k values revealed by Tumbler
+    
+    puts "Words=#{@words[0]}"
     @real_k_values = []
-    j = 0
-    CSV.parse(data) do |row|
-      if @payment.real_indices.include? j
-        k_array = []
-        row.each do |f|
-          k_array << f
-          @real_k_values << k_array[0]
-        end
-      end
-      j+=1
-    end # do |row| (read input file)
-    puts "Number of real k values in file: " + j.to_s
+    for i in 1..15
+			@real_k_values[i-1] = @words[16-i].scan(/../).map { |x| x.hex.chr }.join # convert to hex string
+		end
+    # Decrypt cj to sj = Hprg(kj) ⊕ cj
     
     # Decrypt 15 real cj to sj = Hprg(kj) ⊕ cj 
     @real_s_values = []
+    @real_c_values = @payment.real_c_values
     # Tumbler picked 15 real random symetric encryption key k (128 bits) and computed 
     # c = Enc(k, s) and h = H(k)
     true_count = 0
@@ -311,30 +322,24 @@ class PaymentsController < ApplicationController
       decipher = OpenSSL::Cipher::AES.new(128, :CBC)
       decipher.decrypt
       
-      key_hex = @real_k_values[i].to_s[0..31] # TODO handle case when k starts with 0 (padding)
-      iv_hex = @real_k_values[i].to_s[32..63]
+      key_hex = @real_k_values[i][0..31] # TODO handle case when k starts with 0 (padding)
+      iv_hex = @real_k_values[i][32..63]
       key = key_hex.from_hex
       iv = iv_hex.from_hex
       decipher.key = key
       decipher.iv = iv
       encrypted = @real_c_values[i].from_hex
       @real_s_values[i] = decipher.update(encrypted) + decipher.final # plain
-      if (@real_beta_values[i] == mod_pow(@real_s_values[i].to_i(16),e,n))  # verify s**e = beta mod n
+      if (@payment.real_beta_values[i] == mod_pow(@real_s_values[i].to_i(16),e,n).to_s(16))  # verify s**e = beta mod n
         true_count += 1
       end
     end
     
     # Obtain solution sj/rj mod n
-    @solution = ((@real_s_values[0].to_i(16)/@payment.r_values[0]) % n).to_s(16)
-    puts "Real s values"
-    puts @real_s_values
-    puts @solution
-    puts true_count
-    
-    # Obtain solution sj/rj mod N 
     # which is y**d mod N.
+    @payment.solution = ((@real_s_values[0].to_i(16)/@payment.r_values[0].to_i(16)) % n).to_s(16)
     if true_count == 15
-      @payment.solve_tx_broadcasted # update state to completed
+      @payment.solve_tx_broadcasted # update state from "step8" to "completed"
       @payment.save
       render "show"
     else
@@ -751,7 +756,7 @@ class PaymentsController < ApplicationController
   private
  
      def payment_params
-       params.require(:payment).permit(:title, :y, :r, :beta_values, :ro_values, :k_values,:real_indices,:c_values, :h_values,:key_path, :tumbler_public_key, :expiry_date, :aasm_state)
+       params.require(:payment).permit(:solution, :title, :y, :r_values, :beta_values, :ro_values, :k_values,:real_indices,:c_values, :h_values,:key_path, :tumbler_public_key, :expiry_date, :aasm_state)
      end
 
 end

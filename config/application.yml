@@ -30,6 +30,7 @@ development:
   alice_msk: <%= ENV["TBB_ALICE_MSK"] %>
   bob_mpk: <%= ENV["TBB_BOB_MPK"] %>
   bob_msk: <%= ENV["TBB_BOB_MSK"] %>
+  blockcypher_api_token: <%= ENV["BLOCKCYPHER_API_TOKEN"] %>
 
 production:
   <<: *default
@@ -50,3 +51,4 @@ production:
   alice_msk: <%= ENV["TBB_ALICE_MSK"] %>
   bob_mpk: <%= ENV["TBB_BOB_MPK"] %>
   bob_msk: <%= ENV["TBB_BOB_MSK"] %>
+  blockcypher_api_token: <%= ENV["BLOCKCYPHER_API_TOKEN"] %>

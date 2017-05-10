@@ -1,6 +1,8 @@
 class PaymentRequestsController < ApplicationController
   # before_filter :authenticate_user!, :except => [:index]
   # before_filter :payment_request_user?, :except => [:index, :new, :create, :puzzle_list]
+  respond_to :html, :json
+  # respond_to :js, only: :create
   
   include Crypto # module in /lib
   require 'csv'
@@ -8,6 +10,7 @@ class PaymentRequestsController < ApplicationController
 
   def index
     @payment_requests = PaymentRequest.where.not(:key_path => nil).page(params[:page]).order(created_at: :asc) 
+    respond_with(@payment_requests)
   end
   
   
@@ -61,7 +64,9 @@ class PaymentRequestsController < ApplicationController
     end
         
     if @notice.blank?
-      render "show"
+      flash[:notice] = "Payment request was successfully updated."
+      respond_with(@payment_request)
+      # render "show"
     else
       redirect_to @payment_request, alert: @notice
     end
@@ -70,6 +75,9 @@ class PaymentRequestsController < ApplicationController
   
   def show
     @payment_request = PaymentRequest.find(params[:id])
+    if @payment_request.aasm_state == "completed"
+      @payment_request_payout_tx = @payment_request.payout_tx
+    end
   end # of show method
   
   
@@ -213,6 +221,8 @@ class PaymentRequestsController < ApplicationController
       end
     end
     if j == 42
+      @payment_request.c_values = @c_values
+      @payment_request.save
       redirect_to @payment_request, notice: 'Tumblers fake epsilons were successfully checked by Bob.'
     end
   
@@ -250,7 +260,6 @@ class PaymentRequestsController < ApplicationController
       row.each do |zeta|
         c_z_array << zeta
       end
-      # @z_values[j] = c_z_array[1].to_i(16)
       @z_values[j] = c_z_array[1]
       j+=1
     end # do |row| (read input file)
@@ -263,9 +272,7 @@ class PaymentRequestsController < ApplicationController
       end
     end
     puts "Number of real z values : " + @real_z_values.count.to_s
-
     puts "check that z2 = z1*(q2)^pk mod n"
-    # check that z2 = z1*(q2)^pk mod n :
 
     j = 0
     for i in 0..40
@@ -288,7 +295,8 @@ class PaymentRequestsController < ApplicationController
       # Bob picks random R and keeps it secret
       # Bob sets z= zj1 = (epsilonj1)**e = @real_z_values[0] and sends y = z*(R**e)  to Alice
        y = @real_z_values[0].to_i(16)*mod_pow(@payment_request.r.to_i, e, n) % n
-       @payment_request.y  = y.to_s(16)
+       @payment_request.y = y.to_s(16)
+       @payment_request.escrow_tx_broadcasted
        @payment_request.save
       redirect_to @payment_request, notice: 'Tumblers RSA quotients were successfully checked by Bob.'
     else
@@ -297,6 +305,17 @@ class PaymentRequestsController < ApplicationController
     end
     
   end # of bob_step_10
+  
+  
+  def complete
+    # TODO Bob checks puzzle soltuion received from Alice
+    @payment_request = PaymentRequest.find(params[:id])
+    epsilon = @payment_request.solution.to_i(16)/@payment_request.r.to_i
+    puts "Epsilon= #{epsilon.to_s(16)}"
+    @payment_request.puzzle_solution_received
+    @payment_request.save
+    redirect_to @payment_request, notice: 'Puzzle solution was successfully checked by Bob.'
+  end
   
   
   def create_puzzle_z
@@ -581,7 +600,7 @@ class PaymentRequestsController < ApplicationController
   private
  
      def payment_request_params
-       params.require(:payment_request).permit(:r, :key_path, :tumbler_public_key, :title, :expiry_date, :tx_hash,:signed_tx, :index, :amount, :confirmations, :real_indices,:beta_values, :c_values, :epsilon_values, :aasm_state )
+       params.require(:payment_request).permit(:solution, :r, :key_path, :tumbler_public_key, :title, :expiry_date, :tx_hash,:signed_tx, :index, :amount, :confirmations, :real_indices,:beta_values, :c_values, :epsilon_values, :aasm_state )
      end
 
 end

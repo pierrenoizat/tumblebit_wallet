@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170417093124) do
+ActiveRecord::Schema.define(version: 20170430122614) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -48,6 +48,7 @@ ActiveRecord::Schema.define(version: 20170417093124) do
     t.text     "epsilon_values",     default: [],              array: true
     t.string   "key_path"
     t.string   "y"
+    t.string   "solution"
   end
 
   create_table "payments", force: :cascade do |t|
@@ -66,6 +67,7 @@ ActiveRecord::Schema.define(version: 20170417093124) do
     t.string   "key_path"
     t.integer  "real_indices",       default: [],              array: true
     t.text     "r_values",           default: [],              array: true
+    t.string   "solution"
   end
 
   create_table "posts", force: :cascade do |t|

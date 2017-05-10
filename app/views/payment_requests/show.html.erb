@@ -54,6 +54,40 @@
 			<p><%=link_to "Bob Checks RSA Quotients", bob_step_10_payment_request_path(@payment_request), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payment_requests_path, :class => 'btn' %></p>
 		<% end %>
 		
+		<% if @payment_request.aasm_state == "step12" %>
+			<% if @payment_request.solution %>
+				<p>Puzzle solution: <strong><%= @payment_request.solution %></strong></p>
+				<p><%=link_to "Bob Checks Puzzle Solution", complete_payment_request_path(@payment_request), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payment_requests_path, :class => 'btn' %></p>
+			<% else %>
+			<p>Puzzle y sent to Alice: <pre style="width:600px"><code><%= @payment_request.y %></code></pre></p>
+			<%= form_for(@payment_request, multipart: true) do |f| %>
+			<table class="table">
+		    	<tbody>
+		  		<tr>
+					<td><div class="field">
+						<p><%= f.label 'Puzzle solution received from Alice' %></br>
+						<%= f.text_field :solution, :style => "width:540px;", :placeholder => "52f4b8903ad62f13d0e3402947805f811e6d0b8078c88ea41495ed2193ab1867d6f388c11fb70454c7405e7052ea4795a419863abbadffc2e368e111341f2fb0" %></p>
+					</div></td>
+				</tr>
+				<tr>
+		  			<td><div class="actions">
+		    		<%= f.submit "Save solution", :class => "btn btn-primary" %> | 
+					<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
+		                payment_requests_path, :class => 'btn' %></div></td>
+		  		</tr>
+			<% end %>
+		    	</tbody>
+
+			</table>
+			<% end%>
+		<% end %>
+		
+		<% if @payment_request.aasm_state == "completed" %>
+			<p>Puzzle solution: <strong><%= @payment_request.solution %></strong></p>
+			<p>Epsilon: <strong><%= (@payment_request.solution.to_i(16)/@payment_request.r.to_i).to_s(16) %></strong></p>
+			<p>Payout Tx:</p> <pre style="width:600px"><code><%= @payment_request_payout_tx %></code></pre>
+		<% end %>
+		
 	<% end %>
 
 	

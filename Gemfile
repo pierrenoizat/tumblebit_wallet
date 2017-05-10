@@ -40,6 +40,8 @@ gem 'rails-i18n'
 gem 'devise'
 gem 'aasm'
 gem 'rb-readline'
+gem 'responders'
+gem 'blockcypher-ruby'
 
 group :development do
   gem 'better_errors'

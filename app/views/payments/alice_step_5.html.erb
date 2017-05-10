@@ -8,7 +8,7 @@
 	
 	<p>Real indices to share now with Tumbler: <strong><%= @payment.real_indices %></strong></p>
 	
-		<p><a href="<%= products_path("ro_values_#{@payment.hash_address}.csv") %>" class="btn btn-lg btn-primary heading__btn wow fadeInUp" >Download File with ro_values for Tumbler </a></p>
+		<p><a href="<%= products_path("ro_values_#{@payment.alice_public_key[-32..-1]}.csv") %>" class="btn btn-lg btn-primary heading__btn wow fadeInUp" >Download File with ro_values for Tumbler </a></p>
 	
 	</div>
 </div>
