@@ -9,7 +9,7 @@ class PaymentRequestsController < ApplicationController
   require 'btcruby/extensions'
 
   def index
-    @payment_requests = PaymentRequest.where.not(:key_path => nil).page(params[:page]).order(created_at: :asc) 
+    @payment_requests = PaymentRequest.where.not(:key_path => nil).page(params[:page]).order(created_at: :desc) 
     respond_with(@payment_requests)
   end
   
@@ -51,6 +51,7 @@ class PaymentRequestsController < ApplicationController
 
   def edit
     @payment_request = PaymentRequest.find(params[:id])
+    respond_with(@payment_request)
   end
   
 
@@ -75,9 +76,10 @@ class PaymentRequestsController < ApplicationController
   
   def show
     @payment_request = PaymentRequest.find(params[:id])
-    if @payment_request.aasm_state == "completed"
-      @payment_request_payout_tx = @payment_request.payout_tx
-    end
+    # if @payment_request.aasm_state == "completed"
+    #   @payment_request_payout_tx = @payment_request.payout_tx # force execution of payout_tx method
+    # end
+    respond_with(@payment_request)
   end # of show method
   
   
@@ -96,7 +98,7 @@ class PaymentRequestsController < ApplicationController
     # Steps 2 and 3 in Tumbler-Bob interactions, performed by Bob
     # Bob generates 42 “real” payout addresses (keeps them secret for now) and prepares 42 distinct “real” transactions.
     @payment_request = PaymentRequest.find(params[:id])
-    @funded_address = @payment_request.hash_address
+    # @funded_address = @payment_request.hash_address
     @notice = ""
     unless @payment_request.beta_values.blank?
       @notice = 'Beta values already exists.'
@@ -112,11 +114,16 @@ class PaymentRequestsController < ApplicationController
         end # of CSV.open (writing to sigma_values_#{@funded_address}.csv)
     else
       
-      @payment_request.amount = 240800 # amount in satoshis
-
+      @payment_request.amount = 460000 # amount in satoshis
+      
+      @tumbler_funded_address = Figaro.env.tumbler_funding_address # 1LUBfiVgeuFRzc7PC1Auw8YAncdewderVg for testing
+      @previous_id = @payment_request.first_unspent_tx(@tumbler_funded_address)
+      puts "Previous txid = #{@previous_id}"
+      puts "Previous index = #{@payment_request.previous_index}"
+      puts "Amount = #{( @payment_request.amount.to_f*BTC::COIN ).to_i}"
       beta = []
       @payment_request.real_indices.each do |i|
-        beta[i] = @payment_request.real_btc_tx_sighash(i)
+        beta[i] = @payment_request.real_btc_tx_sighash(i, @previous_id)
       end
     
       # In Step 3, Bob picks a random secret 256-bit blinding factor r and prepares 42 “fake” transactions.
@@ -184,8 +191,9 @@ class PaymentRequestsController < ApplicationController
     j = 0
     # @r = @payment_request.r.to_i
 
-    @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(@payment_request.tumbler_public_key))
-    puts @tumbler_key.address
+    # @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(@payment_request.tumbler_public_key))
+    @tumbler_key=BTC::Key.new(wif:Figaro.env.tumbler_funding_priv_key) # for testing
+    puts @tumbler_key.address # 1LUBfiVgeuFRzc7PC1Auw8YAncdewderVg for testing
     @result = false
     
     for i in 0..83
@@ -308,7 +316,7 @@ class PaymentRequestsController < ApplicationController
   
   
   def complete
-    # TODO Bob checks puzzle soltuion received from Alice
+    # Bob checks puzzle solution received from Alice
     @payment_request = PaymentRequest.find(params[:id])
     epsilon = @payment_request.solution.to_i(16)/@payment_request.r.to_i
     puts "Epsilon= #{epsilon.to_s(16)}"
@@ -441,14 +449,14 @@ class PaymentRequestsController < ApplicationController
     @payment_request.index = params[:payment_request][:index]
     @payment_request.tx_hash = params[:payment_request][:tx_hash]
     @payment_request.amount = params[:payment_request][:amount]
-    fee = 0.00015 # approx. 10 cts when 1 BTC = 700 EUR
+
     @previous_index = @payment_request.index.to_i
     @previous_id = @payment_request.tx_hash
     # @refund_address = BTC::Address.parse("16zQaNAg77jco2EDVSsU4bEAq5DgfZPZP4") # my electrum wallet
     @refund_address = BTC::Address.parse(@payment_request.tumbler_refund_address) # tumbler refund address path: "7/@payment_request.id"
     @tumbler_key = BTC::Key.new(wif:@payment_request.tumbler_private_key)
     
-    @value = (@payment_request.amount.to_f - fee) * BTC::COIN # @value is expressed in satoshis
+    @value = ((@payment_request.amount.to_f * BTC::COIN).to_i - $NETWORK_FEE) # @value is expressed in satoshis
     @funding_script = @payment_request.funding_script
     tx = BTC::Transaction.new
     if @payment_request.expired?

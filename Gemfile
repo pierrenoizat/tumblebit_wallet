@@ -42,6 +42,7 @@ gem 'aasm'
 gem 'rb-readline'
 gem 'responders'
 gem 'blockcypher-ruby'
+gem 'rest-client'
 
 group :development do
   gem 'better_errors'

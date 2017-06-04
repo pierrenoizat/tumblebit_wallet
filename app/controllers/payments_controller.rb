@@ -7,7 +7,7 @@ class PaymentsController < ApplicationController
   require 'digest'
   
   def index
-    @payments = Payment.where.not(:key_path => nil).page(params[:page]).order(created_at: :asc)
+    @payments = Payment.where.not(:key_path => nil).page(params[:page]).order(created_at: :desc)
   end
   
   
@@ -176,8 +176,13 @@ class PaymentsController < ApplicationController
     # send real_indices and ro values to Tumbler
     @payment = Payment.find(params[:id])
     string = @payment.alice_public_key[-32..-1] || @payment.alice_public_key
-    
-    data = open("app/views/products/c_h_values_#{string}.csv").read
+    file_name = "app/views/products/c_h_values_#{string}.csv"
+    if File.exists?(file_name)
+      data = open(file_name).read
+    else
+      redirect_to @payment, alert: "c_h_values file does not exist yet. Fetch it from Tumbler"
+      return
+    end
     @c_values = []
     @h_values = []
     j = 0

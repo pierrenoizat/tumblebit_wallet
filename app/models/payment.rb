@@ -174,8 +174,9 @@ class Payment < ActiveRecord::Base
     @alice_key = BTC::Key.new(wif:self.alice_private_key)
     @alice_funded_address = @alice_key.address.to_s
     @previous_id = self.first_unspent_tx(@alice_funded_address)
-    @previous_index = 0
-    @value = (self.amount.to_f * BTC::COIN).to_i - $NETWORK_FEE # in satoshis, amount MUST be 200 000 satoshis (~ 2 €)
+    @previous_index = self.index
+    # @value = (self.amount.to_f * BTC::COIN).to_i - $NETWORK_FEE # in satoshis, amount MUST be 200 000 satoshis (~ 2 €)
+    @value = (self.amount.to_f * BTC::COIN).to_i - 40000
     BTC::Network.default = BTC::Network.mainnet
     @funding_script = BTC::Script.new
     @funding_script = BTC::PublicKeyAddress.new(key:@alice_key).script
@@ -360,9 +361,9 @@ class Payment < ActiveRecord::Base
     puts result
     if !result['data']['unspent'].blank?
       self.tx_hash = result['data']['unspent'][0]['tx']
-      self.index = result['data']['unspent'][0]['n']
-      self.amount = result['data']['unspent'][0]['amount'] # amount in BTC
-      self.confirmations = result['data']['unspent'][0]['confirmations']
+      self.index = result['data']['unspent'][0]['n'].to_i
+      self.amount = result['data']['unspent'][0]['amount'].to_f # amount in BTC
+      self.confirmations = result['data']['unspent'][0]['confirmations'].to_i
       puts "Tx hash: #{self.tx_hash}"
       return self.tx_hash
     else
