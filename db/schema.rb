@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170430122614) do
+ActiveRecord::Schema.define(version: 20170604105714) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -81,51 +81,6 @@ ActiveRecord::Schema.define(version: 20170430122614) do
   create_table "products", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-  end
-
-  create_table "public_keys", force: :cascade do |t|
-    t.string   "name"
-    t.string   "compressed"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer  "script_id"
-  end
-
-  create_table "puzzles", force: :cascade do |t|
-    t.integer  "script_id"
-    t.text     "y"
-    t.text     "encrypted_signature"
-    t.datetime "created_at",                       null: false
-    t.datetime "updated_at",                       null: false
-    t.text     "real_indices",        default: [],              array: true
-    t.text     "beta_values",         default: [],              array: true
-    t.text     "r"
-    t.text     "escrow_txid"
-    t.string   "tumbler_public_key"
-    t.datetime "expiry_date"
-    t.integer  "escrow_amount"
-    t.string   "alice_public_key"
-    t.string   "bob_public_key"
-    t.text     "fake_indices",        default: [],              array: true
-  end
-
-  create_table "scripts", force: :cascade do |t|
-    t.string   "title"
-    t.text     "text"
-    t.datetime "created_at",                  null: false
-    t.datetime "updated_at",                  null: false
-    t.datetime "expiry_date"
-    t.integer  "category"
-    t.text     "contract"
-    t.integer  "user_id"
-    t.string   "refund_address"
-    t.integer  "client_id"
-    t.string   "tumbler_key"
-    t.string   "bob_public_key"
-    t.integer  "escrow_amount"
-    t.string   "escrow_txid"
-    t.string   "real_indices",   default: [],              array: true
-    t.text     "r"
   end
 
   create_table "users", force: :cascade do |t|
