@@ -1,0 +1,3 @@
+action_dispatch.request.parameters             : {"{\"alice_public_key\":\"0352445208bb8435b76cd12b07b3788a356e53a2f6ad8cd05b09ffa4a36e4c9d66\"}"=>nil, "controller"=>"api/v1/payment", "action"=>"create"}
+
+{"utf8"=>"✓", "authenticity_token"=>"PhYY2XlW6qDCnu5j+ld/vDXpisDyNEQ4Eb0z40pzfYY0H/bPJlyH7Sus+NtgK3YfuE8t6BhoGE8MOBjvIBL6uA==", "payment"=>{"expiry_date"=>"2017-08-17 07:31:44 UTC", "real_indices"=>"5 22 24 61 63 74 93 134 160 170 243 266 268 270 298", "key_path"=>"1/544382923", "expiry_date(1i)"=>"2017", "expiry_date(2i)"=>"8", "expiry_date(3i)"=>"17", "expiry_date(4i)"=>"07", "expiry_date(5i)"=>"31", "tumbler_public_key"=>""}, "commit"=>"Start Payment Process"}

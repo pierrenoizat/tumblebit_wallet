@@ -20,6 +20,7 @@ Rails.application.routes.draw do
     
   resources :payments do
     member do
+      get 'get_tumbler_key'
       get 'alice_step_1'
       get 'alice_step_5'
       get 'alice_step_7'

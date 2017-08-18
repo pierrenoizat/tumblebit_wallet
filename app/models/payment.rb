@@ -4,7 +4,7 @@ class Payment < ActiveRecord::Base
 
   aasm do # default column: aasm_state
     state :initiated, :initial => true
-    state :step1,:step5,:step7,:step8
+    state :step1,:step3,:step5,:step7,:step8
     state :completed
 
     event :y_received do
@@ -12,18 +12,22 @@ class Payment < ActiveRecord::Base
     end
 
     event :beta_values_sent do
-      transitions :from => :step1, :to => :step5
+      transitions :from => :step1, :to => :step3
     end
     
     event :c_h_values_received do
+      transitions :from => :step3, :to => :step5
+    end
+    
+    event :fake_k_values_checked do
       transitions :from => :step5, :to => :step7
     end
     
-    event :fake_k_values_received do
+    event :y_value_sent do
       transitions :from => :step7, :to => :step8
     end
     
-    event :solve_tx_broadcasted do
+    event :real_k_values_obtained do
       transitions :from => :step8, :to => :completed
     end
   end
@@ -81,28 +85,32 @@ class Payment < ActiveRecord::Base
   def funding_script
     BTC::Network.default= BTC::Network.mainnet
     @funding_script = BTC::Script.new
-    @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(self.tumbler_public_key))
-    @user_key=BTC::Key.new(public_key:BTC.from_hex(self.alice_public_key))
+    if !self.tumbler_public_key.blank? and !self.alice_public_key.blank?
+      @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(self.tumbler_public_key))
+      @user_key=BTC::Key.new(public_key:BTC.from_hex(self.alice_public_key))
     
-    @expire_at = Time.at(self.expiry_date.to_time.to_i)
-    if !self.h_values.blank? and @user_key
-      @funding_script<<BTC::Script::OP_IF
-      for i in 0..299
-        if self.real_indices.include? i
-          @funding_script<<BTC::Script::OP_RIPEMD160
-          @funding_script.append_pushdata(BTC::Data.data_from_hex(self.h_values[i]))
-          @funding_script<<BTC::Script::OP_EQUALVERIFY
+      @expire_at = Time.at(self.expiry_date.to_time.to_i)
+      if !self.h_values.blank?
+        @funding_script<<BTC::Script::OP_IF
+        for i in 0..299
+          if self.real_indices.include? i
+            @funding_script<<BTC::Script::OP_RIPEMD160
+            @funding_script.append_pushdata(BTC::Data.data_from_hex(self.h_values[i]))
+            @funding_script<<BTC::Script::OP_EQUALVERIFY
+          end
         end
+        @funding_script<<@tumbler_key.compressed_public_key
+        @funding_script<<BTC::Script::OP_CHECKSIG
+        @funding_script<<BTC::Script::OP_ELSE
+        @funding_script<<BTC::WireFormat.encode_int32le(@expire_at.to_i)
+        @funding_script<<BTC::Script::OP_CHECKLOCKTIMEVERIFY
+        @funding_script<<BTC::Script::OP_DROP
+        @funding_script<<@user_key.compressed_public_key
+        @funding_script<<BTC::Script::OP_CHECKSIG
+        @funding_script<<BTC::Script::OP_ENDIF
+      else
+        return nil
       end
-      @funding_script<<@tumbler_key.compressed_public_key
-      @funding_script<<BTC::Script::OP_CHECKSIG
-      @funding_script<<BTC::Script::OP_ELSE
-      @funding_script<<BTC::WireFormat.encode_int32le(@expire_at.to_i)
-      @funding_script<<BTC::Script::OP_CHECKLOCKTIMEVERIFY
-      @funding_script<<BTC::Script::OP_DROP
-      @funding_script<<@user_key.compressed_public_key
-      @funding_script<<BTC::Script::OP_CHECKSIG
-      @funding_script<<BTC::Script::OP_ENDIF
     else
       return nil
     end
@@ -317,6 +325,103 @@ class Payment < ActiveRecord::Base
       puts "No spending transaction for #{self.hash_address}"
       return nil
     end
+  end
+  
+  
+  def generate_beta_values
+    # Fig. 3, steps 1,2,3
+    # Alice creates 300 values for Tumbler, mixing 15 real values with 285 fake values
+    @script =Script.find(self.script_id)
+    string = self.funded_address
+
+    if self.real_indices.blank?
+      real_indices = []
+      prng = Random.new
+      while real_indices.count < 15
+        j = prng.rand(0..299)
+        unless real_indices.include? j
+          real_indices << j
+        end
+      end
+      self.real_indices = real_indices
+      self.save # save indices of real values to @payment.real_indices
+    end
+    puts "Real indices: #{self.real_indices}"
+
+    # Exponent (part of the public key)
+    e = $TUMBLER_RSA_PUBLIC_EXPONENT
+    # The modulus (aka the public key, although this is also used in the private key computations as well)
+    n = $TUMBLER_RSA_PUBLIC_KEY
+
+    salt=Random.new.bytes(32).unpack('H*')[0] # 256-bit random integer
+    puts "Salt: #{salt}"
+    r=[]
+    real = []
+    self.real_indices.each do |ri|
+      real << ri.strip # avoid problems with extra leading or trailing space caracters
+    end
+
+    for i in 0..299  # create 300 blinding factors
+      # 285 ro values created by Alice
+      # 15 r values created by Bob. Alice knows only d = y*r^^pk
+      if real.include? i.to_s
+        r[i]=Random.new.bytes(10).unpack('H*')[0] # "8f0722a18b63d49e8d9a", size = 20 hex char, 80 bits, 10 bytes
+      else
+        r[i]=(Random.new.bytes(10).unpack('H*')[0].to_i(16)*salt.to_i(16) % n).to_s(16) # salt is same size as epsilon, otherwise Tumbler can easily tell real values from fake values based on the size of s
+      end
+    end
+
+
+    # dump the 285 values to ro_values
+    @ro_values = []
+    for i in 0..299
+      unless real.include? i.to_s
+        @ro_values[i] = r[i]
+      end
+    end
+
+    @beta_values = []
+    # first, compute 15 real beta values
+
+    p = self.y.to_i  # y = epsilon^^pk
+    # The secret exponent (aka the private key)
+    d = Figaro.env.tumbler_rsa_private_key.to_i(16)
+    epsilon = mod_pow(p,d,n)
+    puts "y: #{self.y.to_i.to_s(16)}"
+    puts "Epsilon: #{epsilon.to_s(16)}"
+    puts "Epsilon in db: #{@script.contract}"
+
+    m = @script.contract.to_i(16)
+    puzzle = mod_pow(m,e,n) # epsilon^pk mod n
+    puts "puzzle: %x" % puzzle
+
+    # puzzle solution
+    d = Figaro.env.tumbler_rsa_private_key.to_i(16)
+    solution = mod_pow(puzzle,d,n) # puzzle^sk mod modulus
+    puts "Solution (epsilon):" + solution.to_s(16)
+    puts "Script contract:" + @script.contract # solution should be equal to contract
+
+
+    real.each do |i|
+      m = r[i.to_i].to_i(16)
+      b = mod_pow(m,e,n)
+      beta_value = (p*b) % n
+      @beta_values[i.to_i] = beta_value.to_s(16)
+    end
+
+    # compute 285 fake values to complete beta_values
+    k = 0
+    for i in 0..299
+      if @beta_values[i].blank?
+        m = r[i].to_i(16)
+        beta_value = mod_pow(m,e,n)
+        @beta_values[i] = beta_value.to_s(16)
+        k += 1
+      end
+    end
+    puts "Number of fake values: #{k}"
+    puts "Total number of values: #{@beta_values.count}"
+    @beta_values
   end
   
   

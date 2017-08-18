@@ -98,7 +98,7 @@ class PaymentRequestsController < ApplicationController
     # Steps 2 and 3 in Tumbler-Bob interactions, performed by Bob
     # Bob generates 42 “real” payout addresses (keeps them secret for now) and prepares 42 distinct “real” transactions.
     @payment_request = PaymentRequest.find(params[:id])
-    # @funded_address = @payment_request.hash_address
+    @funded_address = @payment_request.hash_address
     @notice = ""
     unless @payment_request.beta_values.blank?
       @notice = 'Beta values already exists.'
@@ -119,7 +119,7 @@ class PaymentRequestsController < ApplicationController
       @tumbler_funded_address = Figaro.env.tumbler_funding_address # 1LUBfiVgeuFRzc7PC1Auw8YAncdewderVg for testing
       @previous_id = @payment_request.first_unspent_tx(@tumbler_funded_address)
       puts "Previous txid = #{@previous_id}"
-      puts "Previous index = #{@payment_request.previous_index}"
+      puts "Previous index = #{@payment_request.index}"
       puts "Amount = #{( @payment_request.amount.to_f*BTC::COIN ).to_i}"
       beta = []
       @payment_request.real_indices.each do |i|

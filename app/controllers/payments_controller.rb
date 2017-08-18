@@ -1,6 +1,7 @@
 class PaymentsController < ApplicationController
-
+  skip_before_action :verify_authenticity_token
   include Crypto # module in /lib
+  include Http # module in /lib
   require 'csv'
   require 'btcruby/extensions'
   require 'mechanize'
@@ -33,8 +34,34 @@ class PaymentsController < ApplicationController
   def create
     @payment = Payment.new(payment_params)
     
-    @payment.save
-    render "show", notice: 'Payment was successfully created.'
+    @agent = Mechanize.new
+
+    # begin     
+      # page = @agent.post($PAYMENT_API_URL, {
+      #   "alice_publice_key" => "#{@payment.alice_public_key}"
+      # })
+      
+    # rescue Exception => e
+      # page = e.page
+    # end
+
+    # data = page.body
+    # result = JSON.parse(data)
+    
+    # uri = URI.parse($PAYMENT_API_URL)
+    # http = Net::HTTP.new(uri.host, uri.port)
+    # request = Net::HTTP::Post.new(uri.request_uri)
+    # request.set_form_data({"payment[alice_public_key]" => @payment.alice_public_key})
+    # response = http.request(request)
+    # http.use_ssl = (url.scheme == "https")
+    # result = JSON.parse(response.body)
+    # puts result
+    if @payment.save
+      render "show", notice: 'Payment was successfully created.'
+    else
+      flash[:notice] = "There was a problem with this payment creation."
+      redirect_to payments_url
+    end
   end
   
   
@@ -71,13 +98,27 @@ class PaymentsController < ApplicationController
   end
   
   
-  def alice_step_1
-    # Fig. 3, steps 1,2,3
+  def get_tumbler_key
+  @payment = Payment.find(params[:id])
+  
+  require 'rest-client'
+  response= RestClient.post $PAYMENT_API_URL, {payment: {alice_public_key: @payment.alice_public_key}}
+  result = JSON.parse(response.body)
+  puts result
+  @payment.tumbler_public_key = result["tumbler_public_key"]
+  @payment.save
+  render "show"
+  end  
+  
+  
+  def generate_beta_values
+    # Fig. 3, steps 1,2,3,5,7
     # Alice creates 300 values for Tumbler, mixing 15 real values with 285 fake values
     @payment = Payment.find(params[:id])
-    string = @payment.alice_public_key[-32..-1] || @payment.alice_public_key
     
-    
+    include Crypto # module in /lib
+    # include Http
+
     if @payment.real_indices.blank?
       real_indices = []
       prng = Random.new
@@ -90,56 +131,36 @@ class PaymentsController < ApplicationController
       @payment.real_indices = real_indices.sort
       @payment.save # save indices of real values to @payment.real_indices
     end
-    puts "Real indices: #{@payment.real_indices}"
-    
-    # Exponent (part of the public key)
+
     e = $TUMBLER_RSA_PUBLIC_EXPONENT
-    # The modulus (aka the public key, although this is also used in the private key computations as well)
     n = $TUMBLER_RSA_PUBLIC_KEY
-    
+
     salt=Random.new.bytes(128).unpack('H*')[0] # 1024-bit random integer
     puts "Salt: #{salt}"
-    r=[]
-    
-    for i in 0..299  # create 300 blinding factors
-
-      if @payment.real_indices.include? i
-        r[i]=Random.new.bytes(10).unpack('H*')[0] # "8f0722a18b63d49e8d9a", size = 20 hex char, 80 bits, 10 bytes
-      else
-        r[i]=(Random.new.bytes(10).unpack('H*')[0].to_i(16)*salt.to_i(16) % n).to_s(16) # salt is same size as y, otherwise Tumbler can easily tell real values from fake values based on the size of s
-      end
-    end
-    
-    # dump the 285 ro values to a new csv file for Tumbler
-    @ro_values = []
-    require 'csv'
-    file_name = "app/views/products/ro_values_#{string}.csv"
-    if File.exists?(file_name)
-      File.delete(file_name) # delete any previous version of file
-    end
-    
-    CSV.open(file_name, "ab") do |csv|
-      for i in 0..299
-        unless @payment.real_indices.include? i
-          @ro_values[i] = r[i]
-        end
-      end
-      @ro_values.each do |ro|
-        csv << [ro]
-        end
-      end # of CSV.open (writing to ro_values_123456.csv)
-    
-    @beta_values = []
     @r_values = []
+    @ro_values = []
+
+    for i in 0..299  # create 300 blinding factors
+      if @payment.real_indices.include? i
+        @r_values[i]=Random.new.bytes(10).unpack('H*')[0] # "8f0722a18b63d49e8d9a", size = 20 hex char, 80 bits, 10 bytes
+        @ro_values[i] = nil
+      else
+        # salt is same size as y, otherwise Tumbler can easily tell real values from fake values based on the size of s
+        @r_values[i]=(Random.new.bytes(10).unpack('H*')[0].to_i(16)*salt.to_i(16) % n).to_s(16)
+        @ro_values[i] = @r_values[i]
+      end
+    end
+
+    @beta_values = []
+
     # first, compute 15 real beta values
     if @payment.y
+      @payment.y_received # update state from "initiated" to "step1"
       p = @payment.y.to_i(16) # y = epsilon^^pk,received from Bob
-      puts "y: #{@payment.y}"
-    
+
       for i in 0..299
-        m = r[i].to_i(16)
+        m = @r_values[i].to_i(16)
         if @payment.real_indices.include? i
-          @r_values << r[i]
           b = mod_pow(m,e,n)
           beta_value = (p*b) % n
         else
@@ -147,146 +168,107 @@ class PaymentsController < ApplicationController
         end
         @beta_values[i] = beta_value.to_s(16)
       end
-    
-      # Alice sends the 300 values to Tumbler in a CSV file
-      # dump the 300 values to a new csv file for Tumbler
-      file_name = "app/views/products/beta_values_#{string}.csv"
-      if File.exists?(file_name)
-        File.delete(file_name) # delete any previous version of file
-      end
-    
-      CSV.open(file_name, "ab") do |csv|
-        @beta_values.each do |beta|
-          csv << [beta]
-        end
-      end # of CSV.open (writing to betavalues123456.csv)
+
+      # data = JSON.parse('{"payment[alice_public_key]": "#{@payment.alice_public_key}", "payment[beta_values]": "#{@beta_values}" }')
+      # data = {"payment[alice_public_key]" => @payment.alice_public_key, "payment[beta_values]" => "#{@beta_values}"}
+      # result = update_request($PAYMENT_UPDATE_API_URL, data)  # http request performed by Http module in /lib
+      uri = URI.parse($PAYMENT_API_URL)
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Patch.new(uri.request_uri)
+      request.set_form_data({"payment[alice_public_key]" => @payment.alice_public_key, "payment[beta_values]" => "#{@beta_values}"})
+      response = http.request(request)
+      http.use_ssl = (url.scheme == "https")
+      result = JSON.parse(response.body)
+
+      # get c values from result params and put them in an array
+      @c_values = Array.new
+      @c_values = result["c_values"]
+      @payment.c_values = @c_values
+
+      # get h values from result params and put them in an array
+      @h_values = Array.new
+      @h_values = result["h_values"]
+      @payment.h_values = @h_values
+
       @payment.beta_values = @beta_values
       @payment.ro_values = @ro_values
       @payment.r_values = @r_values # 15 real r values to be revealed to Tumbler after step 8
-      @payment.beta_values_sent # update state to step5
+      @payment.beta_values_sent # update state from "step1" to "step3"
+      @payment.c_h_values_received # update payment state from "step3" to "step5"
       @payment.save
-      render "show"
     else
-      redirect_to payments_url, alert: "Before computing beta values, Alice must get y from Bob."
+      raise "Before computing beta values, Alice must get y from Bob."
     end
-  end # of alice_step_1
-  
-  
-  def alice_step_5
-    # send real_indices and ro values to Tumbler
-    @payment = Payment.find(params[:id])
-    string = @payment.alice_public_key[-32..-1] || @payment.alice_public_key
-    file_name = "app/views/products/c_h_values_#{string}.csv"
-    if File.exists?(file_name)
-      data = open(file_name).read
-    else
-      redirect_to @payment, alert: "c_h_values file does not exist yet. Fetch it from Tumbler"
-      return
-    end
-    @c_values = []
-    @h_values = []
-    j = 0
-    CSV.parse(data) do |row|
-      c_h_array = []
-      row.each do |f|
-        c_h_array << f
-        @c_values[j] = c_h_array[0]
-        @h_values[j] = c_h_array[1]
-      end
-      j+=1
-    end # do |row| (read input file)
-    @payment.c_values = @c_values
-    @payment.h_values = @h_values
-    @payment.save
-    
-    file_name = "app/views/products/ro_values_#{string}.csv"
-    if File.exists?(file_name) and @payment.aasm_state == "step5"
-      @payment.c_h_values_received # update state to step7
-      @payment.save
-    end
-  end # of alice_step_5
-  
-  
-  def alice_step_7
+
+    # send real indices and 285 (fake) ro values to Tumbler
+    # ro values are a 300-element array with 15 nil values in it.
+    uri = URI.parse($PAYMENT_API_URL)
+    http = Net::HTTP.new(uri.host, uri.port)
+    request = Net::HTTP::Patch.new(uri.request_uri)
+    request.set_form_data({"payment[alice_public_key]" => @payment.alice_public_key, "payment[real_indices]" => "#{@payment.real_indices}", "payment[ro_values]" => "#{@ro_values}"})
+    response = http.request(request)
+    http.use_ssl = (url.scheme == "https")
+    result = JSON.parse(response.body)
+
     # Fig 3, step 7
     # For 285 fake indices, Alice verifies now that h = H(k), computes s = Dec(k,c) and verifies also that s = ro
-    
-    @payment = Payment.find(params[:id])
-    string = @payment.alice_public_key[-32..-1] || @payment.alice_public_key
-    # Alice reads the 285 fake k values from Tumbler's CSV file and verifies that h = H(k)
+    @fake_k_values = Array.new
+    @fake_k_values = result["fake_k_values"]
 
-    data = open("app/views/products/fake_k_values_#{string}.csv").read
-    @fake_k_values = []
-    j = 0
-    CSV.parse(data) do |row|
-      fake_k_array = []
-      row.each do |f|
-        fake_k_array << f
-        @fake_k_values[j] = fake_k_array[0]
-      end
-      j+=1
-    end # do |row| (read input file)
-    puts "Number of fake k values loaded: " + j.to_s
-    
     true_count = 0
     j = 0
     for i in 0..299
       unless @payment.real_indices.include? i
         if @payment.h_values[i] == @fake_k_values[j].ripemd160.to_hex
           true_count += 1
-        else
-          puts "h: " + @payment.h_values[i]
-          puts "k: " + @fake_k_values[j].ripemd160.to_hex
         end
         j += 1
       end
     end
-    puts "Number of k values checked successfully: " + true_count.to_s
-    
-    unless true_count == 285
-      redirect_to @payment, alert: "Mismatch between h and H(k) values."
-    else
-      # Alice now computes s = Dec(k,c) and verifies that s^^pk = beta
-      e = $TUMBLER_RSA_PUBLIC_EXPONENT
-      n = $TUMBLER_RSA_PUBLIC_KEY
 
-      @s_values = []
-      j = 0
-      for i in 0..299
-        unless @payment.real_indices.include? i
-          k = @fake_k_values[j]
-          c = @payment.c_values[i]
-          decipher = OpenSSL::Cipher::AES.new(128, :CBC)
-          decipher.decrypt
-          key_hex = k[0..31]
-          iv_hex = k[32..63]
-          key = key_hex.from_hex
-          iv = iv_hex.from_hex
-          decipher.key = key
-          decipher.iv = iv
-          @s_values[i] =  decipher.update(BTC::Data.data_from_hex(c)) + decipher.final
-          j += 1
-        end
-      end
-      
-      true_count = 0
-      for i in 0..299
-        unless @payment.real_indices.include? i
-          if (@payment.ro_values[i] == @s_values[i])  # verify s = ro (fake values)
-            true_count += 1
-          end
-        end
-      end
-      puts "Number of s values checked successfully: " + true_count.to_s
-      unless true_count == 285
-        redirect_to @payment, alert: "Mismatch between fake s and ro values."
-      end
-      @payment.fake_k_values_received # update state to step8
-      @payment.save
-      
+    if true_count != 285
+      raise 'Check fake k values failed: mismatch between h and H(k) values.'
     end
-    
-  end # of alice_step_7
+    # Alice now computes s = Dec(k,c) and verifies that s^^pk = beta
+
+    @s_values = []
+    j = 0
+    for i in 0..299
+      unless @payment.real_indices.include? i
+        k = @fake_k_values[j]
+        c = @payment.c_values[i]
+        decipher = OpenSSL::Cipher::AES.new(128, :CBC)
+        decipher.decrypt
+        key_hex = k[0..31]
+        iv_hex = k[32..63]
+        key = key_hex.from_hex
+        iv = iv_hex.from_hex
+        decipher.key = key
+        decipher.iv = iv
+        @s_values[i] =  decipher.update(BTC::Data.data_from_hex(c)) + decipher.final
+        j += 1
+      end
+    end
+
+    true_count = 0
+    for i in 0..299
+      unless @payment.real_indices.include? i
+        if (@payment.ro_values[i] == @s_values[i])  # verify s = ro (fake values)
+          true_count += 1
+        end
+      end
+    end
+
+    if true_count != 285
+        puts "Mismatch between fake s and ro values."
+        raise 'Tumblebit protocol session aborted: mismatch between fake s and ro values'
+    end
+    @payment.k_values = @fake_k_values
+    @payment.fake_k_values_checked # update state from "step5" to "step7"
+    @payment.save
+    flash[:notice] = "Payment successfully updated: step7 completed."
+    render "show"
+  end # of method generate_beta_values
   
   
   def alice_step_11

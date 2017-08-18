@@ -45,7 +45,7 @@ class PaymentRequest < ActiveRecord::Base
       
    end
   
-  validates_presence_of :title
+  # validates_presence_of :title
   validates :expiry_date, :timeliness => {:type => :datetime }
   
   attr_accessor :tx_hash, :index, :amount, :confirmations, :signed_tx
@@ -75,7 +75,7 @@ class PaymentRequest < ActiveRecord::Base
   
   
   def real_btc_tx_sighash(i, previous_id)
-    
+    BTC::Network.default = BTC::Network.mainnet
     # TODO for testing replace funding_script by @tumbler_funded_address P2PKH script
     # BTC::Script "OP_DUP OP_HASH160 7ab89f9fae3f8043dcee5f7b5467a0f0a6e2f7e1 OP_EQUALVERIFY OP_CHECKSIG"
     
@@ -86,11 +86,14 @@ class PaymentRequest < ActiveRecord::Base
     # TODO : dynamic generation of @bob_payout_address, static address for now (testing)
     # @bob_payout_address = "1Axoqagyjn5RXcNyLP144dzzYUppTKkB6L" # compressed wif : L4Pny7E44175jXdStRiHkn8cESPpxMmUNc4WsMPFtFi3em89kotK
     @bob_payout_address = self.hash_address
-    # @previous_id points to UTXO funded by Tumbler on static address 1LnEtnWKC5PyJQ7bJ8Y33c1rgzChkVmvKW
-    # Tumbler compressed wif: L2dSPKfm998jApkYyF1CoM5zR6rYAassuSbgagMkyB8vxfpiEzFU
+    # @previous_id points to UTXO funded by Tumbler on static address 
+
     # TODO: @previous_id should point dynamically to 2-of-2 multisig with timelocked refund P2SH escrow UTXO
     @tumbler_funded_address = Figaro.env.tumbler_funding_address # 1LUBfiVgeuFRzc7PC1Auw8YAncdewderVg for testing
+    # @tumbler_private_key = Figaro.env.tumbler_funding_priv_key # KzKVn96SKYesba2B7acKLPEP7R3LtyLoxNVQeDoAu3RgqrdinQcJ
     
+    # @tumbler_public_key = BTC::WIF.new(string:@tumbler_private_key).key.public_key.unpack('H*')[0] # 02765768BE37703A0C6116BCD37E82F8548806E31A5AED72FC781AE0F041A74C3C
+    # @tumbler_key = BTC::Key.new(public_key:BTC.from_hex(@tumbler_public_key))
     # @previous_id = self.first_unspent_tx(@tumbler_funded_address)
     @previous_id = previous_id
     @previous_index = self.index 
@@ -105,7 +108,7 @@ class PaymentRequest < ActiveRecord::Base
     tx.add_output(BTC::TransactionOutput.new(value: @value, script: BTC::Address.parse(@bob_payout_address).script))
     hashtype = BTC::SIGHASH_ALL
     sighash = tx.signature_hash(input_index: 0,
-                                output_script: BTC::PublicKeyAddress.new(string:@tumbler_funded_address).script,
+                                output_script: BTC::Address.parse(@tumbler_funded_address).script,
                                 hash_type: hashtype)
     beta = sighash.unpack('H*')[0]
   end # of real_btc_tx_sighash intance method
