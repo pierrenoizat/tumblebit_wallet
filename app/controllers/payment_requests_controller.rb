@@ -42,15 +42,31 @@ class PaymentRequestsController < ApplicationController
     result = JSON.parse(response.body)
     # get Tumbler key in http response and save it to @payment in Alice wallet
     @payment_request.tumbler_public_key = result["tumbler_public_key"]
-
+    @payment_request.request_created # update state from "started" to "step1"
     if @payment_request.save
       flash[:notice] = "Payment Request was successfully created"
       render "show"
     else
-      flash[:notice] = "There was a problem with this payment request creation."
+      flash[:alert] = "There was a problem with this payment request creation."
       redirect_to payment_requests_url
     end
     
+  end
+  
+  
+  def show
+    @payment_request = PaymentRequest.find(params[:id])
+    response= RestClient.get($TUMBLER_PAYMENT_REQUEST_API_URL + "/#{@payment_request.bob_public_key}")
+    result = JSON.parse(response.body)
+    # if @payment_request.aasm_state == "completed"
+    #   @payment_request_payout_tx = @payment_request.payout_tx # force execution of payout_tx method
+    # end
+    if @payment_request.tumbler_public_key == result["tumbler_public_key"]
+      respond_with(@payment_request)
+    else
+      flash[:alert] = "This payment request seems to be unknown from the Tumbler or the Tumbler API is down."
+      redirect_to payment_requests_url
+    end
   end
   
 
@@ -79,18 +95,6 @@ class PaymentRequestsController < ApplicationController
   end # of update method
   
   
-  def show
-    @payment_request = PaymentRequest.find(params[:id])
-    response= RestClient.get($TUMBLER_PAYMENT_REQUEST_API_URL + "/#{@payment_request.bob_public_key}")
-    result = JSON.parse(response.body)
-    puts result["tumbler_public_key"]
-    # if @payment_request.aasm_state == "completed"
-    #   @payment_request_payout_tx = @payment_request.payout_tx # force execution of payout_tx method
-    # end
-    respond_with(@payment_request)
-  end # of show method
-  
-  
   def destroy
     @payment_request = PaymentRequest.find_by_id(params[:id])
     if @payment_request.virgin?
@@ -107,20 +111,8 @@ class PaymentRequestsController < ApplicationController
     # Bob generates 42 “real” payout addresses (keeps them secret for now) and prepares 42 distinct “real” transactions.
     @payment_request = PaymentRequest.find(params[:id])
     @funded_address = @payment_request.hash_address
-    @notice = ""
-    unless @payment_request.beta_values.blank?
-      @notice = 'Beta values already exists.'
-      # dump the 84 beta values to a new csv file for testing
-      if File.exists?("app/views/products/beta_values_#{@funded_address}.csv")
-        File.delete("app/views/products/beta_values_#{@funded_address}.csv") # delete any previous version of file
-      end
 
-      CSV.open("app/views/products/beta_values_#{@funded_address}.csv", "ab") do |csv|
-        for i in 0..83
-          csv << [@payment_request.beta_values[i]]
-          end
-        end # of CSV.open (writing to sigma_values_#{@funded_address}.csv)
-    else
+    if @payment_request.beta_values.blank?
       
       @payment_request.amount = 460000 # amount in satoshis
       
@@ -147,15 +139,42 @@ class PaymentRequestsController < ApplicationController
       end
       # save 84 beta values for Tumbler
       @payment_request.beta_values = beta
-    end
-    if @notice.blank?
-      @payment_request.request_created # update state to step1
-      @payment_request.escrow_tx_received # transition in state machine to step 2
-      @payment_request.beta_values_sent # update state to step4
       @payment_request.save
-      redirect_to @payment_request, notice: 'Transactions were successfully created by Bob.'
+    end
+      
+    # update Tumbler payment request with beta values
+    @payment_request.reload
+    response= RestClient.patch $TUMBLER_PAYMENT_REQUEST_API_URL, {payment_request: {bob_public_key: @payment_request.bob_public_key, beta_values: "#{@payment_request.beta_values}"}}
+      
+      # uri = URI.parse($TUMBLER_PAYMENT_REQUEST_API_URL)
+      # http = Net::HTTP.new(uri.host, uri.port)
+      # request = Net::HTTP::Patch.new(uri.request_uri)
+      # request.set_form_data({"payment_request[bob_public_key]" => @payment_request.bob_public_key, "payment_request[beta_values]" => "#{@payment_request.beta_values}"})
+      # response = http.request(request)
+      # http.use_ssl = (url.scheme == "https")
+    result = JSON.parse(response.body)
+    # get c values from result params and put them in an array
+    @c_values = Array.new
+    @c_values = result["c_values"]
+    @payment_request.c_values = @c_values
+    
+    true_count=0
+    for i in 0..83
+      if @payment_request.beta_values[i] == result["beta_values"][i]
+        true_count += 1
+      else
+        puts @payment_request.beta_values[i]
+        puts result["beta_values"][i]
+      end
+    end
+      
+    if true_count == 84
+      @payment_request.escrow_tx_received # transition in state machine from "step1" to "step2"
+      @payment_request.beta_values_sent # update state from "step2" to "step4"
+      @payment_request.save
+      redirect_to @payment_request, notice: 'Transactions were successfully created by Bob in step 2.'
     else
-      redirect_to root_url, notice: @notice
+      redirect_to root_url, alert: 'Tumbler seems to have wrong beta values or to be down.'
     end
   end # of bob_step_2
   

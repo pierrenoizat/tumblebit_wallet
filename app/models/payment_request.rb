@@ -64,7 +64,7 @@ class PaymentRequest < ActiveRecord::Base
     real_indices = []
     prng = Random.new
     while real_indices.count < 42
-      j = prng.rand(0..299)
+      j = prng.rand(0..83)
       unless real_indices.include? j
         real_indices << j
       end

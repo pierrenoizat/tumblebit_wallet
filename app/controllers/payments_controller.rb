@@ -1,5 +1,5 @@
 class PaymentsController < ApplicationController
-  skip_before_action :verify_authenticity_token
+  # skip_before_action :verify_authenticity_token
   include Crypto # module in /lib
   include Http # module in /lib
   require 'csv'
@@ -40,7 +40,7 @@ class PaymentsController < ApplicationController
     result = JSON.parse(response.body)
     # get Tumbler key in http response and save it to @payment in Alice wallet
     @payment.tumbler_public_key = result["tumbler_public_key"]
-
+    
     if @payment.save
       flash[:notice] = "Payment was successfully created"
       render "show"
@@ -145,7 +145,7 @@ class PaymentsController < ApplicationController
       # data = JSON.parse('{"payment[alice_public_key]": "#{@payment.alice_public_key}", "payment[beta_values]": "#{@beta_values}" }')
       # data = {"payment[alice_public_key]" => @payment.alice_public_key, "payment[beta_values]" => "#{@beta_values}"}
       # result = update_request($PAYMENT_UPDATE_API_URL, data)  # http request performed by Http module in /lib
-      uri = URI.parse($PAYMENT_API_URL)
+      uri = URI.parse($TUMBLER_PAYMENT_API_URL)
       http = Net::HTTP.new(uri.host, uri.port)
       request = Net::HTTP::Patch.new(uri.request_uri)
       request.set_form_data({"payment[alice_public_key]" => @payment.alice_public_key, "payment[beta_values]" => "#{@beta_values}"})
@@ -175,7 +175,7 @@ class PaymentsController < ApplicationController
 
     # send real indices and 285 (fake) ro values to Tumbler
     # ro values are a 300-element array with 15 nil values in it.
-    uri = URI.parse($PAYMENT_API_URL)
+    uri = URI.parse($TUMBLER_PAYMENT_API_URL)
     http = Net::HTTP.new(uri.host, uri.port)
     request = Net::HTTP::Patch.new(uri.request_uri)
     request.set_form_data({"payment[alice_public_key]" => @payment.alice_public_key, "payment[real_indices]" => "#{@payment.real_indices}", "payment[ro_values]" => "#{@ro_values}"})
