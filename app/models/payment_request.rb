@@ -45,17 +45,36 @@ class PaymentRequest < ActiveRecord::Base
       
    end
   
-  # validates_presence_of :title
   validates :expiry_date, :timeliness => {:type => :datetime }
+  validates :tumbler_public_key, :key_path, :expiry_date, presence: true
+  validates :tumbler_public_key, uniqueness: { case_sensitive: false }
   
   attr_accessor :tx_hash, :index, :amount, :confirmations, :signed_tx
   
   require 'btcruby/extensions'
-  # require 'money-tree'
+  require 'money-tree'
   require 'mechanize'
   require 'digest'
   
   self.per_page = 10
+  
+  
+  def init
+    self.expiry_date  ||= Time.now.utc  # will set the default value only if it's nil
+    real_indices = []
+    prng = Random.new
+    while real_indices.count < 42
+      j = prng.rand(0..299)
+      unless real_indices.include? j
+        real_indices << j
+      end
+    end
+    self.real_indices ||= real_indices.sort
+    
+    salt = Figaro.env.tumblebit_salt
+    index = (salt.to_i + prng.rand(0..99999)) % 0x80000000
+    self.key_path = "1/#{index}"
+  end
   
   
   def bob_private_key

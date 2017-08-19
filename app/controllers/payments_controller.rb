@@ -5,6 +5,7 @@ class PaymentsController < ApplicationController
   require 'csv'
   require 'btcruby/extensions'
   require 'mechanize'
+  require 'rest-client'
   require 'digest'
   
   def index
@@ -34,30 +35,15 @@ class PaymentsController < ApplicationController
   def create
     @payment = Payment.new(payment_params)
     
-    @agent = Mechanize.new
+    # create @payment on Tumbler side
+    response= RestClient.post $TUMBLER_PAYMENT_API_URL, {payment: {alice_public_key: @payment.alice_public_key}}
+    result = JSON.parse(response.body)
+    # get Tumbler key in http response and save it to @payment in Alice wallet
+    @payment.tumbler_public_key = result["tumbler_public_key"]
 
-    # begin     
-      # page = @agent.post($PAYMENT_API_URL, {
-      #   "alice_publice_key" => "#{@payment.alice_public_key}"
-      # })
-      
-    # rescue Exception => e
-      # page = e.page
-    # end
-
-    # data = page.body
-    # result = JSON.parse(data)
-    
-    # uri = URI.parse($PAYMENT_API_URL)
-    # http = Net::HTTP.new(uri.host, uri.port)
-    # request = Net::HTTP::Post.new(uri.request_uri)
-    # request.set_form_data({"payment[alice_public_key]" => @payment.alice_public_key})
-    # response = http.request(request)
-    # http.use_ssl = (url.scheme == "https")
-    # result = JSON.parse(response.body)
-    # puts result
     if @payment.save
-      render "show", notice: 'Payment was successfully created.'
+      flash[:notice] = "Payment was successfully created"
+      render "show"
     else
       flash[:notice] = "There was a problem with this payment creation."
       redirect_to payments_url
@@ -96,19 +82,6 @@ class PaymentsController < ApplicationController
     @payment.destroy
     redirect_to payments_path, notice: 'Payment was successfully deleted.'
   end
-  
-  
-  def get_tumbler_key
-  @payment = Payment.find(params[:id])
-  
-  require 'rest-client'
-  response= RestClient.post $PAYMENT_API_URL, {payment: {alice_public_key: @payment.alice_public_key}}
-  result = JSON.parse(response.body)
-  puts result
-  @payment.tumbler_public_key = result["tumbler_public_key"]
-  @payment.save
-  render "show"
-  end  
   
   
   def generate_beta_values

@@ -15,10 +15,6 @@
 	<% if @payment.id %>
 		<%= f.submit 'Update payment with parameters', :class => "btn btn-primary" %>
 	<% else %>
-	<div class="field">
-		<p><%= f.label 'Tumbler Public Key' %></br>
-		<%= f.text_field :tumbler_public_key, :style => "width:540px;", :placeholder => "02893204e76671e558ce40d9784422d5b3a1990c3975ffa288fc98c987a590a0f9" %></p>
-	</div>
 		<%= f.submit 'Start Payment Process', :class => "btn btn-primary" %>
 	<% end %>
 	 | <%= link_to t('.cancel', :default => t("helpers.links.cancel")),

@@ -8,22 +8,16 @@
 	<p>Expiry: <strong><%= Time.at(@payment.expiry_date.to_time.to_i).utc %></strong></br>
 	Expiry in seconds since epoch time (1/1/1970): <%= @payment.expiry_date.to_time.to_i %></p>
 	</br>
-	<% if @payment.tumbler_public_key.blank? or @payment.y.blank? %>
 		
-			<% if @payment.tumbler_public_key.blank? %>
-				<p><%=link_to 'Get Tumbler Public Key', get_tumbler_key_payment_path(@payment), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payments_path, :class => 'btn' %></p>
-			<% else %>
-				<% if @payment.y.blank? %>
-					<%= form_for(@payment, multipart: true) do |f| %>
-						<div class="field">
-			    			<p><%= f.label 'Alice Puzzle Access Code y' %></p>
-			    			<p><%= f.text_field :y, :style => "width:540px;", :placeholder => "b2aeac0d6d50bf63b01522936b9bcf58ef7dd196cefff6ba80d470d125e4f24501cc2305dca1a34e344b59ae1a8251e47a1c2da52fd7630303856cbf729ec0ffe2b27365b3cd49f2e4bbedd2a4b7b4563181a1073e6b099fffb1a9beb5f5710c1afeff06ee38b4250bd069dfc4bcddc47495837272a35268e794e6c5919dc136" %></p>
-			  			</div>
+	<% if @payment.y.blank? %>
+		<%= form_for(@payment, multipart: true) do |f| %>
+			<div class="field">
+			   <p><%= f.label 'Alice Puzzle Access Code y' %></p>
+			   <p><%= f.text_field :y, :style => "width:540px;", :placeholder => "b2aeac0d6d50bf63b01522936b9bcf58ef7dd196cefff6ba80d470d125e4f24501cc2305dca1a34e344b59ae1a8251e47a1c2da52fd7630303856cbf729ec0ffe2b27365b3cd49f2e4bbedd2a4b7b4563181a1073e6b099fffb1a9beb5f5710c1afeff06ee38b4250bd069dfc4bcddc47495837272a35268e794e6c5919dc136" %></p>
+			 </div>
 			
-						<%= f.submit 'Update Payment with parameters', :class => "btn btn-primary" %>
-						<% end %>
-				<% end %>
-			<% end %>
+			<%= f.submit 'Update Payment with parameters', :class => "btn btn-primary" %>
+		<% end %>
 	<% end %>
 	
 	<% if @payment.aasm_state == "step1"%>

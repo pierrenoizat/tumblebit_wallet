@@ -7,6 +7,7 @@ class PaymentRequestsController < ApplicationController
   include Crypto # module in /lib
   require 'csv'
   require 'btcruby/extensions'
+  require 'rest-client'
 
   def index
     @payment_requests = PaymentRequest.where.not(:key_path => nil).page(params[:page]).order(created_at: :desc) 
@@ -16,11 +17,6 @@ class PaymentRequestsController < ApplicationController
   
   def new
     @payment_request = PaymentRequest.new
-  end
-  
-  
-  def create
-    @payment_request = PaymentRequest.new(payment_request_params)
     @payment_request.expiry_date  ||= Time.now.utc  # will set the default value only if it's nil
     real_indices = []
     prng = Random.new
@@ -35,17 +31,26 @@ class PaymentRequestsController < ApplicationController
     salt = Figaro.env.tumblebit_salt
     index = (salt.to_i + prng.rand(0..99999)) % 0x80000000
     @payment_request.key_path = "1/#{index}"
+  end
+  
+  
+  def create
+    @payment_request = PaymentRequest.new(payment_request_params)
+    
+    # create @payment_request on Tumbler side
+    response= RestClient.post $TUMBLER_PAYMENT_REQUEST_API_URL, {payment_request: {bob_public_key: @payment_request.bob_public_key}}
+    result = JSON.parse(response.body)
+    # get Tumbler key in http response and save it to @payment in Alice wallet
+    @payment_request.tumbler_public_key = result["tumbler_public_key"]
 
     if @payment_request.save
-      redirect_to edit_payment_request_path(@payment_request), notice: 'Payment request was successfully created.'
+      flash[:notice] = "Payment Request was successfully created"
+      render "show"
     else
-      alert_string = ""
-      @payment_request.errors.full_messages.each do |msg|
-        msg += ". "
-        alert_string += msg 
-      end
-      redirect_to new_payment_request_path, alert: alert_string
+      flash[:notice] = "There was a problem with this payment request creation."
+      redirect_to payment_requests_url
     end
+    
   end
   
 
@@ -76,6 +81,9 @@ class PaymentRequestsController < ApplicationController
   
   def show
     @payment_request = PaymentRequest.find(params[:id])
+    response= RestClient.get($TUMBLER_PAYMENT_REQUEST_API_URL + "/#{@payment_request.bob_public_key}")
+    result = JSON.parse(response.body)
+    puts result["tumbler_public_key"]
     # if @payment_request.aasm_state == "completed"
     #   @payment_request_payout_tx = @payment_request.payout_tx # force execution of payout_tx method
     # end

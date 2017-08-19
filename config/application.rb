@@ -58,6 +58,7 @@ module Tumblebit
     # $TUMBLER_COLLECTION_ADDRESS = "1LnEtnWKC5PyJQ7bJ8Y33c1rgzChkVmvKW" # wif : "L2dSPKfm998jApkYyF1CoM5zR6rYAassuSbgagMkyB8vxfpiEzFU"
     $BOB_PAYOUT_ADDRESS = "1Axoqagyjn5RXcNyLP144dzzYUppTKkB6L" # wif : "L4Pny7E44175jXdStRiHkn8cESPpxMmUNc4WsMPFtFi3em89kotK"
     # $PAYMENT_UPDATE_API_URL ="http://0.0.0.0:3000/api/v1/payment"
-    $PAYMENT_API_URL = "https://fierce-ocean-41496.herokuapp.com/api/v1/payment"
+    $TUMBLER_PAYMENT_API_URL = "https://fierce-ocean-41496.herokuapp.com/api/v1/payment"
+    $TUMBLER_PAYMENT_REQUEST_API_URL = "https://fierce-ocean-41496.herokuapp.com/api/v1/payment_request"
   end
 end

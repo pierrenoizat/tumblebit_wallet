@@ -36,10 +36,12 @@ class Payment < ActiveRecord::Base
   
   attr_accessor :tx_hash, :index, :amount, :confirmations, :signed_tx, :secret
   # after_initialize :init
+  validates :expiry_date, :timeliness => {:type => :datetime }
+  validates :tumbler_public_key, :key_path, :expiry_date, presence: true
+  validates :tumbler_public_key, uniqueness: { case_sensitive: false }
   
   require 'btcruby/extensions'
   require 'money-tree'
-  require 'mechanize'
   require 'digest'
   
   
