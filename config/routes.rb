@@ -35,10 +35,7 @@ Rails.application.routes.draw do
   resources :payment_requests do
     member do
       get 'bob_step_2'
-      get 'bob_step_8'
-      get 'bob_step_10'
       get 'complete'
-      get 'create_puzzle_z'
       patch 'sign_tx'
       patch 'broadcast'
     end

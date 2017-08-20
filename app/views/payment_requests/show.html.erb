@@ -43,14 +43,9 @@
 		<% if @payment_request.aasm_state == "step7" %>
 			<p>Bob Real Indices: <pre style="width:600px"><code><%= @payment_request.real_indices if @payment_request %></code></pre></p>
 		<% end %>
-		<% if @payment_request.aasm_state == "step8" %>
-			<p><%=link_to "Bob Checks Tumbler Fake Epsilon", bob_step_8_payment_request_path(@payment_request), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payment_requests_path, :class => 'btn' %></p>
-		<% end %>
-		
 		<% if @payment_request.aasm_state == "step10" %>
-			<p><%=link_to "Bob Checks RSA Quotients", bob_step_10_payment_request_path(@payment_request), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payment_requests_path, :class => 'btn' %></p>
-		<% end %>
-		
+			<p>Puzzle y sent to Alice: <pre style="width:600px"><code><%= @payment_request.y %></code></pre></p>
+		<% end %>		
 		<% if @payment_request.aasm_state == "step12" %>
 			<% if @payment_request.solution %>
 				<p>Puzzle solution: <strong><%= @payment_request.solution %></strong></p>

@@ -1,5 +1,5 @@
 class PaymentRequest < ActiveRecord::Base
-  
+  include Crypto # module in /lib
   include AASM
 
    aasm do # default column: aasm_state
@@ -413,6 +413,58 @@ class PaymentRequest < ActiveRecord::Base
       puts "No utxo avalaible for #{address}"
       return nil
     end
+  end
+  
+  
+  def real_z_values
+    @real_z_values = []
+    for i in 0..83
+      if self.real_indices.include? i
+        @real_z_values << self.z_values[i]
+      end
+    end
+    @real_z_values
+  end
+  
+  
+  def y
+    e = $TUMBLER_RSA_PUBLIC_EXPONENT
+    n = $TUMBLER_RSA_PUBLIC_KEY
+    y = self.real_z_values[0].to_i(16)*mod_pow(self.r.to_i, e, n) % n
+    y.to_s(16)
+  end
+  
+  
+  def quotients_ok?
+    quotients_ok = false
+    # In step 10, Bob computes zj1*(q2)pk = (epsilonj2)pk and checks that zj2 = zj1*(q2)pk
+    # If any check fails, Bob aborts the protocol.
+    # If no fail, Tumbler is very likely to have sent validly formed zi values.
+    e = $TUMBLER_RSA_PUBLIC_EXPONENT
+    n = $TUMBLER_RSA_PUBLIC_KEY
+    @quotients = self.quotients
+    @real_z_values = self.real_z_values
+    j = 0
+
+    puts "Number of real z values : " + @real_z_values.count.to_s
+    puts "check that z2 = z1*(q2)^pk mod n"
+
+    j = 0
+    for i in 0..40
+      z2 = @real_z_values[i+1].to_i(16)
+      z1 = @real_z_values[i].to_i(16)
+      q2 = @quotients[i].to_i(16)
+      puts z2.to_s(16)
+      puts z1.to_s(16)
+      puts q2
+      if (z2 == (z1*mod_pow(q2, e, n) % n))
+        j += 1
+      else
+        puts "Failed test, should be zero:" + ((z2 - z1*mod_pow(q2, e, n)) % n).to_s
+      end
+      puts j
+    end
+    quotients_ok = ( j == 41 )
   end
   
   

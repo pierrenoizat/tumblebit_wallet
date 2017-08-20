@@ -1,5 +1,5 @@
 class Payment < ActiveRecord::Base
-  
+  include Crypto # module in /lib
   include AASM
 
   aasm do # default column: aasm_state
