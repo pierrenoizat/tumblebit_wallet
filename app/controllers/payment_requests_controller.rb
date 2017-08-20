@@ -158,7 +158,7 @@ class PaymentRequestsController < ApplicationController
     @c_values = result["c_values"]
     @payment_request.c_values = @c_values
     @z_values = Array.new
-    @z_values = result["c_values"]
+    @z_values = result["z_values"]
     @payment_request.z_values = @z_values
     
     true_count=0
@@ -196,6 +196,7 @@ class PaymentRequestsController < ApplicationController
       puts @tumbler_key.address # 1LUBfiVgeuFRzc7PC1Auw8YAncdewderVg for testing
       j = 0
       check_ok = false
+      rsa_puzzle_ok = false
 
       for i in 0..83
         unless @payment_request.real_indices.include? i
@@ -216,15 +217,22 @@ class PaymentRequestsController < ApplicationController
           puts "fake sigma value = #{@sigma[j].unpack('H*')[0]}"
           puts "c value = #{@c_values[i]}"
           # TODO: If necessary, Bob checks that @fake_epsilon_values[j] < n  (RSA modulus)
-          # TODO: Bob checks that RSA puzzle zi = (εi)**e
+          # Bob checks that RSA puzzle zi = (εi)**e
+          e = $TUMBLER_RSA_PUBLIC_EXPONENT
+          n = $TUMBLER_RSA_PUBLIC_KEY
+          rsa_puzzle_ok = (@z_values[i] == mod_pow(@fake_epsilon_values[j].to_i(16),e,n).to_s(16))
+          
           # Validate promise @c_values[i]: Bob checks that sigmai is a valid ECDSA signature against PKT and betai
           @beta[j] = @payment_request.fake_btc_tx_sighash(i)
           puts "beta = #{@beta[j]}"
           check_ok = @tumbler_key.verify_ecdsa_signature(@sigma[j], @beta[j].htb)  # result must equal true
-          if check_ok
+          if rsa_puzzle_ok and check_ok
             j += 1
           else
             puts j
+            puts "#{@z_values[i]}"
+            puts "#{@fake_epsilon_values[j]}"
+            puts "#{mod_pow(@fake_epsilon_values[j].to_i(16),e,n).to_s(16)}"
             puts'There is a problem with Tumblers fake epsilons: Bob should abort protocol.'
             return
           end
