@@ -40,10 +40,7 @@
 		<% if @payment_request.aasm_state == "step1" %>
 			<p><%=link_to "Bob Checks Tumbler Fake Epsilon", bob_step_2_payment_request_path(@payment_request), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payment_requests_path, :class => 'btn' %></p>
 		<% end %>
-		<% if @payment_request.aasm_state == "step2" %>
-			<p><%=link_to "Bob Checks Tumbler Fake Epsilon", bob_step_2_payment_request_path(@payment_request), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payment_requests_path, :class => 'btn' %></p>
-		<% end %>
-		<% if @payment_request.aasm_state == "step4" %>
+		<% if @payment_request.aasm_state == "step7" %>
 			<p>Bob Real Indices: <pre style="width:600px"><code><%= @payment_request.real_indices if @payment_request %></code></pre></p>
 		<% end %>
 		<% if @payment_request.aasm_state == "step8" %>

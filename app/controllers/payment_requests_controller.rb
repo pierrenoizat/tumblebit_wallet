@@ -157,6 +157,9 @@ class PaymentRequestsController < ApplicationController
     @c_values = Array.new
     @c_values = result["c_values"]
     @payment_request.c_values = @c_values
+    @z_values = Array.new
+    @z_values = result["c_values"]
+    @payment_request.z_values = @z_values
     
     true_count=0
     for i in 0..83
@@ -171,8 +174,69 @@ class PaymentRequestsController < ApplicationController
     if true_count == 84
       @payment_request.escrow_tx_received # transition in state machine from "step1" to "step2"
       @payment_request.beta_values_sent # update state from "step2" to "step4"
+      
+      # step6, identify fake set: reveal real indices to Tumbler
+      response= RestClient.patch $TUMBLER_PAYMENT_REQUEST_API_URL, {payment_request: {bob_public_key: @payment_request.bob_public_key, real_indices: "#{@payment_request.real_indices}"}}
+      result = JSON.parse(response.body)
+      
+      @payment_request.c_z_values_received # update state from "step4" to "step6"
+      @payment_request.real_indices_sent # update state from "step6" to "step7"
       @payment_request.save
-      redirect_to @payment_request, notice: 'Transactions were successfully created by Bob in step 2.'
+      
+      # step8, check fake set: check fake epsilon values sent by Tumbler
+      @funded_address = @payment_request.hash_address
+      @fake_epsilon_values = []
+      @fake_epsilon_values = result["fake_epsilon_values"]
+
+      # Bob computes sigmai = Dec(epsiloni, ci) for the 42 fake epsilon values
+      @sigma = []
+      @beta = []
+
+      @tumbler_key=BTC::Key.new(wif:Figaro.env.tumbler_funding_priv_key) # for testing
+      puts @tumbler_key.address # 1LUBfiVgeuFRzc7PC1Auw8YAncdewderVg for testing
+      j = 0
+      check_ok = false
+
+      for i in 0..83
+        unless @payment_request.real_indices.include? i
+          k = @fake_epsilon_values[j]
+          while k.size < 64
+            k = "0" + k # padding k with leading zeroes in case of low epsilon value
+          end
+          puts "fake epsilon: #{k}"
+          key_hex = k[0..31]
+          iv_hex = k[32..63]
+          key = key_hex.from_hex
+          iv = iv_hex.from_hex
+          decipher = OpenSSL::Cipher::AES.new(128, :CBC)
+          decipher.decrypt
+          decipher.key = key
+          decipher.iv = iv
+          @sigma[j] = decipher.update(@c_values[i].from_hex) + decipher.final
+          puts "fake sigma value = #{@sigma[j].unpack('H*')[0]}"
+          puts "c value = #{@c_values[i]}"
+          # TODO: If necessary, Bob checks that @fake_epsilon_values[j] < n  (RSA modulus)
+          # TODO: Bob checks that RSA puzzle zi = (εi)**e
+          # Validate promise @c_values[i]: Bob checks that sigmai is a valid ECDSA signature against PKT and betai
+          @beta[j] = @payment_request.fake_btc_tx_sighash(i)
+          puts "beta = #{@beta[j]}"
+          check_ok = @tumbler_key.verify_ecdsa_signature(@sigma[j], @beta[j].htb)  # result must equal true
+          if check_ok
+            j += 1
+          else
+            puts j
+            puts'There is a problem with Tumblers fake epsilons: Bob should abort protocol.'
+            return
+          end
+        end
+      end
+      if j == 42
+        @payment_request.epsilon_values = @fake_epsilon_values
+        @payment_request.save
+        redirect_to @payment_request, notice: 'Bob steps 2, 3, 4, 6 and 8 completed successfully.'
+      else
+        redirect_to root_url, alert: 'There is a problem with Tumblers fake epsilons: protocol aborted'
+      end
     else
       redirect_to root_url, alert: 'Tumbler seems to have wrong beta values or to be down.'
     end
