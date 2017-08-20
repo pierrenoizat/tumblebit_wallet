@@ -46,9 +46,8 @@ class PaymentRequest < ActiveRecord::Base
    end
   
   validates :expiry_date, :timeliness => {:type => :datetime }
-  validates :tumbler_public_key, :key_path, :expiry_date, presence: true
+  validates :tumbler_public_key, :key_path, :expiry_date, :title, presence: true
   validates :tumbler_public_key, uniqueness: { case_sensitive: false }
-  validates_presence_of :title
   
   attr_accessor :tx_hash, :index, :amount, :confirmations, :signed_tx
   

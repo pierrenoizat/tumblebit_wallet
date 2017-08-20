@@ -15,8 +15,9 @@
 	<% if @payment_request.id %>
 		<%= f.submit 'Update Payment Request with parameters', :class => "btn btn-primary" %>
 	<% else %>
-	<%= f.hidden_field :expiry_date , :value => @payment_request.expiry_date %>
-	<%= f.hidden_field :real_indices , :value => @payment_request.real_indices %>
+	<% @payment_request.real_indices.each do |real| %>
+	    <%= f.hidden_field :real_indices, :multiple => true, :value => real %>
+	<% end %>
 	<%= f.hidden_field :key_path , :value => @payment_request.key_path %>
 		<div class="field">
 	  <p><%= f.label 'Expiry' %></p>

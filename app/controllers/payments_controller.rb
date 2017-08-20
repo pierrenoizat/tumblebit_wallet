@@ -716,7 +716,7 @@ class PaymentsController < ApplicationController
   private
  
      def payment_params
-       params.require(:payment).permit(:solution, :title, :y, :r_values, :beta_values, :ro_values, :k_values,:real_indices,:c_values, :h_values,:key_path, :tumbler_public_key, :expiry_date, :aasm_state)
+       params.require(:payment).permit(:solution, :title, :y ,:key_path, :tumbler_public_key, :expiry_date, :aasm_state, :r_values => [], :beta_values => [], :ro_values => [], :k_values => [], :real_indices => [], :c_values => [], :h_values => [])
      end
 
 end

@@ -36,7 +36,7 @@ class PaymentRequestsController < ApplicationController
   
   def create
     @payment_request = PaymentRequest.new(payment_request_params)
-    
+    puts "#{payment_request_params}"
     # create @payment_request on Tumbler side
     response= RestClient.post $TUMBLER_PAYMENT_REQUEST_API_URL, {payment_request: {bob_public_key: @payment_request.bob_public_key}}
     result = JSON.parse(response.body)
@@ -200,7 +200,6 @@ class PaymentRequestsController < ApplicationController
           while k.size < 64
             k = "0" + k # padding k with leading zeroes in case of low epsilon value
           end
-          puts "fake epsilon: #{k}"
           key_hex = k[0..31]
           iv_hex = k[32..63]
           key = key_hex.from_hex
@@ -210,8 +209,6 @@ class PaymentRequestsController < ApplicationController
           decipher.key = key
           decipher.iv = iv
           @sigma[j] = decipher.update(@c_values[i].from_hex) + decipher.final
-          puts "fake sigma value = #{@sigma[j].unpack('H*')[0]}"
-          puts "c value = #{@c_values[i]}"
           
           # Bob checks that @fake_epsilon_values[j] < n  (RSA modulus)
           e = $TUMBLER_RSA_PUBLIC_EXPONENT
@@ -222,7 +219,6 @@ class PaymentRequestsController < ApplicationController
           
           # Validate promise @c_values[i]: Bob checks that sigmai is a valid ECDSA signature against PKT and betai
           @beta[j] = @payment_request.fake_btc_tx_sighash(i)
-          puts "beta = #{@beta[j]}"
           check_ok = @tumbler_key.verify_ecdsa_signature(@sigma[j], @beta[j].htb)  # result must equal true
           if rsa_puzzle_ok and check_ok
             j += 1
@@ -436,7 +432,7 @@ class PaymentRequestsController < ApplicationController
   private
  
      def payment_request_params
-       params.require(:payment_request).permit(:solution, :r, :key_path, :tumbler_public_key, :title, :expiry_date, :tx_hash,:signed_tx, :index, :amount, :confirmations, :real_indices,:beta_values, :c_values, :epsilon_values, :aasm_state )
+       params.require(:payment_request).permit(:solution, :r, :key_path, :tumbler_public_key, :title, :expiry_date, :tx_hash,:signed_tx, :index, :amount, :confirmations, :aasm_state, :beta_values => [], :c_values => [], :epsilon_values => [], :real_indices => [] )
      end
 
 end
