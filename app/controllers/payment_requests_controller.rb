@@ -40,14 +40,20 @@ class PaymentRequestsController < ApplicationController
     # create @payment_request on Tumbler side
     response= RestClient.post $TUMBLER_PAYMENT_REQUEST_API_URL, {payment_request: {bob_public_key: @payment_request.bob_public_key}}
     result = JSON.parse(response.body)
-    # get Tumbler key in http response and save it to @payment in Alice wallet
-    @payment_request.tumbler_public_key = result["tumbler_public_key"]
-    @payment_request.request_created # update state from "started" to "step1"
-    if @payment_request.save
-      flash[:notice] = "Payment Request was successfully created"
-      render "show"
+
+    # get Tumbler key in http response and save it to @payment_request in Bob wallet
+    if valid_pubkey?(result["tumbler_public_key"])
+      @payment_request.tumbler_public_key = result["tumbler_public_key"]
+      @payment_request.request_created # update state from "started" to "step1"
+      if @payment_request.save
+        flash[:notice] = "Payment Request was successfully created"
+        render "show"
+      else
+        flash[:alert] = "There was a problem with this payment request creation."
+        redirect_to payment_requests_url
+      end
     else
-      flash[:alert] = "There was a problem with this payment request creation."
+      flash[:alert] = "Invalid Tumbler public key."
       redirect_to payment_requests_url
     end
     
@@ -432,7 +438,7 @@ class PaymentRequestsController < ApplicationController
   private
  
      def payment_request_params
-       params.require(:payment_request).permit(:solution, :r, :key_path, :tumbler_public_key, :title, :expiry_date, :tx_hash,:signed_tx, :index, :amount, :confirmations, :aasm_state, :beta_values => [], :c_values => [], :epsilon_values => [], :real_indices => [] )
+       params.require(:payment_request).permit(:solution, :r, :key_path, :tumbler_public_key, :title, :expiry_date, :tx_hash,:signed_tx, :index, :amount, :confirmations, :aasm_state, :beta_values, :c_values, :epsilon_values, :real_indices => [] )
      end
 
 end
