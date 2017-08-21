@@ -19,6 +19,8 @@
 	    <%= f.hidden_field :real_indices, :multiple => true, :value => real %>
 	<% end %>
 	<%= f.hidden_field :key_path , :value => @payment_request.key_path %>
+	<%= f.hidden_field :r , :value => @payment_request.r %>
+	<%= f.hidden_field :blinding_factor , :value => @payment_request.blinding_factor %>
 		<div class="field">
 	  <p><%= f.label 'Expiry' %></p>
 		<p>Present Time: <%= Time.now.strftime("%Y-%b-%d - %H:%M") %></p>

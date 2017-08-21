@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170820154032) do
+ActiveRecord::Schema.define(version: 20170821200839) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -50,6 +50,7 @@ ActiveRecord::Schema.define(version: 20170820154032) do
     t.string   "solution"
     t.text     "z_values",           default: [],              array: true
     t.text     "quotients",          default: [],              array: true
+    t.string   "blinding_factor"
   end
 
   create_table "payments", force: :cascade do |t|

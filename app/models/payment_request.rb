@@ -46,7 +46,7 @@ class PaymentRequest < ActiveRecord::Base
    end
   
   validates :expiry_date, :timeliness => {:type => :datetime }
-  validates :key_path, :expiry_date, :title, presence: true
+  validates :key_path, :expiry_date, :title, :r, :blinding_factor, presence: true
   validates :tumbler_public_key, uniqueness: { case_sensitive: false }
   
   attr_accessor :tx_hash, :index, :amount, :confirmations, :signed_tx
@@ -61,6 +61,9 @@ class PaymentRequest < ActiveRecord::Base
   
   def init
     self.expiry_date  ||= Time.now.utc  # will set the default value only if it's nil
+    r = Random.new.bytes(32).unpack('H*')[0].to_i(16) # 256-bit random integer
+    self.r = r
+    self.blinding_factor = Random.new.bytes(32).unpack('H*')[0].to_i(16)
     real_indices = []
     prng = Random.new
     while real_indices.count < 42
@@ -203,13 +206,7 @@ class PaymentRequest < ActiveRecord::Base
   
   def fake_btc_tx_sighash(i)
     @user_key=BTC::Key.new(public_key:BTC.from_hex(self.bob_public_key))
-    if self.r
-      r = self.r.to_i
-    else
-      r = Random.new.bytes(32).unpack('H*')[0].to_i(16) # 256-bit random integer
-      self.r = r
-      self.save
-    end
+    r = self.r.to_i
     index = r+i
     @previous_id = "d569e96b0d88b3774de1e4fe1a7e9ce8e07d362af8afa4d960ca0514b51fb4f9" # TODO make it a variable
     @previous_index = 0
@@ -429,7 +426,9 @@ class PaymentRequest < ActiveRecord::Base
   def y
     e = $TUMBLER_RSA_PUBLIC_EXPONENT
     n = $TUMBLER_RSA_PUBLIC_KEY
-    y = self.real_z_values[0].to_i(16)*mod_pow(self.r.to_i, e, n) % n
+    # Bob's blinding factor R in step 12
+    blinding_factor = self.blinding_factor.to_i
+    y = self.real_z_values[0].to_i(16)*mod_pow(blinding_factor, e, n) % n
     y.to_s(16)
   end
   

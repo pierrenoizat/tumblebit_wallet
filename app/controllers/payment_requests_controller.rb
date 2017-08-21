@@ -5,7 +5,6 @@ class PaymentRequestsController < ApplicationController
   # respond_to :js, only: :create
   
   include Crypto # module in /lib
-  require 'csv'
   require 'btcruby/extensions'
   require 'rest-client'
 
@@ -18,6 +17,8 @@ class PaymentRequestsController < ApplicationController
   def new
     @payment_request = PaymentRequest.new
     @payment_request.expiry_date  ||= Time.now.utc  # will set the default value only if it's nil
+    @payment_request.r = Random.new.bytes(32).unpack('H*')[0].to_i(16) # 256-bit random integer
+    @payment_request.blinding_factor = Random.new.bytes(32).unpack('H*')[0].to_i(16) # 256-bit random integer
     real_indices = []
     prng = Random.new
     while real_indices.count < 42
@@ -252,7 +253,10 @@ class PaymentRequestsController < ApplicationController
   def complete
     # Bob checks puzzle solution received from Alice
     @payment_request = PaymentRequest.find(params[:id])
-    epsilon = @payment_request.solution.to_i(16)/@payment_request.r.to_i
+    salt = Figaro.env.tumblebit_salt
+    # Bob's blinding factor R in step 12
+    blinding_factor = @payment_request.blinding_factor.to_i
+    epsilon = @payment_request.solution.to_i(16)/blinding_factor
     puts "Epsilon= #{epsilon.to_s(16)}"
     @payment_request.puzzle_solution_received
     @payment_request.save
@@ -438,7 +442,7 @@ class PaymentRequestsController < ApplicationController
   private
  
      def payment_request_params
-       params.require(:payment_request).permit(:solution, :r, :key_path, :tumbler_public_key, :title, :expiry_date, :tx_hash,:signed_tx, :index, :amount, :confirmations, :aasm_state, :beta_values, :c_values, :epsilon_values, :real_indices => [] )
+       params.require(:payment_request).permit(:solution, :r, :blinding_factor, :key_path, :tumbler_public_key, :title, :expiry_date, :tx_hash,:signed_tx, :index, :amount, :confirmations, :aasm_state, :beta_values, :c_values, :epsilon_values, :real_indices => [] )
      end
 
 end
