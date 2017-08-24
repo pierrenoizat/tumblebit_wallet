@@ -426,6 +426,20 @@ class Payment < ActiveRecord::Base
     @beta_values
   end
   
+  def ro_values
+    @ro_values = Array.new
+    if !self.r_values.blank?
+      for i in 0..299  # select 285 fake blinding factors ro
+        if self.real_indices.include? i
+          @ro_values[i] = nil
+        else
+          @ro_values[i] = self.r_values[i]
+        end
+      end
+    end
+    @ro_values
+  end
+  
   
   def real_c_values
     real_c = []

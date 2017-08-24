@@ -16,7 +16,7 @@ class PaymentRequestsController < ApplicationController
   
   def new
     @payment_request = PaymentRequest.new
-    @payment_request.expiry_date  ||= Time.now.utc  # will set the default value only if it's nil
+    # @payment_request.expiry_date  ||= Time.now.utc  # will set the default value only if it's nil
     @payment_request.r = Random.new.bytes(32).unpack('H*')[0].to_i(16) # 256-bit random integer
     @payment_request.blinding_factor = Random.new.bytes(32).unpack('H*')[0].to_i(16) # 256-bit random integer
     real_indices = []
@@ -45,6 +45,7 @@ class PaymentRequestsController < ApplicationController
     # get Tumbler key in http response and save it to @payment_request in Bob wallet
     if valid_pubkey?(result["tumbler_public_key"])
       @payment_request.tumbler_public_key = result["tumbler_public_key"]
+      @payment.expiry_date = result["expiry_date"]
       @payment_request.request_created # update state from "started" to "step1"
       if @payment_request.save
         flash[:notice] = "Payment Request was successfully created"
