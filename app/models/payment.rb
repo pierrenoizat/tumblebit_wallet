@@ -4,8 +4,7 @@ class Payment < ActiveRecord::Base
 
   aasm do # default column: aasm_state
     state :initiated, :initial => true
-    state :step1,:step3,:step5,:step7,:step8
-    state :completed
+    state :step1,:step3,:step5,:step7,:step8, :completed
 
     event :y_received do
       transitions :from => :initiated, :to => :step1
@@ -43,6 +42,13 @@ class Payment < ActiveRecord::Base
   require 'btcruby/extensions'
   require 'money-tree'
   require 'digest'
+  
+  
+  def puzzle_transaction
+    # Alice step 8
+    # Tpuzzle offers 1 bitcoin within timewindow tw1 under condition:
+    # the fulfilling transaction is signed by T and has preimages of hj ∀j ∈ R
+  end
   
   
   def init
@@ -269,6 +275,41 @@ class Payment < ActiveRecord::Base
   end
   
   
+  def utxo(address)
+    utxo_params = Hash.new
+    
+    string = $BLOCKCHAIN_UTXO_URL + address.to_s
+    @agent = Mechanize.new
+    begin
+    page = @agent.get string
+    rescue Exception => e
+    page = e.page
+    end
+
+    data = page.body
+    result = JSON.parse(data)
+    self.tx_hash = nil
+    if !result['unspent_outputs'].blank?
+      result['unspent_outputs'].each do |utx|
+        if utx['value'].to_f >= 450000
+          self.tx_hash = utx['tx_hash_big_endian']
+          self.index = utx['tx_output_n'].to_i
+          self.amount = utx['value'].to_f
+          self.confirmations = utx['confirmations'].to_i
+          utxo_params["tx_hash"] = utx['tx_hash_big_endian']
+          utxo_params["index"]  = utx['tx_output_n'].to_i
+          utxo_params["amount"]  = utx['value'].to_f  # amount in satoshis
+          utxo_params["confirmations"]  = utx['confirmations'].to_i
+        end
+      end
+      return utxo_params
+    else
+      puts "No utxo avalaible for #{address}"
+      return nil
+    end
+  end # of model method utxo
+  
+  
   def first_spending_tx_hash_unconfirmed
     require 'blockcypher'
     block_cypher = BlockCypher::Api.new(api_token:Figaro.env.blockcypher_api_token)
@@ -289,7 +330,7 @@ class Payment < ActiveRecord::Base
       puts "Tx hash: #{self.tx_hash}"
       return self.tx_hash
     else
-      puts "No spending transaction for #{self.hash_address}"
+      puts "No spending transaction for #{self.hash_address} at BlockCypher"
       return nil
     end
   end
@@ -309,7 +350,6 @@ class Payment < ActiveRecord::Base
 
     data = page.body
     result = JSON.parse(data)
-    puts result
     if !result['data']['txs'].blank?
       i = 0
       counter = result['data']['txs'].count
@@ -324,7 +364,28 @@ class Payment < ActiveRecord::Base
       puts "Tx hash: #{self.tx_hash}"
       return self.tx_hash
     else
-      puts "No spending transaction for #{self.hash_address}"
+      puts "No spending transaction for #{self.hash_address} at Blockr.io"
+      string = "https://blockchain.info/rawaddr/" + self.hash_address.to_s
+      begin
+      page = @agent.get string
+      rescue Exception => e
+      page = e.page
+      end
+
+      data = page.body
+      result = JSON.parse(data)
+      n = result["n_tx"]
+      i = 0
+      while i < n
+        tx = result["txs"][i]
+        if tx["inputs"][0]["prev_out"]["address"] == self.hash_address
+          self.tx_hash = tx["hash"]
+          return self.tx_hash
+        else
+          i += 1
+        end
+      end
+      
       return nil
     end
   end
@@ -464,6 +525,19 @@ class Payment < ActiveRecord::Base
       end
     end
     real_beta
+  end
+  
+  
+  def real_r_values
+    real_r = []
+    unless self.r_values.blank?
+      for i in 0..299
+        if self.real_indices.include? i
+          real_r << self.r_values[i]
+        end
+      end
+    end
+    real_r
   end
   
   

@@ -54,6 +54,9 @@ class PaymentsController < ApplicationController
   
   def show
     @payment = Payment.find(params[:id])
+    if @payment.aasm_state == "step8"
+      alice_step_11
+    end
   end
   
   
@@ -192,14 +195,13 @@ class PaymentsController < ApplicationController
     j = 0
     for i in 0..299
       unless @payment.real_indices.include? i
-        k = @fake_k_values[j]
+        key_hex = @fake_k_values[j]
         c = @payment.c_values[i]
         decipher = OpenSSL::Cipher::AES.new(128, :CBC)
         decipher.decrypt
-        key_hex = k[0..31]
-        iv_hex = k[32..63]
-        key = key_hex.from_hex
-        iv = iv_hex.from_hex
+        iv_hex = $AES_INIT_VECTOR
+        key = key_hex.htb
+        iv = iv_hex.htb
         decipher.key = key
         decipher.iv = iv
         @s_values[i] =  decipher.update(BTC::Data.data_from_hex(c)) + decipher.final
@@ -226,9 +228,10 @@ class PaymentsController < ApplicationController
     
     @payment.k_values = @fake_k_values
     @payment.fake_k_values_checked # update state from "step5" to "step7"
+    @payment.y_value_sent # update state from "step7" to "step8"
     @payment.save
     
-    # send y and real r_values to Tumbler so he can validate y: verify for all j ∈ R βj=y·(rj)e mod n
+    # send y and real r_values to Tumbler so he can validate y: Tumbler verifies for all j ∈ R βj=y·(rj)e mod n
     response= RestClient.patch $TUMBLER_PAYMENT_API_URL, {payment: {alice_public_key: @payment.alice_public_key, y: "#{@payment.y}",r_values: "#{@payment.r_values}"}}
     result = JSON.parse(response.body)
     
@@ -240,11 +243,12 @@ class PaymentsController < ApplicationController
   
   
   def alice_step_11
-    # TODO: Learn kj from Tsolve spending Tpuzzle funded by Alice in alice_step_7
+    # Learn kj from Tsolve spending Tpuzzle funded by Alice in alice_step_7
+    # @payments = Payment.all
     @payment = Payment.find(params[:id])
 
-    url_string = $BLOCKR_RAW_TX_URL + @payment.first_spending_tx_hash_unconfirmed
-    puts url_string
+    # url_string = $BLOCKR_RAW_TX_URL + "#{@payment.first_spending_tx_hash_unconfirmed}"
+    url_string = $BLOCKCHAIN_RAW_TX_URL + "#{@payment.first_spending_tx_hash_unconfirmed}" +"?format=hex"
     @agent = Mechanize.new
     begin
       page = @agent.get url_string
@@ -252,53 +256,56 @@ class PaymentsController < ApplicationController
       page = e.page
     end
     data = page.body
-    result = JSON.parse(data)
-    @transaction = BTC::Transaction.new(hex: result['data']['tx']['hex'])
-    puts "#{result['data']['tx']['hex']}" # raw_tx in hex
-    puts @transaction.dictionary['in'][0]['scriptSig']['asm']
-    @words = @transaction.dictionary['in'][0]['scriptSig']['asm'].split(/\W+/) # array of real k values revealed by Tumbler
-    
-    puts "Words=#{@words[0]}"
-    @real_k_values = []
-    for i in 1..15
-			@real_k_values[i-1] = @words[16-i].scan(/../).map { |x| x.hex.chr }.join # convert to hex string
-		end
-    # Decrypt cj to sj = Hprg(kj) ⊕ cj
-    
-    # Decrypt 15 real cj to sj = Hprg(kj) ⊕ cj 
-    @real_s_values = []
-    @real_c_values = @payment.real_c_values
-    # Tumbler picked 15 real random symetric encryption key k (128 bits) and computed 
-    # c = Enc(k, s) and h = H(k)
-    true_count = 0
-    e = $TUMBLER_RSA_PUBLIC_EXPONENT
-    n = $TUMBLER_RSA_PUBLIC_KEY
-    for i in 0..14
-      decipher = OpenSSL::Cipher::AES.new(128, :CBC)
-      decipher.decrypt
+    # result = JSON.parse(data)
+    # @transaction = BTC::Transaction.new(hex: result['data']['tx']['hex'])
+    if data.size >= 64
+      @transaction = BTC::Transaction.new(hex: data)
+      @words = @transaction.dictionary['in'][0]['scriptSig']['asm'].split(/\W+/) # array of real k values revealed by Tumbler
+      @real_k_values = []
+      for i in 1..15
+			  @real_k_values[i-1] = @words[16-i].scan(/../).map { |x| x.hex.chr }.join # convert to hex string
+		  end
+      # Decrypt cj to sj = Hprg(kj) ⊕ cj
+      # Decrypt 15 real cj to sj = Hprg(kj) ⊕ cj 
+      @real_s_values = []
+      @real_c_values = @payment.real_c_values
+      # Tumbler picked 15 real random symetric encryption key k (128 bits) and computed 
+      # c = Enc(k, s) and h = H(k)
+      true_count = 0
+      e = $TUMBLER_RSA_PUBLIC_EXPONENT
+      n = $TUMBLER_RSA_PUBLIC_KEY
+      for i in 0..14
+        decipher = OpenSSL::Cipher::AES.new(128, :CBC)
+        decipher.decrypt
       
-      key_hex = @real_k_values[i][0..31] # TODO handle case when k starts with 0 (padding)
-      iv_hex = @real_k_values[i][32..63]
-      key = key_hex.from_hex
-      iv = iv_hex.from_hex
-      decipher.key = key
-      decipher.iv = iv
-      encrypted = @real_c_values[i].from_hex
-      @real_s_values[i] = decipher.update(encrypted) + decipher.final # plain
-      if (@payment.real_beta_values[i] == mod_pow(@real_s_values[i].to_i(16),e,n).to_s(16))  # verify s**e = beta mod n
-        true_count += 1
+        key_hex = @real_k_values[i]
+        iv_hex = $AES_INIT_VECTOR
+        key = key_hex.htb
+        iv = iv_hex.htb
+        decipher.key = key
+        decipher.iv = iv
+        encrypted = @real_c_values[i].htb
+        @real_s_values[i] = decipher.update(encrypted) + decipher.final # plain
+        if (@payment.real_beta_values[i] == mod_pow(@real_s_values[i].to_i(16),e,n).to_s(16))  # verify s**e = beta mod n
+          true_count += 1
+        end
       end
-    end
     
-    # Obtain solution sj/rj mod n
-    # which is y**d mod N.
-    @payment.solution = ((@real_s_values[0].to_i(16)/@payment.r_values[0].to_i(16)) % n).to_s(16)
-    if true_count == 15
-      @payment.solve_tx_broadcasted # update state from "step8" to "completed"
-      @payment.save
-      render "show"
-    else
-      redirect_to @payment, alert: "Mismatch between real s and beta values."
+      # Obtain solution sj/rj mod n
+      # which is y**d mod N.
+      @payment.solution = ((@real_s_values[0].to_i(16)/@payment.real_r_values[0].to_i(16)) % n).to_s(16)
+      if true_count == 15
+        if @payment.aasm_state == "step8"
+          @payment.real_k_values_obtained # update state from "step8" to "completed"
+        end
+        @payment.save
+        flash[:notice] = "Payment successfully completed (step 11): puzzle solution obtained"
+        render "show"
+      else
+        redirect_to payments_url, alert: "Mismatch between real s and beta values."
+      end
+    else # data.size != 64, no tx spending from P2SH address yet.
+      redirect_to payments_url, alert: "Tumbler has not been paid yet. Please try again later."
     end
     
   end # of alice_step_11

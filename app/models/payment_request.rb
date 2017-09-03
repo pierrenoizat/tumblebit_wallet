@@ -49,7 +49,7 @@ class PaymentRequest < ActiveRecord::Base
   validates :key_path, :expiry_date, :title, :r, :blinding_factor, presence: true
   validates :tumbler_public_key, uniqueness: { case_sensitive: false }
   
-  attr_accessor :tx_hash, :index, :amount, :confirmations, :signed_tx
+  attr_accessor :signed_tx
   
   require 'btcruby/extensions'
   require 'money-tree'
@@ -96,31 +96,23 @@ class PaymentRequest < ActiveRecord::Base
   end
   
   
-  def real_btc_tx_sighash(i, previous_id)
+  def real_btc_tx_sighash(i)
     BTC::Network.default = BTC::Network.mainnet
     # TODO for testing replace funding_script by @tumbler_funded_address P2PKH script
-    # BTC::Script "OP_DUP OP_HASH160 7ab89f9fae3f8043dcee5f7b5467a0f0a6e2f7e1 OP_EQUALVERIFY OP_CHECKSIG"
-    
-    # keychain = BTC::Keychain.new(xpub:Figaro.env.bob_mpk) 
-    # salt = Figaro.env.tumblebit_salt
-    # index = (salt.to_i + self.id.to_i + i.to_i) % 0x80000000
-    # key = keychain.derived_keychain("8/#{index}").key # payout address for Bob
-    # TODO : dynamic generation of @bob_payout_address, static address for now (testing)
-    # @bob_payout_address = "1Axoqagyjn5RXcNyLP144dzzYUppTKkB6L" # compressed wif : L4Pny7E44175jXdStRiHkn8cESPpxMmUNc4WsMPFtFi3em89kotK
-    @bob_payout_address = self.hash_address
+    # TODO : make beta depend on i
     # @previous_id points to UTXO funded by Tumbler on static address 
 
     # TODO: @previous_id should point dynamically to 2-of-2 multisig with timelocked refund P2SH escrow UTXO
-    @tumbler_funded_address = Figaro.env.tumbler_funding_address # 1LUBfiVgeuFRzc7PC1Auw8YAncdewderVg for testing
-    # @tumbler_private_key = Figaro.env.tumbler_funding_priv_key # KzKVn96SKYesba2B7acKLPEP7R3LtyLoxNVQeDoAu3RgqrdinQcJ
-    
-    # @tumbler_public_key = BTC::WIF.new(string:@tumbler_private_key).key.public_key.unpack('H*')[0] # 02765768BE37703A0C6116BCD37E82F8548806E31A5AED72FC781AE0F041A74C3C
-    # @tumbler_key = BTC::Key.new(public_key:BTC.from_hex(@tumbler_public_key))
-    # @previous_id = self.first_unspent_tx(@tumbler_funded_address)
-    @previous_id = previous_id
-    @previous_index = self.index 
-    @value = ( self.amount.to_f*BTC::COIN ).to_i - 40000 # in satoshis, self.amount MUST be 500 000 satoshis ( ~ 2 € )
 
+    @bob_key = BTC::Key.new(public_key:BTC.from_hex(self.bob_public_key))
+    @bob_payout_address = @bob_key.address.to_s # test: paying back Tumbler instead of Bob
+    # TODO : pay Bob on dynamic address
+    @tumbler_funded_address = Figaro.env.tumbler_funding_address # static 1LUBfiVgeuFRzc7PC1Auw8YAncdewderVg, TODO : dynamic generation
+    @tumbler_key = BTC::Key.new(wif: Figaro.env.tumbler_funding_priv_key)
+    @previous_id = self.tx_hash
+    @previous_index = self.index 
+    # @value = ( self.amount.to_f*BTC::COIN ).to_i - 40000 # in satoshis, self.amount MUST be 500 000 satoshis ( ~ 2 € )
+    @value = (self.amount.to_f - 200*$FEE_RATE)
     tx = BTC::Transaction.new
     tx.lock_time = 1471199999 # some time in the past (2016-08-14)
     tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
@@ -129,10 +121,35 @@ class PaymentRequest < ActiveRecord::Base
     # tx.add_output(BTC::TransactionOutput.new(value: @value, script: key.address.script))
     tx.add_output(BTC::TransactionOutput.new(value: @value, script: BTC::Address.parse(@bob_payout_address).script))
     hashtype = BTC::SIGHASH_ALL
+    # signature_hash : specify an input index (0) and output script of the previous transaction for that input
     sighash = tx.signature_hash(input_index: 0,
                                 output_script: BTC::Address.parse(@tumbler_funded_address).script,
                                 hash_type: hashtype)
     beta = sighash.unpack('H*')[0]
+             
+    # TODO: remove test below
+    @sigma = @tumbler_key.ecdsa_signature(sighash).unpack('H*')[0] #  Tumbler signature as hex string
+    @previous_id = self.tx_hash
+    @previous_index = self.index 
+    @value = (self.amount.to_f - 200*$FEE_RATE) # @value is expressed in satoshis, should be 450 000
+    tx = BTC::Transaction.new
+    tx.lock_time = 1471199999 # some time in the past (2016-08-14)
+    tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id, # UTXO is "escrow" P2SH funded by Tumbler
+                                            previous_index: @previous_index,
+                                            sequence: 0))
+    # tx.add_output(BTC::TransactionOutput.new(value: @value, script: key.address.script))
+    tx.add_output(BTC::TransactionOutput.new(value: @value, script: BTC::PublicKeyAddress.new(string: @bob_payout_address).script))
+    hashtype = BTC::SIGHASH_ALL
+    sighash = tx.signature_hash(input_index: 0,
+                                output_script: BTC::PublicKeyAddress.new(string:@tumbler_funded_address).script,
+                                hash_type: hashtype)
+    tx.inputs[0].signature_script = BTC::Script.new << (@sigma.htb + BTC::WireFormat.encode_uint8(hashtype)) << @tumbler_key.public_key
+    puts tx.to_s
+    #unless @tumbler_key.verify_ecdsa_signature(@sigma.htb, beta.htb)
+    #  puts "Invalid Tumbler signature !!"
+    #  return nil
+    #end
+    return beta
   end # of real_btc_tx_sighash intance method
   
   
@@ -146,18 +163,16 @@ class PaymentRequest < ActiveRecord::Base
     
     # @tumbler_key=BTC::Key.new(public_key:BTC.from_hex(self.tumbler_key))
     # keychain = BTC::Keychain.new(xprv:Figaro.env.tumbler_btc_mpk)  # TODO: replace with Bob's mpk
-    epsilon = (self.solution.to_i(16)/self.r.to_i).to_s(16)
+    epsilon = (self.solution.to_i(16)/self.blinding_factor.to_i).to_s(16)
     
-    key_hex = epsilon.to_s[0..31]
-    iv_hex = epsilon.to_s[32..63]
-    key = key_hex.htb
+    decipher = OpenSSL::Cipher::AES.new(128, :CBC)
+    decipher.decrypt
+
+    key = epsilon.htb
+    iv_hex = $AES_INIT_VECTOR
     iv = iv_hex.htb
     i = self.real_indices.first
     encrypted = self.c_values[i].htb
-
-    decipher = OpenSSL::Cipher::AES.new(128, :CBC)
-    decipher.decrypt
-    
     decipher.key = key
     decipher.iv = iv
 
@@ -165,40 +180,37 @@ class PaymentRequest < ActiveRecord::Base
     sigma = BTC::Data.hex_from_data(plain)
     puts sigma
     
-    keychain = BTC::Keychain.new(xprv:Figaro.env.bob_mpk) 
+    # keychain = BTC::Keychain.new(xprv:Figaro.env.bob_mpk) 
     
-    salt = Figaro.env.tumblebit_salt
-    index = (salt.to_i + self.id.to_i) % 0x80000000
-    key = keychain.derived_keychain("8/#{index}").key
+    # salt = Figaro.env.tumblebit_salt
+    # index = (salt.to_i + self.id.to_i) % 0x80000000
+    # key = keychain.derived_keychain("8/#{index}").key
     
-    @bob_key = BTC::Key.new(wif:self.bob_private_key)
+    # @bob_key = BTC::Key.new(wif:self.bob_private_key)
+    @bob_key = BTC::Key.new(public_key:BTC.from_hex(self.bob_public_key))
     # @bob_payout_address = $BOB_PAYOUT_ADDRESS # TODO dynamic generation
-    @bob_payout_address = self.hash_address
-    puts self.bob_private_key
-    @tumbler_funded_address = Figaro.env.tumbler_funding_address # TODO dynamic generation
-    @previous_id = self.first_unspent_tx(@tumbler_funded_address)
-    @previous_index = self.index
+    @bob_payout_address = @bob_key.address.to_s # test: paying back Tumbler instead of Bob
+    # TODO : pay Bob on dynamic address
+    @tumbler_funded_address = Figaro.env.tumbler_funding_address # static 1LUBfiVgeuFRzc7PC1Auw8YAncdewderVg, TODO : dynamic generation
+    @tumbler_key = BTC::Key.new(wif: Figaro.env.tumbler_funding_priv_key)
     
-    # @value = (self.amount.to_f * BTC::COIN).to_i - $NETWORK_FEE # in satoshis, amount MUST be 200 000 satoshis (~ 2 €)
-    @value = (self.amount.to_f * BTC::COIN).to_i - 40000 # network fee is set to 40 000 satoshis beacause its a small (standard) tx.
     # scriptSig (escrow tx before expiry): 0 <Tumbler signature> <Bob signature> TRUE
+    @previous_id = self.tx_hash
+    @previous_index = self.index 
+    # @value = ( self.amount.to_f*BTC::COIN ).to_i - 40000 # in satoshis, self.amount MUST be 500 000 satoshis ( ~ 2 € )
+    @value = (self.amount.to_f - 200*$FEE_RATE) # @value is expressed in satoshis, should be 450 000
     tx = BTC::Transaction.new
     tx.lock_time = 1471199999 # some time in the past (2016-08-14)
     tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id, # UTXO is "escrow" P2SH funded by Tumbler
                                             previous_index: @previous_index,
                                             sequence: 0))
     # tx.add_output(BTC::TransactionOutput.new(value: @value, script: key.address.script))
-    tx.add_output(BTC::TransactionOutput.new(value: @value, script: BTC::Address.parse(@bob_payout_address).script))
+    tx.add_output(BTC::TransactionOutput.new(value: @value, script: BTC::PublicKeyAddress.new(string: @bob_payout_address).script))
     hashtype = BTC::SIGHASH_ALL
     sighash = tx.signature_hash(input_index: 0,
                                 output_script: BTC::PublicKeyAddress.new(string:@tumbler_funded_address).script,
                                 hash_type: hashtype)
-    tx.inputs[0].signature_script = BTC::Script.new
-    # tx.inputs[0].signature_script << BTC::Script::OP_0         
-    tx.inputs[0].signature_script << (plain + BTC::WireFormat.encode_uint8(hashtype))
-    # tx.inputs[0].signature_script << (@bob_key.ecdsa_signature(sighash) + BTC::WireFormat.encode_uint8(hashtype))
-    # tx.inputs[0].signature_script << BTC::Script::OP_TRUE # force script execution into the 2-of-2 multisig branch
-    tx.inputs[0].signature_script << @funding_script.data
+    tx.inputs[0].signature_script = BTC::Script.new << (sigma.htb + BTC::WireFormat.encode_uint8(hashtype)) << @tumbler_key.public_key
     return tx.to_s
     
   end # of payout_tx instance method
@@ -240,10 +252,15 @@ class PaymentRequest < ActiveRecord::Base
   
   
   def funding_script # simplified script paying user (Bob) without escrow
+    # TODO : make it dynamic instead of static
     BTC::Network.default= BTC::Network.mainnet
-    @funding_script = BTC::Script.new
-    @user_key=BTC::Key.new(public_key:BTC.from_hex(self.bob_public_key))
-    @funding_script = BTC::PublicKeyAddress.new(key:@user_key).script
+    # @funding_script = BTC::Script.new
+
+    # @funding_script = BTC::Script.new(hex: "76a914d58e8690c8cda5719ac5a1d2cacfc9f66ea9653c88ac")
+    # @funding_script.standard_address
+    # => #<BTC::PublicKeyAddress:1LUBfiVgeuFRzc7PC1Auw8YAncdewderVg>
+    @tumbler_funded_address = Figaro.env.tumbler_funding_address # static 1LUBfiVgeuFRzc7PC1Auw8YAncdewderVg, TODO : dynamic generation
+    @funding_script = BTC::PublicKeyAddress.new(string:@tumbler_funded_address).script
   end
   
   

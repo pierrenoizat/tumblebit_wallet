@@ -45,7 +45,7 @@ class PaymentRequestsController < ApplicationController
     # get Tumbler key in http response and save it to @payment_request in Bob wallet
     if valid_pubkey?(result["tumbler_public_key"])
       @payment_request.tumbler_public_key = result["tumbler_public_key"]
-      @payment.expiry_date = result["expiry_date"]
+      @payment_request.expiry_date = result["expiry_date"]
       @payment_request.request_created # update state from "started" to "step1"
       if @payment_request.save
         flash[:notice] = "Payment Request was successfully created"
@@ -69,6 +69,14 @@ class PaymentRequestsController < ApplicationController
     # if @payment_request.aasm_state == "completed"
     #   @payment_request_payout_tx = @payment_request.payout_tx # force execution of payout_tx method
     # end
+    if @payment_request.aasm_state == "step1"
+      @payment_request.tx_hash = result["utxo"]["tx_hash"]
+      @payment_request.index = result["utxo"]["index"]
+      @payment_request.amount = result["utxo"]["amount"]
+      @payment_request.confirmations = result["utxo"]["confirmations"]
+      @payment_request.escrow_tx_received # transition in state machine from "step1" to "step2"
+      @payment_request.save
+    end
     if @payment_request.tumbler_public_key == result["tumbler_public_key"]
       respond_with(@payment_request)
     else
@@ -121,17 +129,10 @@ class PaymentRequestsController < ApplicationController
     @funded_address = @payment_request.hash_address
 
     if @payment_request.beta_values.blank?
-      
-      @payment_request.amount = 460000 # amount in satoshis
-      
-      @tumbler_funded_address = Figaro.env.tumbler_funding_address # 1LUBfiVgeuFRzc7PC1Auw8YAncdewderVg for testing
-      @previous_id = @payment_request.first_unspent_tx(@tumbler_funded_address)
-      puts "Previous txid = #{@previous_id}"
-      puts "Previous index = #{@payment_request.index}"
-      puts "Amount = #{( @payment_request.amount.to_f*BTC::COIN ).to_i}"
+
       beta = []
       @payment_request.real_indices.each do |i|
-        beta[i] = @payment_request.real_btc_tx_sighash(i, @previous_id)
+        beta[i] = @payment_request.real_btc_tx_sighash(i)
       end
     
       # In Step 3, Bob picks a random secret 256-bit blinding factor r and prepares 42 “fake” transactions.
@@ -172,7 +173,6 @@ class PaymentRequestsController < ApplicationController
     end
       
     if true_count == 84
-      @payment_request.escrow_tx_received # transition in state machine from "step1" to "step2"
       @payment_request.beta_values_sent # update state from "step2" to "step4"
       
       # step6, identify fake set: reveal real indices to Tumbler
@@ -195,23 +195,16 @@ class PaymentRequestsController < ApplicationController
       # Bob computes sigmai = Dec(epsiloni, ci) for the 42 fake epsilon values
       @sigma = []
       @beta = []
-
-      @tumbler_key=BTC::Key.new(wif:Figaro.env.tumbler_funding_priv_key) # for testing
-      puts @tumbler_key.address # 1LUBfiVgeuFRzc7PC1Auw8YAncdewderVg for testing
       j = 0
       check_ok = false
       rsa_puzzle_ok = false
 
       for i in 0..83
         unless @payment_request.real_indices.include? i
-          k = @fake_epsilon_values[j]
-          while k.size < 64
-            k = "0" + k # padding k with leading zeroes in case of low epsilon value
-          end
-          key_hex = k[0..31]
-          iv_hex = k[32..63]
-          key = key_hex.from_hex
-          iv = iv_hex.from_hex
+          key_hex = @fake_epsilon_values[j]
+          iv_hex = $AES_INIT_VECTOR
+          key = key_hex.htb
+          iv = iv_hex.htb
           decipher = OpenSSL::Cipher::AES.new(128, :CBC)
           decipher.decrypt
           decipher.key = key
@@ -226,6 +219,7 @@ class PaymentRequestsController < ApplicationController
           rsa_puzzle_ok = rsa_puzzle_ok and (@z_values[i] == mod_pow(@fake_epsilon_values[j].to_i(16),e,n).to_s(16))
           
           # Validate promise @c_values[i]: Bob checks that sigmai is a valid ECDSA signature against PKT and betai
+          @tumbler_key = BTC::Key.new(wif: Figaro.env.tumbler_funding_priv_key)
           @beta[j] = @payment_request.fake_btc_tx_sighash(i)
           check_ok = @tumbler_key.verify_ecdsa_signature(@sigma[j], @beta[j].htb)  # result must equal true
           if rsa_puzzle_ok and check_ok
@@ -259,7 +253,8 @@ class PaymentRequestsController < ApplicationController
     blinding_factor = @payment_request.blinding_factor.to_i
     epsilon = @payment_request.solution.to_i(16)/blinding_factor
     puts "Epsilon= #{epsilon.to_s(16)}"
-    @payment_request.puzzle_solution_received
+    @payment_request.escrow_tx_broadcasted # transition payment request state from "step10" to "step12"
+    @payment_request.puzzle_solution_received # transition payment request state from "step12" to "completed"
     @payment_request.save
     redirect_to @payment_request, notice: 'Puzzle solution was successfully checked by Bob.'
   end
@@ -342,12 +337,11 @@ class PaymentRequestsController < ApplicationController
         cipher = OpenSSL::Cipher::AES.new(128, :CBC)
         cipher.encrypt
         if @payment_request.contract.blank?
-          key = cipher.random_key  # generate random AES encryption key
-          key_hex = key.to_hex
-          puts key_hex
-          
-          iv = cipher.random_iv # generate random AES initialization vector
-          iv_hex = iv.to_hex
+          # key = cipher.random_key  # generate random AES encryption key
+          key = $AES_TEST_KEY.htb
+          key_hex = key.unpack('H*')[0]
+          iv_hex = $AES_INIT_VECTOR
+          iv = iv_hex.htb
           
           contract = key_hex + iv_hex  # epsilon, 128-bit key + 128-bit iv, total 256 bits
             # TODO Encrypt epsilon before storing in database
