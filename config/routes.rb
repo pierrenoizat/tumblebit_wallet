@@ -31,7 +31,6 @@ Rails.application.routes.draw do
     member do
       get 'bob_step_2'
       get 'complete'
-      patch 'sign_tx'
       patch 'broadcast'
     end
   end

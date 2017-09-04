@@ -72,6 +72,7 @@ class PaymentsController < ApplicationController
         @payment.y_received # update state from "initiated" to "step1"
         @payment.save
       end
+      # TODO: launch alice_step_1 method from here
       flash[:notice] = "Payment successfully updated."
       render "show"
     else
