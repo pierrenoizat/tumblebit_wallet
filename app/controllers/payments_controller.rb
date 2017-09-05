@@ -72,11 +72,14 @@ class PaymentsController < ApplicationController
         @payment.y_received # update state from "initiated" to "step1"
         @payment.save
       end
-      # TODO: launch alice_step_1 method from here
-      flash[:notice] = "Payment successfully updated."
-      render "show"
+      if @payment.aasm_state == "step1"
+        alice_step_1
+      else
+        flash[:notice] = "Payment successfully updated."
+        render "show"
+      end
     else
-      flash[:notice] = "There was a problem with this payment update."
+      flash[:notice] = "There was a problem with this payment."
       redirect_to payments_url
     end
   end
@@ -250,6 +253,7 @@ class PaymentsController < ApplicationController
 
     # url_string = $BLOCKR_RAW_TX_URL + "#{@payment.first_spending_tx_hash_unconfirmed}"
     url_string = $BLOCKCHAIN_RAW_TX_URL + "#{@payment.first_spending_tx_hash_unconfirmed}" +"?format=hex"
+    # url_string = $BLOCKCHAIN_RAW_TX_URL + "#{@payment.first_spending_tx_hash}" +"?format=hex"
     @agent = Mechanize.new
     begin
       page = @agent.get url_string
@@ -306,7 +310,9 @@ class PaymentsController < ApplicationController
         redirect_to payments_url, alert: "Mismatch between real s and beta values."
       end
     else # data.size != 64, no tx spending from P2SH address yet.
-      redirect_to payments_url, alert: "Tumbler has not been paid yet. Please try again later."
+      # redirect_to payments_url, alert: "Tumbler has not been paid yet. Please try again later."
+      # flash[:alert] = "Tumbler has not been paid yet. Please pay the escrow address and try again."
+      render "show"
     end
     
   end # of alice_step_11

@@ -36,8 +36,8 @@
 		<p>Expiry: <strong><%= Time.at(@payment_request.expiry_date.to_time.to_i).utc %></strong></br>
 		Expiry in seconds since epoch time (1/1/1970): <%= @payment_request.expiry_date.to_time.to_i %></p>
 		<p>Tumbler (Compressed) Public Key: <strong><%= @payment_request.tumbler_public_key %></strong></p>
-		<p>Payment Request Address: <strong><%= @payment_request.hash_address if @payment_request %></strong></p>
-		<% if @payment_request.aasm_state == "step2" %>
+		<p>Payment Request Tumbler Address: <strong><%= @payment_request.hash_address if @payment_request %></strong></p>
+		<% if @payment_request.aasm_state == "step1" or @payment_request.aasm_state == "step2" %>
 			<p><%=link_to "Submit Request to Tumbler", bob_step_2_payment_request_path(@payment_request), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payment_requests_path, :class => 'btn' %></p>
 		<% end %>
 		<% if @payment_request.aasm_state == "step7" %>
@@ -63,7 +63,7 @@
 				</tr>
 				<tr>
 		  			<td><div class="actions">
-		    		<%= f.submit "Save solution", :class => "btn btn-primary" %> | 
+		    		<%= f.submit "Check solution", :class => "btn btn-primary" %> | 
 					<%= link_to t('.cancel', :default => t("helpers.links.cancel")),
 		                payment_requests_path, :class => 'btn' %></div></td>
 		  		</tr>
@@ -75,8 +75,7 @@
 		<% end %>
 		
 		<% if @payment_request.aasm_state == "completed" %>
-			<p>Puzzle solution: <strong><%= @payment_request.solution %></strong></p>
-			<p>Epsilon: <strong><%= (@payment_request.solution.to_i(16)/@payment_request.blinding_factor.to_i).to_s(16) %></strong></p>
+			<p>Payout address: <strong><%= @payment_request.payout_address %></strong></p>
 			<p>Payout Tx:</p> <pre style="width:600px"><code><%= @payment_request.payout_tx %></code></pre>
 		<% end %>
 		

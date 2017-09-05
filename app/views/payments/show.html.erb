@@ -1,7 +1,9 @@
 <div class="container">
   <div class="row">
 	<h3>Payment # <%= @payment.id %>: <%= @payment.title %></h3>
-	<p>P2SH Address: <strong><%= @payment.hash_address %></strong></p>
+	<% unless @payment.aasm_state == "step8"%>
+		<p>P2SH Address: <strong><%= @payment.hash_address %></strong></p>
+	<% end %>
 	<p>Tumbler's Public Key: <strong><%= @payment.tumbler_public_key %></strong></p>
 	<p>Alice Public Key: <strong><%= @payment.alice_public_key %></strong></p>
 
@@ -16,12 +18,8 @@
 			   <p><%= f.text_field :y, :style => "width:540px;", :placeholder => "b2aeac0d6d50bf63b01522936b9bcf58ef7dd196cefff6ba80d470d125e4f24501cc2305dca1a34e344b59ae1a8251e47a1c2da52fd7630303856cbf729ec0ffe2b27365b3cd49f2e4bbedd2a4b7b4563181a1073e6b099fffb1a9beb5f5710c1afeff06ee38b4250bd069dfc4bcddc47495837272a35268e794e6c5919dc136" %></p>
 			 </div>
 			
-			<%= f.submit 'Update Payment with parameters', :class => "btn btn-primary" %>
+			<%= f.submit 'Start Payment Process with Tumbler', :class => "btn btn-primary" %>
 		<% end %>
-	<% end %>
-	
-	<% if @payment.aasm_state == "step1"%>
-		<p><%=link_to 'Start Payment Process with Tumbler', alice_step_1_payment_path(@payment), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payments_path, :class => 'btn' %></p>
 	<% end %>
 	</br>
 	<% if @payment.aasm_state == "step7"%>
@@ -33,7 +31,7 @@
 		<% if @payment.first_spending_tx_hash_unconfirmed %>
 			<p><%=link_to 'Get puzzle solution', alice_step_11_payment_path(@payment), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payments_path, :class => 'btn' %></p>
 		<% else %>
-			<p>Tumbler has not been paid yet.</p>
+			<p>Tumbler has not been paid yet.Please pay P2SH (escrow) address: <strong><%= @payment.hash_address %></strong></p>
 		<% end %>
 	<% end %>
 	<% if @payment.aasm_state == "completed" %>
