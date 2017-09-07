@@ -74,15 +74,6 @@ class PaymentRequestsController < ApplicationController
     @payment_request = PaymentRequest.find(params[:id])
     response= RestClient.get($TUMBLER_PAYMENT_REQUEST_API_URL + "/#{@payment_request.bob_public_key}")
     result = JSON.parse(response.body)
-    # TODO: get rid of this if statement and block:
-    # if @payment_request.aasm_state == "step1"
-    #  @payment_request.tx_hash = result["utxo"]["tx_hash"]
-    #  @payment_request.index = result["utxo"]["index"]
-    #  @payment_request.amount = result["utxo"]["amount"]
-    #  @payment_request.confirmations = result["utxo"]["confirmations"]
-    #  @payment_request.escrow_tx_received # transition in state machine from "step1" to "step2"
-    #  @payment_request.save
-    # end
     if @payment_request.tumbler_public_key == result["tumbler_public_key"]
       respond_with(@payment_request)
     else
