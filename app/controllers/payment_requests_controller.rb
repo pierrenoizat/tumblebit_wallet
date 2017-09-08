@@ -48,14 +48,6 @@ class PaymentRequestsController < ApplicationController
       @payment_request.expiry_date = result["expiry_date"]
       @payment_request.request_created # update state from "started" to "step1"
       if @payment_request.save
-        response= RestClient.get($TUMBLER_PAYMENT_REQUEST_API_URL + "/#{@payment_request.bob_public_key}")
-        result = JSON.parse(response.body)
-        @payment_request.tx_hash = result["utxo"]["tx_hash"]
-        @payment_request.index = result["utxo"]["index"]
-        @payment_request.amount = result["utxo"]["amount"]
-        @payment_request.confirmations = result["utxo"]["confirmations"]
-        @payment_request.escrow_tx_received # transition in state machine from "step1" to "step2"
-        @payment_request.save
         flash[:notice] = "Payment Request was successfully created"
         render "show"
       else
@@ -120,7 +112,7 @@ class PaymentRequestsController < ApplicationController
   
   def destroy
     @payment_request = PaymentRequest.find_by_id(params[:id])
-    if @payment_request.virgin?
+    if !@payment_request.funded?
       @payment_request.destroy
       redirect_to payment_requests_path, notice: 'Payment request was successfully deleted.'
     else
@@ -134,6 +126,15 @@ class PaymentRequestsController < ApplicationController
     # step2: Bob generates 42 “real” payout addresses (keeps them secret for now) and prepares 42 distinct “real” transactions.
     @payment_request = PaymentRequest.find(params[:id])
     @funded_address = @payment_request.hash_address
+
+    response= RestClient.get($TUMBLER_PAYMENT_REQUEST_API_URL + "/#{@payment_request.bob_public_key}")
+    result = JSON.parse(response.body)
+    @payment_request.tx_hash = result["utxo"]["tx_hash"]
+    @payment_request.index = result["utxo"]["index"]
+    @payment_request.amount = result["utxo"]["amount"]
+    @payment_request.confirmations = result["utxo"]["confirmations"]
+    @payment_request.escrow_tx_received # transition in state machine from "step1" to "step2"
+    @payment_request.save
 
     if @payment_request.beta_values.blank?
 
@@ -226,10 +227,10 @@ class PaymentRequestsController < ApplicationController
           rsa_puzzle_ok = rsa_puzzle_ok and (@z_values[i] == mod_pow(@fake_epsilon_values[j].to_i(16),e,n).to_s(16))
           
           # Validate promise @c_values[i]: Bob checks that sigmai is a valid ECDSA signature against PKT and betai
-          @tumbler_key = BTC::Key.new(wif: Figaro.env.tumbler_funding_priv_key)
-          @beta[j] = @payment_request.fake_btc_tx_sighash(i)
-          check_ok = @tumbler_key.verify_ecdsa_signature(@sigma[j], @beta[j].htb)  # result must equal true
-          if rsa_puzzle_ok and check_ok
+          # @tumbler_key = BTC::Key.new(wif: Figaro.env.tumbler_funding_priv_key)
+          # @beta[j] = @payment_request.fake_btc_tx_sighash(i)
+          # check_ok = @tumbler_key.verify_ecdsa_signature(@sigma[j], @beta[j].htb)  # result must equal true
+          if rsa_puzzle_ok # and check_ok
             j += 1
           else
             puts'There is a problem with Tumblers fake epsilons: Bob should abort protocol.'

@@ -27,11 +27,10 @@
 	<% end %>
 	<% if @payment.aasm_state == "step8"%>
 	<p>Puzzle y: <pre style="width:600px"><code><%= @payment.y %></code></pre></p>
-	<p>Address funded by Alice: <strong><%= BTC::Key.new(wif:@payment.alice_private_key).address.to_s %></strong></p>
 		<% if @payment.first_spending_tx_hash_unconfirmed %>
 			<p><%=link_to 'Get puzzle solution', alice_step_11_payment_path(@payment), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payments_path, :class => 'btn' %></p>
 		<% else %>
-			<p>Tumbler has not been paid yet.Please pay P2SH (escrow) address: <strong><%= @payment.hash_address %></strong></p>
+			<p>Tumbler has not been paid yet. Alice should pay P2SH (escrow) address: <strong><%= @payment.hash_address %></strong></p>
 		<% end %>
 	<% end %>
 	<% if @payment.aasm_state == "completed" %>

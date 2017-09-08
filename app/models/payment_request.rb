@@ -132,11 +132,11 @@ class PaymentRequest < ActiveRecord::Base
   def real_btc_tx_sighash(i)
     BTC::Network.default = BTC::Network.mainnet
     
-    keychain = BTC::Keychain.new(xpub:Figaro.env.bob_mpk)
-    path = self.key_path[0...-2] + i.to_s
+    # keychain = BTC::Keychain.new(xpub:Figaro.env.bob_mpk)
+    # path = self.key_path[0...-2] + i.to_s
 
-    @bob_payout_key = BTC::Key.new(public_key:BTC.from_hex(keychain.derived_keychain(path).key.public_key.unpack('H*')[0]))
-    @bob_payout_address = @bob_payout_key.address.to_s
+    # @bob_payout_key = BTC::Key.new(public_key:BTC.from_hex(keychain.derived_keychain(path).key.public_key.unpack('H*')[0]))
+    # @bob_payout_address = @bob_payout_key.address.to_s
     
     # static 1LUBfiVgeuFRzc7PC1Auw8YAncdewderVg, TODO : dynamic generation
     # @tumbler_key = BTC::Key.new(public_key:self.tumbler_public_key)
@@ -152,7 +152,8 @@ class PaymentRequest < ActiveRecord::Base
                                             previous_index: @previous_index,
                                             sequence: 0))
     # tx.add_output(BTC::TransactionOutput.new(value: @value, script: key.address.script))
-    tx.add_output(BTC::TransactionOutput.new(value: @value, script: BTC::Address.parse(@bob_payout_address).script))
+    # tx.add_output(BTC::TransactionOutput.new(value: @value, script: BTC::Address.parse(@bob_payout_address).script))
+    tx.add_output(BTC::TransactionOutput.new(value: @value, script: BTC::PublicKeyAddress.new(string: self.payout_address).script))
     hashtype = BTC::SIGHASH_ALL
     # signature_hash : specify an input index (0) and output script of the previous transaction for that input
     sighash = tx.signature_hash(input_index: 0,
@@ -215,6 +216,17 @@ class PaymentRequest < ActiveRecord::Base
                                 output_script: self.funding_script,
                                 hash_type: hashtype)
     @bob_key = BTC::Key.new(wif:self.bob_private_key)
+    @tumbler_key = BTC::Key.new(wif:"L3GPmuiizb56MTiTvmHhokU3V4jqbWYaRCoZQTFx2pEsoZacqvRR")
+    j = 0
+    self.beta_values.each do |beta|
+      if @tumbler_key.verify_ecdsa_signature(sigma.htb, beta.htb)
+        puts "Index of real beta: #{j}"
+      else
+        puts "Sigma and beta dont match"
+      end
+      j += 1
+    end
+    puts "Number of beta values checked: #{j}"
     # @tumbler_key = BTC::Key.new(wif:"L1DcbzarfBn5V5q4sQyDN7dWBkhnVwqcXFJh24PdPQwuHYoHF2ce") # TODO: remove! test only, success !!
     tx.inputs[0].signature_script = BTC::Script.new
     tx.inputs[0].signature_script << BTC::Script::OP_0 # because of the famous checkmultisig bug, pushes zero to the stack
@@ -370,7 +382,7 @@ class PaymentRequest < ActiveRecord::Base
   
   
   def funded?
-    
+    funded = false
     if !self.hash_address.blank?
       string = $BLOCKR_ADDRESS_BALANCE_URL + self.hash_address.to_s + "?confirmations=0"
       @agent = Mechanize.new
@@ -382,11 +394,10 @@ class PaymentRequest < ActiveRecord::Base
       end
 
       data = page.body
-      result = JSON.parse(data)
-      puts result
-      puts "True? #{result['data']['balance']}"
-      if  (result['data']['balance'] > 0)
-        return true
+      if valid_json?(data)
+        result = JSON.parse(data)
+        puts "Result from blockr: #{result['data']['balance']}"
+        funded = (result['data']['balance'] > 0)
       else
         string = $BLOCKCHAIN_ADDRESS_BALANCE_URL + self.hash_address.to_s + "?format=json" # check another source, just in case
         begin
@@ -394,18 +405,13 @@ class PaymentRequest < ActiveRecord::Base
         rescue Exception => e
           page = e.page
         end
-
         data = page.body
         result = JSON.parse(data)
-        if  (result['final_balance'] > 0)
-          return true
-        else
-          return false
-        end
+        puts "Result from blockchain: #{result['final_balance']}"
+        funded = (result['final_balance'] > 0)
       end
-    else
-      return false
     end
+    funded
   end
   
   
@@ -422,28 +428,28 @@ class PaymentRequest < ActiveRecord::Base
       end
 
       data = page.body
-      result = JSON.parse(data)
+      if valid_json?(data)
+        result = JSON.parse(data)
 
-      virgin = (result['data']['nb_txs'] == 0)
-      puts "Number of transactions= #{result['data']['nb_txs']}"
-      string = $BLOCKR_ADDRESS_UNSPENT_URL + self.hash_address.to_s + "?unconfirmed=1"
-      @agent = Mechanize.new
+        virgin = (result['data']['nb_txs'] == 0)
+        string = $BLOCKR_ADDRESS_UNSPENT_URL + self.hash_address.to_s + "?unconfirmed=1"
+        @agent = Mechanize.new
 
-      begin
-        page = @agent.get string
-      rescue Exception => e
-        page = e.page
+        begin
+          page = @agent.get string
+        rescue Exception => e
+          page = e.page
+        end
+
+        data = page.body
+        result = JSON.parse(data)
+
+        virgin = virgin and (result['data']['unspent'].count == 0)
+      else
+        virgin = true
       end
-
-      data = page.body
-      result = JSON.parse(data)
-
-      virgin = virgin and (result['data']['unspent'].count == 0)
-      puts "Number of unconfirmed transactions= #{result['data']['unspent'].count}"
-    else
-      virgin = true
+      return virgin
     end
-    return virgin
   end
   
   
@@ -541,6 +547,14 @@ class PaymentRequest < ActiveRecord::Base
       puts j
     end
     quotients_ok = ( j == 41 )
+  end
+  
+  
+  def valid_json?(json)
+      JSON.parse(json)
+      return true
+    rescue JSON::ParserError => e
+      return false
   end
   
   

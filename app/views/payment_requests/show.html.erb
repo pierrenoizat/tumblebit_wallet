@@ -38,7 +38,9 @@
 		<p>Tumbler (Compressed) Public Key: <strong><%= @payment_request.tumbler_public_key %></strong></p>
 		<p>Payment Request Tumbler Address: <strong><%= @payment_request.hash_address if @payment_request %></strong></p>
 		<% if @payment_request.aasm_state == "step1" or @payment_request.aasm_state == "step2" %>
-			<p><%=link_to "Submit Request to Tumbler", bob_step_2_payment_request_path(@payment_request), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payment_requests_path, :class => 'btn' %></p>
+			<% if @payment_request.funded? %>
+				<p><%=link_to "Submit Request to Tumbler", bob_step_2_payment_request_path(@payment_request), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payment_requests_path, :class => 'btn' %></p>
+			<% end%>
 		<% end %>
 		<% if @payment_request.aasm_state == "step7" %>
 			<p>Bob Real Indices: <pre style="width:600px"><code><%= @payment_request.real_indices if @payment_request %></code></pre></p>
