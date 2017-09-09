@@ -5,9 +5,9 @@
     <p><%= f.text_field :title %></p>
   </div>
   <% end %>
-
+<p>Timelocked Escrow Transaction Script:</p>
 	<div><pre style="width:600px"><code id="contrat"><%= @payment_request.description %></code></pre></div>
-</br>
+</br><div id="subFormLine1">The P2SH address corresponding to this script shall be funded by Tumbler.</div>
 	<div id="subFormLine1">A transaction spending from this address cannot be included in a block until the set date and time has passed.</div>
 	<div id="subFormLine2">We can be reasonably certain that any block in the chain was created within approximately two hours of the block’s timestamp.</div>
 </br>
@@ -21,11 +21,12 @@
 	<%= f.hidden_field :key_path , :value => @payment_request.key_path %>
 	<%= f.hidden_field :r , :value => @payment_request.r %>
 	<%= f.hidden_field :blinding_factor , :value => @payment_request.blinding_factor %>
-		<div class="field">
-	  <p><%= f.label 'Expiry' %></p>
-		<p>Present Time: <%= Time.now.strftime("%Y-%b-%d - %H:%M") %></p>
-	  <p><%= f.datetime_select(:expiry_date, {:start_year => Date.today.year, :end_year => 2024, :default => @payment_request.expiry_date, :use_two_digit_numbers => true, :prompt => {:day => "day", :month => "month", :year => "year", :hour => "hour", :minute => "minute"}}, {:style => "width: 80px;"}) %></p>
-	</div>
+	  <p><strong>Lock Time</strong></p>
+		<% if @payment_request.expiry_date %>
+			<p>Lock Time: <%= @payment_request.expiry_date %></p>
+		<% else %>
+			<p>Lock Time shall be set by Tumbler.</p>
+		<% end %>
 		<%= f.submit 'Start Request Creation', :class => "btn btn-primary" %>
 	<% end %>
 	 | <%= link_to t('.cancel', :default => t("helpers.links.cancel")),
