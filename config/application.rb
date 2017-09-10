@@ -58,6 +58,6 @@ module Tumblebit
     # $PAYMENT_UPDATE_API_URL ="http://0.0.0.0:3000/api/v1/payment"
     $TUMBLER_PAYMENT_API_URL = "https://fierce-ocean-41496.herokuapp.com/api/v1/payment"
     $TUMBLER_PAYMENT_REQUEST_API_URL = "https://fierce-ocean-41496.herokuapp.com/api/v1/payment_request"
-    $AES_INIT_VECTOR = "01970acf3305b463b40a0ce816821522"  # not a secret !
+    $AES_INIT_VECTOR = "6be1e1c3469e5538a7cc29ef6b9806af"  # not a secret !
   end
 end
