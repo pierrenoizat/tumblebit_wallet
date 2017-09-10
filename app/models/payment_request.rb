@@ -135,7 +135,8 @@ class PaymentRequest < ActiveRecord::Base
     # Compute sigma by decrypting c with key epsilon ( σ = Hprg(ε) ⊕ c )
 
     epsilon = (self.solution.to_i(16)/self.blinding_factor.to_i).to_s(16)
-    decipher = OpenSSL::Cipher::AES.new(128, :CBC)
+    # decipher = OpenSSL::Cipher::AES.new(128, :CBC)
+    decipher = OpenSSL::Cipher::AES256.new(:CBC)
     decipher.decrypt
     key = epsilon.htb
     iv_hex = $AES_INIT_VECTOR
