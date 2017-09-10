@@ -1,16 +1,17 @@
 <%# add navigation links to this file %>
-  <li><a href="<%= payments_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" ><i class="fa fa-list" aria-hidden="true"></i> Payments</a></li>
+  <li><a href="<%= new_payment_request_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" ><i class="fa fa-arrow-circle-o-down fa-lg" aria-hidden="true"></i> Receive</a></li>
   <li><a href="<%= payment_requests_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" ><i class="fa fa-list" aria-hidden="true"></i> Payment Requests</a></li>
-  <li><a href="<%= page_path('about') %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >About</a></li>
-  <li><a href="<%= new_payment_request_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" ><i class="fa fa-hand-o-up" aria-hidden="true"></i> Request</a></li>
   <li><a href="<%= new_payment_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" ><i class="fa fa-paper-plane" aria-hidden="true"></i> Send</a></li>
+  <li><a href="<%= payments_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" ><i class="fa fa-list" aria-hidden="true"></i> Payments</a></li>
+
+  <li><a href="<%= page_path('about') %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" ><i class="fa fa-compass fa-lg" aria-hidden="true"></i> About</a></li>
 
 <% if client_signed_in? %>
   <li><a href="<%= destroy_client_session_path %>" data-method="delete" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Log out</a></li>
 <% else %>
   <% unless user_signed_in? %>
-  	<li><a href="<%= new_client_session_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" ><i class="fa fa-sign-in" aria-hidden="true"></i> Log in</a></li>
-	<li><a href="<%= new_client_registration_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Sign up</a></li>
+  	<!--<li><a href="<%= new_client_session_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" ><i class="fa fa-sign-in" aria-hidden="true"></i> Log in</a></li>
+	<li><a href="<%= new_client_registration_path %>" style="color:#4682b4" onMouseOver="this.style.color='#42aef3'" onMouseOut="this.style.color='#4682b4'" >Sign up</a></li>-->
   <% end %>
 <% end %>
 

@@ -349,27 +349,30 @@ class Payment < ActiveRecord::Base
     end
 
     data = page.body
-    result = JSON.parse(data)
-    if !result['data']['txs'].blank?
-      i = 0
-      counter = result['data']['txs'].count
-      while i < counter
-        if result['data']['txs'][i]['amount'] < 0
-          self.tx_hash = result['data']['txs'][0]['tx']
-          i = counter
-        else
-          i += 1
+    if valid_json?(data)
+      result = JSON.parse(data)
+      if !result['data']['txs'].blank?
+        i = 0
+        counter = result['data']['txs'].count
+        while i < counter
+          if result['data']['txs'][i]['amount'] < 0
+            self.tx_hash = result['data']['txs'][0]['tx']
+            i = counter
+          else
+            i += 1
+          end
         end
+        puts "According to Blockr.io, Tx hash: #{self.tx_hash}"
+      else
+        puts "No spending transaction for #{self.hash_address} at Blockr.io"
       end
-      puts "Tx hash: #{self.tx_hash}"
-      return self.tx_hash
-    else
-      puts "No spending transaction for #{self.hash_address} at Blockr.io"
+    else # blockr.io not available, trying blockchain.info
+      puts "blockr.io not available, trying blockchain.info"
       string = "https://blockchain.info/rawaddr/" + self.hash_address.to_s
       begin
-      page = @agent.get string
+        page = @agent.get string
       rescue Exception => e
-      page = e.page
+        page = e.page
       end
 
       data = page.body
@@ -378,16 +381,18 @@ class Payment < ActiveRecord::Base
       i = 0
       while i < n
         tx = result["txs"][i]
-        if tx["inputs"][0]["prev_out"]["address"] == self.hash_address
+        if tx["inputs"][0]["prev_out"]["addr"] == self.hash_address.to_s
           self.tx_hash = tx["hash"]
-          return self.tx_hash
+          puts "According to Blockchain.info, Tx hash: #{self.tx_hash}"
+          i = n
         else
           i += 1
         end
       end
-      
-      return nil
     end
+    puts "Hash of tx paying Tumbler: #{self.tx_hash}"
+    self.tx_hash
+    
   end
   
   
@@ -565,6 +570,14 @@ class Payment < ActiveRecord::Base
       puts "No utxo avalaible for #{address}"
       return nil
     end
+  end
+  
+  
+  def valid_json?(json)
+      JSON.parse(json)
+      return true
+    rescue JSON::ParserError => e
+      return false
   end
   
   

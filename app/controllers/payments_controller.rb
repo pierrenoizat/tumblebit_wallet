@@ -252,8 +252,8 @@ class PaymentsController < ApplicationController
     @payment = Payment.find(params[:id])
 
     # url_string = $BLOCKR_RAW_TX_URL + "#{@payment.first_spending_tx_hash_unconfirmed}"
-    url_string = $BLOCKCHAIN_RAW_TX_URL + "#{@payment.first_spending_tx_hash_unconfirmed}" +"?format=hex"
-    # url_string = $BLOCKCHAIN_RAW_TX_URL + "#{@payment.first_spending_tx_hash}" +"?format=hex"
+    # url_string = $BLOCKCHAIN_RAW_TX_URL + "#{@payment.first_spending_tx_hash_unconfirmed}" +"?format=hex"
+    url_string = $BLOCKCHAIN_RAW_TX_URL + "#{@payment.first_spending_tx_hash}" +"?format=hex"
     @agent = Mechanize.new
     begin
       page = @agent.get url_string
