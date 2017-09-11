@@ -34,6 +34,7 @@
 	<p>Expiry: <strong><%= Time.at(@payment.expiry_date.to_time.to_i).utc %></strong></br>
 	Expiry in seconds since epoch time (1/1/1970): <%= @payment.expiry_date.to_time.to_i %></p>
 	</br>
+	<p>Payment State: <strong><%= @payment.aasm_state %></strong></p>
 		
 	<% if @payment.y.blank? %>
 		<%= form_for(@payment, multipart: true) do |f| %>

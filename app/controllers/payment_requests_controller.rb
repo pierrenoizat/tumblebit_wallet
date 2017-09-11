@@ -1,8 +1,6 @@
 class PaymentRequestsController < ApplicationController
-  # before_filter :authenticate_user!, :except => [:index]
-  # before_filter :payment_request_user?, :except => [:index, :new, :create]
+  
   respond_to :html, :json
-  # respond_to :js, only: :create
   
   include Crypto # module in /lib
   require 'btcruby/extensions'

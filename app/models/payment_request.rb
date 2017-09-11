@@ -112,7 +112,7 @@ class PaymentRequest < ActiveRecord::Base
     tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id,
                                             previous_index: @previous_index,
                                             sequence: 0))
-    tx.add_output(BTC::TransactionOutput.new(value: @value, script: BTC::PublicKeyAddress.new(string: self.payout_address).script))
+    tx.add_output(BTC::TransactionOutput.new(value: @value, script: BTC::PublicKeyAddress.new(string: self.payout_address(i)).script))
     hashtype = BTC::SIGHASH_ALL
     # signature_hash : specify an input index (0) and output script of the previous transaction for that input
     sighash = tx.signature_hash(input_index: 0,
@@ -123,9 +123,9 @@ class PaymentRequest < ActiveRecord::Base
   end # of real_btc_tx_sighash intance method
   
   
-  def payout_address
+  def payout_address(i)
     keychain = BTC::Keychain.new(xpub:Figaro.env.bob_mpk)
-    i = self.real_indices.first
+    # i = self.real_indices.first
     path = self.key_path[0...-2] + i.to_s
     BTC::Key.new(public_key:BTC.from_hex(keychain.derived_keychain(path).key.public_key.unpack('H*')[0])).address.to_s
   end
@@ -156,7 +156,7 @@ class PaymentRequest < ActiveRecord::Base
     tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id, # UTXO is "escrow" P2SH funded by Tumbler
                                             previous_index: @previous_index,
                                             sequence: 0))
-    tx.add_output(BTC::TransactionOutput.new(value: @value, script: BTC::PublicKeyAddress.new(string: self.payout_address).script))
+    tx.add_output(BTC::TransactionOutput.new(value: @value, script: BTC::PublicKeyAddress.new(string: self.payout_address(i)).script))
     hashtype = BTC::SIGHASH_ALL
     sighash = tx.signature_hash(input_index: 0,
                                 output_script: self.funding_script,
