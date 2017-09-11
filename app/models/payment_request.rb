@@ -1,5 +1,6 @@
 class PaymentRequest < ActiveRecord::Base
   include Crypto # module in /lib
+  include Paymentable
   include AASM
 
    aasm do # default column: aasm_state
@@ -135,7 +136,6 @@ class PaymentRequest < ActiveRecord::Base
     # Compute sigma by decrypting c with key epsilon ( σ = Hprg(ε) ⊕ c )
 
     epsilon = (self.solution.to_i(16)/self.blinding_factor.to_i).to_s(16)
-    # decipher = OpenSSL::Cipher::AES.new(128, :CBC)
     decipher = OpenSSL::Cipher::AES256.new(:CBC)
     decipher.decrypt
     key = epsilon.htb
@@ -174,29 +174,29 @@ class PaymentRequest < ActiveRecord::Base
   
   
   def fake_btc_tx_sighash(i)
-    @user_key=BTC::Key.new(public_key:BTC.from_hex(self.bob_public_key))
-    r = self.r.to_i
-    index = r+i
-    @previous_id = "d569e96b0d88b3774de1e4fe1a7e9ce8e07d362af8afa4d960ca0514b51fb4f9" # TODO make it a variable
-    @previous_index = 0
-    # @value = $AMOUNT - $NETWORK_FEE # in satoshis 
-    @value = 19800000
-    hashtype = BTC::SIGHASH_ALL
-    @op_return_script = BTC::Script.new(op_return: index.to_s)
-    tx = BTC::Transaction.new
-    tx.lock_time = 1471199999 # some time in the past (2016-08-14)
-    tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id, # UTXO is "escrow" P2SH funded by Tumbler
-                                          previous_index: @previous_index,
-                                          sequence: 0))
-    tx.add_output(BTC::TransactionOutput.new(value: @value, script: @user_key.address.script))
-    tx.add_output(BTC::TransactionOutput.new(value: 0, script: @op_return_script))
+      @user_key=BTC::Key.new(public_key:BTC.from_hex(self.bob_public_key))
+      r = self.r.to_i
+      index = r+i
+      @previous_id = "d569e96b0d88b3774de1e4fe1a7e9ce8e07d362af8afa4d960ca0514b51fb4f9" # TODO make it a variable
+      @previous_index = 0
+      # @value = $AMOUNT - $NETWORK_FEE # in satoshis 
+      @value = 19800000
+      hashtype = BTC::SIGHASH_ALL
+      @op_return_script = BTC::Script.new(op_return: index.to_s)
+      tx = BTC::Transaction.new
+      tx.lock_time = 1471199999 # some time in the past (2016-08-14)
+      tx.add_input(BTC::TransactionInput.new( previous_id: @previous_id, # UTXO is "escrow" P2SH funded by Tumbler
+                                            previous_index: @previous_index,
+                                            sequence: 0))
+      tx.add_output(BTC::TransactionOutput.new(value: @value, script: @user_key.address.script))
+      tx.add_output(BTC::TransactionOutput.new(value: 0, script: @op_return_script))
 
-    hashtype = BTC::SIGHASH_ALL
-    sighash = tx.signature_hash(input_index: 0,
-                                output_script: self.funding_script,
-                                hash_type: hashtype)
-    beta = sighash.unpack('H*')[0]
-  end
+      hashtype = BTC::SIGHASH_ALL
+      sighash = tx.signature_hash(input_index: 0,
+                                  output_script: self.funding_script,
+                                  hash_type: hashtype)
+      beta = sighash.unpack('H*')[0]
+    end
   
   
   def description
@@ -411,14 +411,6 @@ class PaymentRequest < ActiveRecord::Base
       puts j
     end
     quotients_ok = ( j == 41 )
-  end
-  
-  
-  def valid_json?(json)
-      JSON.parse(json)
-      return true
-    rescue JSON::ParserError => e
-      return false
   end
   
   

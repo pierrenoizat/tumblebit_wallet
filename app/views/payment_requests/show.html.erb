@@ -36,7 +36,7 @@
 		<p>Expiry: <strong><%= Time.at(@payment_request.expiry_date.to_time.to_i).utc %></strong></br>
 		Expiry in seconds since epoch time (1/1/1970): <%= @payment_request.expiry_date.to_time.to_i %></p>
 		<p>Tumbler (Compressed) Public Key: <strong><%= @payment_request.tumbler_public_key %></strong></p>
-		<p>Payment Request Tumbler Address: <strong><%= @payment_request.hash_address if @payment_request %></strong></p>
+		<p>Payment Request Escrow Address to be funded by Tumbler: <strong><%= @payment_request.hash_address if @payment_request %></strong></p>
 		<% if @payment_request.aasm_state == "step1" or @payment_request.aasm_state == "step2" %>
 			<% if @payment_request.funded? %>
 				<p><%=link_to "Submit Request to Tumbler", bob_step_2_payment_request_path(@payment_request), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payment_requests_path, :class => 'btn' %></p>
@@ -60,7 +60,7 @@
 		  		<tr>
 					<td><div class="field">
 						<p><%= f.label 'Puzzle solution received from Alice' %></br>
-						<%= f.text_field :solution, :style => "width:1000px;", :placeholder => "52f4b8903ad62f13d0e3402947805f811e6d0b8078c88ea41495ed2193ab1867d6f388c11fb70454c7405e7052ea4795a419863abbadffc2e368e111341f2fb0" %></p>
+						<%= f.text_field :solution, :style => "width:950px;", :placeholder => "52f4b8903ad62f13d0e3402947805f811e6d0b8078c88ea41495ed2193ab1867d6f388c11fb70454c7405e7052ea4795a419863abbadffc2e368e111341f2fb0" %></p>
 					</div></td>
 				</tr>
 				<tr>

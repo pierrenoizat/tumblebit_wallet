@@ -130,7 +130,6 @@ for i in 0..299
   unless @payment.real_indices.include? i
     k = @fake_k_values[j]
     c = @payment.c_values[i]
-    # decipher = OpenSSL::Cipher::AES.new(128, :CBC)
     decipher = OpenSSL::Cipher::AES256.new(:CBC)
     decipher.decrypt
     key_hex = k[0..31]

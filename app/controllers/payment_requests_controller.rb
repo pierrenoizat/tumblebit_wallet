@@ -213,7 +213,6 @@ class PaymentRequestsController < ApplicationController
           iv_hex = $AES_INIT_VECTOR
           key = key_hex.htb
           iv = iv_hex.htb
-          #decipher = OpenSSL::Cipher::AES.new(128, :CBC)
           decipher = OpenSSL::Cipher::AES256.new(:CBC)
           decipher.decrypt
           decipher.key = key

@@ -1,4 +1,5 @@
 class Payment < ActiveRecord::Base
+  include Paymentable
   include Crypto # module in /lib
   include AASM
 
@@ -570,14 +571,6 @@ class Payment < ActiveRecord::Base
       puts "No utxo avalaible for #{address}"
       return nil
     end
-  end
-  
-  
-  def valid_json?(json)
-      JSON.parse(json)
-      return true
-    rescue JSON::ParserError => e
-      return false
   end
   
   

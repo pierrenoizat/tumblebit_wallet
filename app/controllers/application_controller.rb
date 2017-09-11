@@ -107,8 +107,8 @@ class ApplicationController < ActionController::Base
     end
     
     def bitcoin_elliptic_curve
-          ::OpenSSL::PKey::EC.new("secp256k1")
-        end
+      ::OpenSSL::PKey::EC.new("secp256k1")
+    end
         
     def valid_pubkey?(pubkey)
       ::OpenSSL::PKey::EC::Point.from_hex(bitcoin_elliptic_curve.group, pubkey)

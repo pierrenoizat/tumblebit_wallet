@@ -201,7 +201,6 @@ class PaymentsController < ApplicationController
       unless @payment.real_indices.include? i
         key_hex = @fake_k_values[j]
         c = @payment.c_values[i]
-        # decipher = OpenSSL::Cipher::AES.new(128, :CBC)
         decipher = OpenSSL::Cipher::AES256.new(:CBC)
         decipher.decrypt
         iv_hex = $AES_INIT_VECTOR
@@ -281,7 +280,6 @@ class PaymentsController < ApplicationController
       e = $TUMBLER_RSA_PUBLIC_EXPONENT
       n = $TUMBLER_RSA_PUBLIC_KEY
       for i in 0..14
-        # decipher = OpenSSL::Cipher::AES.new(128, :CBC)
         decipher = OpenSSL::Cipher::AES256.new(:CBC)
         decipher.decrypt
       

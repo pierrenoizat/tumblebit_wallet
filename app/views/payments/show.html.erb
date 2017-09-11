@@ -1,5 +1,29 @@
 <div class="container">
   <div class="row">
+		<!-- Bitcoin Address Modal -->
+		<%= javascript_include_tag 'bootstrap/jquery.qrcode.min.js', 'data-turbolinks-track' => true %>
+	
+		<div class="modal fade" id="bitcoinModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+		  <div class="modal-dialog" role="document">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		        <h5 class="modal-title" id="myModalLabel">Bitcoin Address to be funded by Alice:</h5>
+		      </div>
+		      <div class="modal-body">
+				<div id="qrcodeCanvas"></div>
+		        <strong><%= @payment.hash_address %></strong>
+				<script>
+					jQuery('#qrcodeCanvas').qrcode({
+						text	: '<%= escape_javascript @payment.hash_address.to_s %>'
+						
+					});	
+				</script>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+		
 	<h3>Payment # <%= @payment.id %>: <%= @payment.title %></h3>
 	<% unless @payment.aasm_state == "step8"%>
 		<p>P2SH Address: <strong><%= @payment.hash_address %></strong></p>
@@ -15,7 +39,7 @@
 		<%= form_for(@payment, multipart: true) do |f| %>
 			<div class="field">
 			   <p><%= f.label 'Alice Puzzle Access Code y' %></p>
-			   <p><%= f.text_field :y, :style => "width:1200px;", :placeholder => "b2aeac0d6d50bf63b01522936b9bcf58ef7dd196cefff6ba80d470d125e4f24501cc2305dca1a34e344b59ae1a8251e47a1c2da52fd7630303856cbf729ec0ffe2b27365b3cd49f2e4bbedd2a4b7b4563181a1073e6b099fffb1a9beb5f5710c1afeff06ee38b4250bd069dfc4bcddc47495837272a35268e794e6c5919dc136" %></p>
+			   <p><%= f.text_area :y, :class => "form-control", :rows => 2, :placeholder => "b2aeac0d6d50bf63b01522936b9bcf58ef7dd196cefff6ba80d470d125e4f24501cc2305dca1a34e344b59ae1a8251e47a1c2da52fd7630303856cbf729ec0ffe2b27365b3cd49f2e4bbedd2a4b7b4563181a1073e6b099fffb1a9beb5f5710c1afeff06ee38b4250bd069dfc4bcddc47495837272a35268e794e6c5919dc136" %></p>
 			 </div>
 			
 			<%= f.submit 'Start Payment Process with Tumbler', :class => "btn btn-primary" %>
@@ -30,7 +54,11 @@
 		<% if @payment.first_spending_tx_hash_unconfirmed %>
 			<p><%=link_to 'Get puzzle solution', alice_step_11_payment_path(@payment), :class => "btn btn-primary" %> | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payments_path, :class => 'btn' %></p>
 		<% else %>
-			<p>Tumbler has not been paid yet. Alice should pay P2SH (escrow) address: <strong><%= @payment.hash_address %></strong></p>
+			<p>Tumbler has not been paid yet. Alice should pay P2SH (escrow) address: 
+			<% if !@payment.hash_address.blank? %>
+			<a href="#bitcoinModal" data-toggle="modal" title="Bitcoin">
+	      <span><i class="fa fa-qrcode fa-lg"></i>      <strong><%= @payment.hash_address %></strong></span></a>
+			<% end %></p>
 		<% end %>
 	<% end %>
 	<% if @payment.aasm_state == "completed" %>
