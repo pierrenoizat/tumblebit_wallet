@@ -130,43 +130,47 @@ class PaymentsController < ApplicationController
     end
 
     @beta_values = []
-
+    begin
     # first, compute 15 real beta values
-    if @payment.y
-      p = @payment.y.to_i(16) # y = epsilon^^pk,received from Bob
+      if @payment.y.size == 256
+        p = @payment.y.to_i(16) # y = epsilon^^pk,received from Bob
 
-      for i in 0..299
-        m = @r_values[i].to_i(16)
-        if @payment.real_indices.include? i
-          b = mod_pow(m,e,n)
-          beta_value = (p*b) % n
-        else
-          beta_value = mod_pow(m,e,n)
+        for i in 0..299
+          m = @r_values[i].to_i(16)
+          if @payment.real_indices.include? i
+            b = mod_pow(m,e,n)
+            beta_value = (p*b) % n
+          else
+            beta_value = mod_pow(m,e,n)
+          end
+          @beta_values[i] = beta_value.to_s(16)
         end
-        @beta_values[i] = beta_value.to_s(16)
-      end
       
-      response= RestClient.patch $TUMBLER_PAYMENT_API_URL, {payment: {alice_public_key: @payment.alice_public_key, beta_values: "#{@beta_values}"}}
-      result = JSON.parse(response.body)
-      @payment.expiry_date = result["expiry_date"]
-      # get c values from result params and put them in an array
-      @c_values = Array.new
-      @c_values = result["c_values"]
-      @payment.c_values = @c_values
+        response= RestClient.patch $TUMBLER_PAYMENT_API_URL, {payment: {alice_public_key: @payment.alice_public_key, beta_values: "#{@beta_values}"}}
+        result = JSON.parse(response.body)
+        @payment.expiry_date = result["expiry_date"]
+        # get c values from result params and put them in an array
+        @c_values = Array.new
+        @c_values = result["c_values"]
+        @payment.c_values = @c_values
 
-      # get h values from result params and put them in an array
-      @h_values = Array.new
-      @h_values = result["h_values"]
-      @payment.h_values = @h_values
+        # get h values from result params and put them in an array
+        @h_values = Array.new
+        @h_values = result["h_values"]
+        @payment.h_values = @h_values
 
-      @payment.beta_values = @beta_values
-      # @payment.ro_values = @ro_values,  no longer an attribute, now a model method
-      @payment.r_values = @r_values # 15 real r values to be revealed to Tumbler after step 8
-      @payment.beta_values_sent # update state from "step1" to "step3"
-      @payment.c_h_values_received # update payment state from "step3" to "step5"
-      @payment.save
-    else
-      raise "Before computing beta values, Alice must get y from Bob."
+        @payment.beta_values = @beta_values
+        @payment.r_values = @r_values # 15 real r values to be revealed to Tumbler after step 8
+        @payment.beta_values_sent # update state from "step1" to "step3"
+        @payment.c_h_values_received # update payment state from "step3" to "step5"
+        @payment.save
+      else
+        raise "Before computing beta values, Alice must get y from Bob."
+      end
+    rescue RuntimeError
+      flash[:alert] = "Before computing beta values, Alice must get y from Bob."
+      redirect_to payments_url
+      return
     end
 
     # send real indices and 285 (fake) ro values to Tumbler

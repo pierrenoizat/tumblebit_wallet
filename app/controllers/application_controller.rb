@@ -6,17 +6,11 @@ class ApplicationController < ActionController::Base
   include ActionView::Helpers::TextHelper
   
   include SessionsHelper   
-    before_filter :set_cache_headers  
+    # before_filter :set_cache_headers  
     rescue_from ActionController::InvalidAuthenticityToken do |exception|  
       flash[:danger] = "If this keeps happening please contact me. Thank you!"  
       redirect_to root_url  
     end  
-
-    def set_cache_headers  
-      response.headers["Cache-Control"] = "no-cache, no-store, max-age=0, must-revalidate"  
-      response.headers["Pragma"] = "no-cache"  
-      response.headers["Expires"] = "Fri, 01 Jan 1990 00:00:00 GMT"  
-    end
 
   helper_method :current_user
   helper_method :user_signed_in?

@@ -34,8 +34,6 @@ module Tumblebit
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de
 
-    # Do not swallow errors in after_commit/after_rollback callbacks.
-    config.active_record.raise_in_transactional_callbacks = true
     $SALT_STRING = "ygiu1211095gadqfzzieczc4320098777pmlkjuyrcw67xfxuxgwosjdhdhd76392187643hdhsdndiidnd"
     
     $BLOCKR_ADDRESS_UNSPENT_URL = "http://btc.blockr.io/api/v1/address/unspent/"

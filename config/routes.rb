@@ -1,7 +1,5 @@
 Rails.application.routes.draw do
   
-  devise_for :clients, controllers: { sessions: 'clients/sessions' }
-  
   resources :posts
   resources :visitors
   
@@ -16,7 +14,6 @@ Rails.application.routes.draw do
   get 'products/:id', to: 'products#show', :as => :products
 
   resources :users
-  resources :clients
     
   resources :payments do
     member do
