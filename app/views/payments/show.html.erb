@@ -47,9 +47,6 @@
 		<% end %>
 	<% end %>
 	</br>
-	<% if @payment.aasm_state == "step7"%>
-		<p><%=link_to 'Check 285 fake k values sent by Tumbler', alice_step_7_payment_path(@payment), :class => "btn btn-primary" %>  | <%= link_to t('.cancel', :default => t("helpers.links.cancel")), payments_path, :class => 'btn' %></p>
-	<% end %>
 	<% if @payment.aasm_state == "step8"%>
 	<p>Puzzle y: <pre style="width:600px"><code><%= @payment.y %></code></pre></p>
 		<% if @payment.first_spending_tx_hash_unconfirmed %>

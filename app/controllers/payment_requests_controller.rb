@@ -97,7 +97,7 @@ class PaymentRequestsController < ApplicationController
         @payment_request.escrow_tx_broadcasted # transition payment request state from "step10" to "step12"
         @payment_request.puzzle_solution_received # transition payment request state from "step12" to "completed"
         @payment_request.save
-        redirect_to @payment_request, notice: 'Puzzle solution was successfully checked by Bob.'
+        redirect_to @payment_request, notice: 'Puzzle solution was successfully saved.'
       else
         flash[:notice] = "Payment request was successfully updated."
         respond_with(@payment_request)

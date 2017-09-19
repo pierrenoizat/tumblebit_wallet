@@ -132,7 +132,7 @@ class PaymentsController < ApplicationController
     @beta_values = []
     begin
     # first, compute 15 real beta values
-      if @payment.y.size == 256
+      if @payment.valid_y?
         p = @payment.y.to_i(16) # y = epsilon^^pk,received from Bob
 
         for i in 0..299
@@ -246,7 +246,6 @@ class PaymentsController < ApplicationController
     flash[:notice] = "Payment successfully updated: step 8 completed. Post transaction Tpuzzle"
     render "show"
     
-    
   end # of method alice_step_1
   
   
@@ -320,14 +319,6 @@ class PaymentsController < ApplicationController
     end
     
   end # of alice_step_11
-  
-  
-  def alice_step_9
-    # Tumbler gets y and r_values file from Alice
-    # Tumbler verifies real beta_values = y·(r)^^e mod n for real r values
-    # If not, abort.
-    # if all real beta values unblind to y, Tumbler post transaction Tsolve containing 15 real k values
-  end
 
 
   private

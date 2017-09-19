@@ -37,6 +37,7 @@ gem 'rb-readline'
 gem "mail_form"
 gem 'rest-client'
 gem 'money-tree'
+gem 'blockcypher-ruby'
 
 group :development do
   gem 'better_errors'

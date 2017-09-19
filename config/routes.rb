@@ -18,9 +18,7 @@ Rails.application.routes.draw do
   resources :payments do
     member do
       get 'alice_step_1'
-      get 'alice_step_7'
       get 'alice_step_11'
-      get 'tumbler_encrypts_values'
     end
   end
     
