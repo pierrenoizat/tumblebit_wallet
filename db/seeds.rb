@@ -39,8 +39,8 @@ Post.create(
 
     This application was developped using the following free software:
     
-    * Ruby 2.3.0
-    * Rails 4.2.0
+    * Ruby 2.3.1
+    * Rails 5.1.1
     * [btcruby](https://github.com/oleganza/btcruby), the awesome Bitcoin ruby library developped by Oleg Andreev and Ryan Smith.}
 )
 
@@ -83,7 +83,7 @@ Post.create(
   body:
   %Q{### License
 
-    © Pierre Noizat - Paymium 2015-2017 Soon to be released under the [MIT license](http://opensource.org/licenses/mit-license.php)}
+    © Pierre Noizat 2015-2019 Soon to be released under the [MIT license](http://opensource.org/licenses/mit-license.php)}
 )
 
 Post.create(
