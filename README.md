@@ -11,7 +11,7 @@ Problems? Issues?
 
 Need help? Contact me at pierre dot noizat at paymium dot com
 
-If the application doesn't work as expected, please [report an issue](https://github.com/Paymium/tumblebit/issues)
+If the application doesn't work as expected, please [report an issue](https://github.com/pierrenoizat/tumblebit_wallet/issues)
 and include the diagnostics.
 
 Ruby on Rails
