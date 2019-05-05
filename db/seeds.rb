@@ -39,9 +39,9 @@ Post.create(
 
     This application was developped using the following free software:
     
-    * Ruby 2.3.1
-    * Rails 5.1.1
-    * [btcruby](https://github.com/oleganza/btcruby), the awesome Bitcoin ruby library developped by Oleg Andreev and Ryan Smith.}
+    * Ruby 2.5.3
+    * Rails 5.2.2
+    }
 )
 
 Post.create(

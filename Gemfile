@@ -1,11 +1,11 @@
 source 'https://rubygems.org'
-ruby '2.3.1'
-gem 'rails', '~> 5.1.1'
+ruby '2.5.3'
+gem 'rails', '~> 5.2.2'
 gem 'responders'
 gem 'active_model_serializers'
 gem 'rake'
 gem 'sass-rails'
-gem 'sprockets', '3.6.3'
+gem "sprockets", ">= 3.7.2"
 gem 'less-rails'
 gem 'therubyracer'
 gem 'uglifier', '>= 1.3.0'
@@ -44,7 +44,6 @@ group :development do
 end
 
 group :development, :test do
-  gem 'factory_girl_rails'
   gem 'rspec-rails'
   gem 'spring'
   gem "binding_of_caller"

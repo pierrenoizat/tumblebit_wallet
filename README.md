@@ -19,13 +19,13 @@ Ruby on Rails
 
 This application requires:
 
-- Ruby 2.3.1
-- Rails 5.1.1
+- Ruby 2.5.3
+- Rails 5.2.2
 - btcruby
 
 Getting Started
 ---------------
-$ rvm use 2.3.1
+$ rvm use 2.5.3
 
 $ pg_ctl -D /usr/local/var/postgres start
 
