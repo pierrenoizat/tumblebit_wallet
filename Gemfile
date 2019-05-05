@@ -33,7 +33,6 @@ gem 'mechanize'
 gem 'validates_timeliness', '~> 4.0'
 gem 'aasm'
 gem 'rb-readline'
-# gem "mail_form", ">= 1.3.0"
 gem "mail_form"
 gem 'rest-client'
 gem 'money-tree'
@@ -48,6 +47,7 @@ group :development, :test do
   gem 'factory_girl_rails'
   gem 'rspec-rails'
   gem 'spring'
+  gem "binding_of_caller"
 end
 
 group :test do
