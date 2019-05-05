@@ -6,7 +6,7 @@ Tumblebit.network Wallet
 This Bitcoin wallet application allows users to create and send unlinkable Bitcoin transactions to and from a Tumblebit server.
 This application is for experimental, non-commercial use only.
 Do NOT use it to move any significant amount of money.
-The application can run locally and be tested against my tumblebit demo server at [tumnblebit.network](tumblebit.network)
+The application can run locally and be tested against my tumblebit demo server at [tumnblebit.network](http://tumblebit.network)
 
 Problems? Issues?
 -----------
